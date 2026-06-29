@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Full-Stack Module Generator for FeedbackHub
+ * Full-Stack Module Generator for OpenCode Scaffold
  *
  * Rapidly generates complete CRUD modules from database schema to frontend management pages.
  * Supports smart field analysis for 10+ business patterns, file upload capabilities.

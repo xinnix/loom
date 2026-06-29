@@ -144,7 +144,7 @@ export class ProductService extends BaseService<Product> {
 ## Seed 数据
 
 ```bash
-docker exec -i postgres psql -U xinnix -d couponHub < infra/database/prisma/seed-base.sql
+docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-base.sql
 ```
 
 测试账号：

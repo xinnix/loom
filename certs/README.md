@@ -94,7 +94,7 @@ volumes:
 ls -la certs/
 
 # 检查容器内挂载
-docker exec couponHub-api-prod ls -la /app/certs
+docker exec ${PROJECT_NAME:-opencode}-api-prod ls -la /app/certs
 ```
 
 ### 微信支付初始化失败
@@ -102,7 +102,7 @@ docker exec couponHub-api-prod ls -la /app/certs
 检查日志：
 
 ```bash
-docker logs couponHub-api-prod | grep "微信支付"
+docker logs ${PROJECT_NAME:-opencode}-api-prod | grep "微信支付"
 ```
 
 常见原因：

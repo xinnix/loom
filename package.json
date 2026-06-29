@@ -1,5 +1,5 @@
 {
-  "name": "agentic-repo",
+  "name": "opencode-scaffold",
   "version": "1.0.0",
   "description": "Full-stack autonomous scaffold with NestJS + tRPC + Refine + UniApp",
   "scripts": {

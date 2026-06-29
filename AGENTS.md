@@ -91,10 +91,10 @@ pnpm --filter @opencode/database prisma db seed     # 执行 Seed（推荐使用
 
    ```bash
    # 基础数据（用户、角色、权限）
-   docker exec -i postgres psql -U xinnix -d couponHub < infra/database/prisma/seed-base.sql
+   docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-base.sql
 
    # 业务数据（商户、券模板、订单等）
-   docker exec -i postgres psql -U xinnix -d couponHub < infra/database/prisma/seed-data.sql
+   docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-data.sql
    ```
 
 **Seed 脚本位置：**

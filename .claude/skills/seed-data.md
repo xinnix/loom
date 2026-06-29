@@ -41,6 +41,6 @@
 ## 注意事项
 
 - 确保 PostgreSQL 容器正在运行
-- 数据库名称：couponHub
+- 数据库名称：opencode
 - 用户：xinnix
 - 如果数据已存在，会跳过插入（ON CONFLICT DO NOTHING）

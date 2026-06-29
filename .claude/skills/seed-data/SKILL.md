@@ -110,7 +110,7 @@ node .claude/skills/seed-data/scripts/seed-data.ts --dry-run
 ## 数据库配置
 
 - **容器名**：postgres
-- **数据库名**：couponHub
+- **数据库名**：opencode
 - **用户名**：xinnix
 - **密码**：x12345678
 
@@ -135,13 +135,13 @@ node .claude/skills/seed-data/scripts/seed-data.ts --dry-run
 docker ps | grep postgres
 
 # 执行基础数据
-docker exec -i postgres psql -U xinnix -d couponHub < infra/database/prisma/seed-base.sql
+docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-base.sql
 
 # 执行业务数据
-docker exec -i postgres psql -U xinnix -d couponHub < infra/database/prisma/seed-data.sql
+docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-data.sql
 
 # 验证数据
-docker exec -i postgres psql -U xinnix -d couponHub -c "SELECT '商户: ' || COUNT(*) FROM merchants UNION ALL SELECT '券模板: ' || COUNT(*) FROM coupon_templates;"
+docker exec -i postgres psql -U xinnix -d opencode -c "SELECT '商户: ' || COUNT(*) FROM merchants UNION ALL SELECT '券模板: ' || COUNT(*) FROM coupon_templates;"
 ```
 
 ## 注意事项
@@ -163,10 +163,10 @@ docker start postgres
 
 ```bash
 # 检查数据库是否存在
-docker exec -i postgres psql -U xinnix -l | grep couponHub
+docker exec -i postgres psql -U xinnix -l | grep opencode
 
 # 如果不存在，创建数据库
-docker exec -i postgres psql -U xinnix -c "CREATE DATABASE couponHub;"
+docker exec -i postgres psql -U xinnix -c "CREATE DATABASE opencode;"
 ```
 
 **问题：表不存在**
