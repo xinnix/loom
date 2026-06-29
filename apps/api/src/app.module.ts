@@ -19,6 +19,7 @@ import { WecomModule } from './modules/wecom/module';
 // 全局拦截器
 import { TransformInterceptor } from './core/interceptors/transform.interceptor';
 import { FileStorageService } from './shared/services/file-storage.service';
+import { LlmService } from './shared/services/llm.service';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { FileStorageService } from './shared/services/file-storage.service';
   providers: [
     Reflector,
     FileStorageService,
+    LlmService,
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,
