@@ -63,24 +63,10 @@
     ]
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/user-prompt-submit.sh\""
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
-          {
-            "type": "command",
-            "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/before-edit.sh\""
-          },
           {
             "type": "command",
             "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/protect-migration.sh\""

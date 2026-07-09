@@ -10,6 +10,7 @@ dist/
 build/
 .next/
 out/
+*.tsbuildinfo
 
 # Environment variables
 .env
@@ -47,6 +48,7 @@ coverage/
 # Misc
 .cache/
 .temp/
+.playwright-mcp/
 
 # Database backups
 backups/
