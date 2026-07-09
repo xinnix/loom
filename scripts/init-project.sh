@@ -3,7 +3,7 @@
 # init-project.sh — 把 OpenCode Scaffold 脚手架的身份标识机械替换为新项目的标识。
 #
 # 用法:
-#   bash scripts/init-project.sh <项目名> [包名前缀] [数据库名] [品牌名] [生产API域名]
+#   bash scripts/init-project.sh <项目名> [包名前缀] [数据库名] [品牌名] [生产API域名] [启用APP列表]
 #
 # 参数（缺省均从 <项目名> 派生）:
 #   $1 项目名      (必填) 顶层 package.json name，并作为容器/镜像默认 PROJECT_NAME
@@ -11,6 +11,7 @@
 #   $3 数据库名    (默认=$1) PostgreSQL 数据库名
 #   $4 品牌名      (默认=$1) 管理/Web/Landing 端可见的 UI 品牌文案
 #   $5 生产API域名 (可选) miniapp 生产环境 API 地址；不提供则保留 example.com 占位
+#   $6 启用APP列表 (可选，默认="api admin") 空格分隔，可选值: api admin web landing miniapp
 #
 # 设计原则:
 #   - 只替换"身份标识"的精确模式，不做模糊 opencode 全局替换，避免误伤。
@@ -24,7 +25,7 @@
 set -euo pipefail
 
 if [ "$#" -lt 1 ]; then
-  echo "用法: bash scripts/init-project.sh <项目名> [包名前缀] [数据库名] [品牌名] [生产API域名]" >&2
+  echo "用法: bash scripts/init-project.sh <项目名> [包名前缀] [数据库名] [品牌名] [生产API域名] [启用APP列表]" >&2
   exit 1
 fi
 
@@ -33,6 +34,7 @@ PKG_PREFIX="${2:-$PROJECT_NAME}"
 DB_NAME="${3:-$PROJECT_NAME}"
 BRAND_NAME="${4:-$PROJECT_NAME}"
 API_DOMAIN="${5:-}"
+ENABLED_APPS="${6:-api admin}"
 
 # 脚本所在仓库根目录
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -91,8 +93,14 @@ echo "   包名前缀:    @${PKG_PREFIX}"
 echo "   数据库名:    ${DB_NAME}"
 echo "   品牌名:      ${BRAND_NAME}"
 [ -n "$API_DOMAIN" ] && echo "   生产API域名: ${API_DOMAIN}"
+echo "   启用APP:     ${ENABLED_APPS}"
 echo " 仓库根: ${ROOT_DIR}"
 echo "================================================"
+
+# ---- 生成 .scaffold-config.json ----
+APPS_JSON="[\"$(echo "$ENABLED_APPS" | sed 's/ /", "/g')\"]"
+echo "$APPS_JSON" > .scaffold-config.json
+echo "  ✓ 已生成 .scaffold-config.json: ${ENABLED_APPS}"
 
 # ---- Step 1: 包 scope @opencode/* → @<prefix>/* （全局，保护技能自身）----
 echo ""
@@ -165,6 +173,18 @@ echo "================================================"
 echo " 📋 部署配置检查清单"
 echo "================================================"
 echo ""
+echo "已启用 APP: ${ENABLED_APPS}"
+echo ""
+
+# 检查哪些 app 有 Dockerfile，用于提示构建顺序
+HAS_DOCKERFILE=""
+for app in $ENABLED_APPS; do
+  [ -f "Dockerfile.${app}" ] && HAS_DOCKERFILE="${HAS_DOCKERFILE} ${app}"
+done
+if [ -n "$HAS_DOCKERFILE" ]; then
+  echo "将构建并推送的 Docker 镜像:${HAS_DOCKERFILE}"
+fi
+echo ""
 echo "将本项目推送到 GitHub 后，CI/CD 会自动构建 Docker 镜像。"
 echo "如需自动部署到服务器，请在 GitHub 仓库 Settings → Secrets and variables → Actions 中设置以下密钥："
 echo ""
@@ -189,17 +209,18 @@ echo ""
 echo "  cd $DEPLOY_PATH"
 echo "  # 从仓库复制 docker-compose.prod.yml"
 echo "  # 创建 .env.prod（基于 .env.prod.example）"
-echo "  # 确保 certs/ 目录和微信支付证书存在"
 echo "  # 登录 GHCR：docker login ghcr.io -u <GitHub用户名>"
-echo "  docker compose -f docker-compose.prod.yml pull"
-echo "  docker compose -f docker-compose.prod.yml up -d"
+echo "  TAG=latest docker compose -f docker-compose.prod.yml pull"
+for app in $ENABLED_APPS; do
+  [ -f "Dockerfile.${app}" ] && echo "  TAG=latest docker compose -f docker-compose.prod.yml up -d --no-deps ${app}"
+done
 echo ""
 echo "之后每次 git push main 都会自动："
 echo "  1. 类型检查 → Lint → 测试 → 迁移"
 echo "  2. 构建并推送 Docker 镜像到 GHCR"
-echo "  3. SSH 到服务器 → pull 新镜像 → 渐进式重启"
+echo "  3. SSH 到服务器 → pull 新镜像 → 重启 ${ENABLED_APPS}"
 echo ""
-echo "================================================"
+echo "如需调整启用的 APP，可编辑 .scaffold-config.json 后提交。"
 echo ""
 echo "================================================"
 echo " 替换完成。影响文件总数: ${AFFECTED}"
@@ -227,5 +248,6 @@ echo "  2. /sync          # Prisma Generate + Build Shared"
 echo "  3. /db-migrate    # 建库 + 迁移 + Seed"
 echo "  4. /start-backend && /start-frontend   # 验证登录与 CRUD"
 echo "  5. 抽查 apps/admin/index.html 标题、AdminLayout 品牌、docker-compose 容器名"
-echo "  6. 推送到 GitHub → 检查 CI 是否通过"
-echo "  7. 参照上方部署检查清单配置自动部署到服务器"
+echo "  6. 创建 GitHub 仓库并推送：# gh repo create <项目名> --private --push --source=."
+echo "  7. 推送到 GitHub → 检查 CI 是否通过"
+echo "  8. 参照上方部署检查清单配置自动部署到服务器"

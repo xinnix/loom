@@ -35,17 +35,18 @@ description: 交互式初始化新项目 — 运行替换脚本把脚手架身�
 3. **数据库名**（默认 = 项目名，如 `my_app_db`）— PostgreSQL 库名
 4. **品牌名**（默认 = 项目名，如 `我的应用`）— 管理/Web/Landing 端可见的标题与文案
 5. **生产 API 域名**（可选，如 `https://api.myapp.com/api`）— miniapp 生产环境地址，不提供则保留占位
+6. **启用 APP**（默认 = `api admin`）— 空格分隔，可选值: `api` `admin` `web` `landing` `miniapp`。不启用的 app 源码保留，但 CI 不会构建和部署它。
 
 ### Step 2: 运行替换脚本
 
 ```bash
-bash scripts/init-project.sh "<项目名>" "<包名前缀>" "<数据库名>" "<品牌名>" "<生产API域名>"
+bash scripts/init-project.sh "<项目名>" "<包名前缀>" "<数据库名>" "<品牌名>" "<生产API域名>" "<启用APP列表>"
 ```
 
 示例：
 
 ```bash
-bash scripts/init-project.sh my-app mycompany my_app_db "我的应用" "https://api.myapp.com/api"
+bash scripts/init-project.sh my-app mycompany my_app_db "我的应用" "https://api.myapp.com/api" "api admin web"
 ```
 
 脚本会逐项打印影响文件数，并在结尾做残留检查。**脚本刻意不触碰**：
@@ -94,11 +95,52 @@ docker compose -f docker-compose.local.yml up -d   # 若用容器化数据库
 - 登录、CRUD 正常
 - 容器名 / 数据库连接使用新项目名
 
-### Step 7: 部署配置（可选）
+### Step 7: 创建 GitHub 仓库并推送
+
+在 GitHub 上创建远程仓库，并将初始化后的代码推送上去。
+
+#### 7.1 检查 gh CLI
+
+```bash
+gh auth status
+```
+
+- 如果提示 `not logged in`，在终端执行（建议输入 `! gh auth login`）：
+  ```bash
+  gh auth login
+  ```
+  选择 **GitHub.com** → **HTTPS** → **Login with a web browser**，按提示完成认证。
+- 如果提示 `gh: command not found`，先安装：[https://cli.github.com](https://cli.github.com)
+
+#### 7.2 创建仓库并推送
+
+确认已 `git commit` 当前状态，然后：
+
+```bash
+# 使用项目名创建私有仓库并推送
+gh repo create <项目名> --private --push --source=.
+
+# 或者公开仓库
+gh repo create <项目名> --public --push --source=.
+```
+
+创建后，GitHub Actions CI/CD 会自动触发首次构建。
+
+#### 7.3 确认 CI 已运行
+
+前往 GitHub 仓库的 Actions 标签页，确认：
+
+- ✅ type-check / lint / test 通过
+- ✅ build-and-push 成功（Docker 镜像已推送到 GHCR）
+- （如果有部署配置）✅ deploy 成功
+
+### Step 8: 部署配置（可选）
 
 推送代码到 GitHub 后，如需自动部署到服务器，完成以下一次性设置。
 
-#### 7.1 在 GitHub Secrets 中配置部署密钥
+> **关于启用的 APP**：初始化时已生成 `.scaffold-config.json`，记录了启用的 app 列表。CI/CD 只会构建和部署列表中启用的 app。如需后期调整，编辑 `.scaffold-config.json` 并提交即可。
+
+#### 8.1 在 GitHub Secrets 中配置部署密钥
 
 前往仓库 `Settings → Secrets and variables → Actions`，添加：
 
@@ -110,7 +152,7 @@ docker compose -f docker-compose.local.yml up -d   # 若用容器化数据库
 | `DEPLOY_PATH`    | 服务器上 `docker-compose.prod.yml` 所在目录 |
 | `DEPLOY_PORT`    | SSH 端口（可选，默认 `22`）                 |
 
-#### 7.2 生成 SSH 密钥对
+#### 8.2 生成 SSH 密钥对
 
 ```bash
 ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github-actions
@@ -118,7 +160,7 @@ ssh-copy-id -i ~/.ssh/github-actions.pub root@<你的服务器IP>
 cat ~/.ssh/github-actions          # 复制输出到 GitHub DEPLOY_SSH_KEY
 ```
 
-#### 7.3 服务器首次部署
+#### 8.3 服务器首次部署
 
 ```bash
 cd /root/opencode
