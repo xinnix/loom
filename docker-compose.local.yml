@@ -22,6 +22,7 @@ services:
   admin:
     image: ${PROJECT_NAME:-opencode}-admin:v1-local
     container_name: ${PROJECT_NAME:-opencode}-admin-local
+    profiles: [admin]
     ports:
       - '8081:80'
     env_file:
@@ -38,6 +39,7 @@ services:
       dockerfile: Dockerfile.web
     image: ${PROJECT_NAME:-opencode}-web:v1-local
     container_name: ${PROJECT_NAME:-opencode}-web-local
+    profiles: [web]
     ports:
       - '3002:3002'
     env_file:
@@ -55,6 +57,7 @@ services:
       target: production
     image: ${PROJECT_NAME:-opencode}-landing:v1-local
     container_name: ${PROJECT_NAME:-opencode}-landing-local
+    profiles: [landing]
     ports:
       - '8080:80'
     restart: unless-stopped

@@ -37,6 +37,7 @@ services:
   admin:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-opencode}-admin:${TAG:-latest}
     container_name: ${PROJECT_NAME:-opencode}-admin-prod
+    profiles: [admin]
     env_file:
       - .env.prod
     environment:
@@ -56,6 +57,7 @@ services:
   web:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-opencode}-web:${TAG:-latest}
     container_name: ${PROJECT_NAME:-opencode}-web-prod
+    profiles: [web]
     env_file:
       - .env.prod
     environment:
@@ -76,6 +78,7 @@ services:
   landing:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-opencode}-landing:${TAG:-latest}
     container_name: ${PROJECT_NAME:-opencode}-landing-prod
+    profiles: [landing]
     environment:
       - TZ=Asia/Shanghai
     ports:
