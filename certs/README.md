@@ -32,7 +32,7 @@
 
 ## 配置环境变量
 
-在 `1panel.env` 或 `.env.prod` 中配置：
+在 `.env.prod` 中配置：
 
 ```bash
 # 商户证书序列号

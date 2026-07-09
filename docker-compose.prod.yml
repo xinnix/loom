@@ -13,7 +13,7 @@ services:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-opencode}-api:${TAG:-latest}
     container_name: ${PROJECT_NAME:-opencode}-api-prod
     env_file:
-      - 1panel.env
+      - .env.prod
     environment:
       - TZ=Asia/Shanghai
     ports:
@@ -21,7 +21,7 @@ services:
     volumes:
       # 微信支付证书文件
       # 宿主机证书目录映射到容器内 /app/certs
-      # 1panel.env 中配置：
+      # .env.prod 中配置：
       # WX_PAY_PRIVATE_KEY_PATH=/app/certs/apiclient_key.pem
       # WX_PAY_PUBLIC_KEY_PATH=/app/certs/wechatpay_public_key.pem
       - ./certs:/app/certs:ro
@@ -38,7 +38,7 @@ services:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-opencode}-admin:${TAG:-latest}
     container_name: ${PROJECT_NAME:-opencode}-admin-prod
     env_file:
-      - 1panel.env
+      - .env.prod
     environment:
       - TZ=Asia/Shanghai
     ports:
@@ -57,7 +57,7 @@ services:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-opencode}-web:${TAG:-latest}
     container_name: ${PROJECT_NAME:-opencode}-web-prod
     env_file:
-      - 1panel.env
+      - .env.prod
     environment:
       - TZ=Asia/Shanghai
     ports:

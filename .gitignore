@@ -62,4 +62,3 @@ uploads/
 # Claude Code hooks
 .claude/logs/
 .claude/backups/
-1panel.env

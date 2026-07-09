@@ -96,13 +96,13 @@ echo "================================================"
 
 # ---- Step 1: 包 scope @opencode/* → @<prefix>/* （全局，保护技能自身）----
 echo ""
-echo "[1/6] 替换包 scope @opencode/* → @${PKG_PREFIX}/*"
+echo "[1/7] 替换包 scope @opencode/* → @${PKG_PREFIX}/*"
 FILES=$(collect_files json ts tsx js mjs cjs yml yaml md)
 replace_all '@opencode/' "@${PKG_PREFIX}/" <<< "$FILES"
 
 # ---- Step 2: 顶层 package.json name ----
 echo ""
-echo "[2/6] 顶层 package.json name: opencode-scaffold → ${PROJECT_NAME}"
+echo "[2/7] 顶层 package.json name: opencode-scaffold → ${PROJECT_NAME}"
 if grep -q '"name": "opencode-scaffold"' package.json 2>/dev/null; then
   sed -i '' "s|\"name\": \"opencode-scaffold\"|\"name\": \"${PROJECT_NAME}\"|" package.json
   echo "  ✓ package.json 已更新"
@@ -113,18 +113,18 @@ fi
 
 # ---- Step 3: docker-compose 容器/镜像默认 PROJECT_NAME / IMAGE_NAME ----
 echo ""
-echo "[3/6] docker-compose 默认值: \${PROJECT_NAME:-opencode} / \${IMAGE_NAME:-opencode}"
+echo "[3/7] docker-compose 默认值: \${PROJECT_NAME:-opencode} / \${IMAGE_NAME:-opencode}"
 FILES=$(collect_files yml yaml)
 replace_all 'PROJECT_NAME:-opencode' "PROJECT_NAME:-${PROJECT_NAME}" <<< "$FILES"
 replace_all 'IMAGE_NAME:-opencode' "IMAGE_NAME:-${PROJECT_NAME}" <<< "$FILES"
 
 # ---- Step 4: 数据库名（生产 env 示例）----
 echo ""
-echo "[4/6] 数据库名: opencode → ${DB_NAME}"
-# 仅 1panel.env.example 的 DATABASE_URL 行，精确到 5432/<db>
-if [ -f 1panel.env.example ] && grep -q '5432/opencode' 1panel.env.example; then
-  sed -i '' "s|5432/opencode|5432/${DB_NAME}|" 1panel.env.example
-  echo "  ✓ 1panel.env.example DATABASE_URL 数据库名已更新"
+echo "[4/7] 数据库名: opencode → ${DB_NAME}"
+# 仅 .env.prod.example 的 DATABASE_URL 行，精确到 5432/<db>
+if [ -f .env.prod.example ] && grep -q '5432/opencode' .env.prod.example; then
+  sed -i '' "s|5432/opencode|5432/${DB_NAME}|" .env.prod.example
+  echo "  ✓ .env.prod.example DATABASE_URL 数据库名已更新"
   AFFECTED=$((AFFECTED + 1))
 fi
 # 注意: seed-data 等技能文档里的示例库名 (opencode) 保持脚手架默认，不在脚本中替换，
@@ -132,7 +132,7 @@ fi
 
 # ---- Step 5: UI 品牌文案 OpenCode → 品牌名（仅用户可见的前端源码）----
 echo ""
-echo "[5/6] UI 品牌文案: OpenCode → ${BRAND_NAME}（admin / web / landing）"
+echo "[5/7] UI 品牌文案: OpenCode → ${BRAND_NAME}（admin / web / landing）"
 UI_FILES=""
 for app in admin web landing; do
   if [ -d "apps/${app}/src" ]; then
@@ -147,7 +147,7 @@ replace_all 'OpenCode' "${BRAND_NAME}" <<< "$UI_FILES"
 
 # ---- Step 6: miniapp 生产 API 域名（可选）----
 echo ""
-echo "[6/6] miniapp 生产 API 域名"
+echo "[6/7] miniapp 生产 API 域名"
 if [ -n "$API_DOMAIN" ]; then
   if [ -f apps/miniapp/.env.production ] && grep -q 'api.example.com' apps/miniapp/.env.production; then
     sed -i '' "s|https://api.example.com/api|${API_DOMAIN}|" apps/miniapp/.env.production
@@ -158,7 +158,48 @@ else
   echo "  (未提供生产API域名，保留 https://api.example.com/api 占位)"
 fi
 
-# ---- 残留检查 ----
+# ---- Step 7: 部署配置检查清单 ----
+echo ""
+echo "[7/7] 部署配置检查清单"
+echo "================================================"
+echo " 📋 部署配置检查清单"
+echo "================================================"
+echo ""
+echo "将本项目推送到 GitHub 后，CI/CD 会自动构建 Docker 镜像。"
+echo "如需自动部署到服务器，请在 GitHub 仓库 Settings → Secrets and variables → Actions 中设置以下密钥："
+echo ""
+echo "  ┌────────────────────┬──────────────────────────────────────┐"
+echo "  │ Secret             │ 说明                                 │"
+echo "  ├────────────────────┼──────────────────────────────────────┤"
+echo "  │ DEPLOY_HOST        │ 服务器 IP 或域名                      │"
+echo "  │ DEPLOY_USER        │ SSH 登录用户名（如 root）              │"
+echo "  │ DEPLOY_SSH_KEY     │ SSH 私钥全文                          │"
+echo "  │ DEPLOY_PATH        │ 服务器上 docker-compose 目录           │"
+echo "  │ DEPLOY_PORT        │ SSH 端口（可选，默认 22）              │"
+echo "  └────────────────────┴──────────────────────────────────────┘"
+echo ""
+echo "生成 SSH 密钥对（如果还没有）："
+echo ""
+echo "  ssh-keygen -t ed25519 -C \"github-actions-deploy\" -f ~/.ssh/github-actions"
+echo '  ssh-copy-id -i ~/.ssh/github-actions.pub <DEPLOY_USER>@<DEPLOY_HOST>'
+echo "  cat ~/.ssh/github-actions   # 复制输出到 GitHub DEPLOY_SSH_KEY"
+echo ""
+echo "首次部署需在服务器上准备："
+echo ""
+echo "  cd $DEPLOY_PATH"
+echo "  # 从仓库复制 docker-compose.prod.yml"
+echo "  # 创建 .env.prod（基于 .env.prod.example）"
+echo "  # 确保 certs/ 目录和微信支付证书存在"
+echo "  # 登录 GHCR：docker login ghcr.io -u <GitHub用户名>"
+echo "  docker compose -f docker-compose.prod.yml pull"
+echo "  docker compose -f docker-compose.prod.yml up -d"
+echo ""
+echo "之后每次 git push main 都会自动："
+echo "  1. 类型检查 → Lint → 测试 → 迁移"
+echo "  2. 构建并推送 Docker 镜像到 GHCR"
+echo "  3. SSH 到服务器 → pull 新镜像 → 渐进式重启"
+echo ""
+echo "================================================"
 echo ""
 echo "================================================"
 echo " 替换完成。影响文件总数: ${AFFECTED}"
@@ -186,3 +227,5 @@ echo "  2. /sync          # Prisma Generate + Build Shared"
 echo "  3. /db-migrate    # 建库 + 迁移 + Seed"
 echo "  4. /start-backend && /start-frontend   # 验证登录与 CRUD"
 echo "  5. 抽查 apps/admin/index.html 标题、AdminLayout 品牌、docker-compose 容器名"
+echo "  6. 推送到 GitHub → 检查 CI 是否通过"
+echo "  7. 参照上方部署检查清单配置自动部署到服务器"

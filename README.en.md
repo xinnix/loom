@@ -346,7 +346,7 @@ Edit schema.prisma → /db-migrate → /sync → git commit & push → CI auto m
 
 ### 1Panel Deployment
 
-See `1panel.env.example` for 1Panel-specific environment configuration.
+See `.env.prod.example` for production environment configuration.
 
 For detailed deployment guides, see `docs/deployment-guide.md` and `docs/deployment-checklist.md`.
 

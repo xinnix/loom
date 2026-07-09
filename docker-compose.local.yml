@@ -16,7 +16,7 @@ services:
     ports:
       - '3000:3000'
     env_file:
-      - 1panel.env
+      - .env.prod
     restart: unless-stopped
 
   admin:
@@ -25,7 +25,7 @@ services:
     ports:
       - '8081:80'
     env_file:
-      - 1panel.env
+      - .env.prod
     environment:
       VITE_API_URL: http://localhost:3000/trpc
     depends_on:
@@ -41,7 +41,7 @@ services:
     ports:
       - '3002:3002'
     env_file:
-      - 1panel.env
+      - .env.prod
     environment:
       NEXT_PUBLIC_API_URL: http://api:3000
     depends_on:

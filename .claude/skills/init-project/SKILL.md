@@ -94,6 +94,63 @@ docker compose -f docker-compose.local.yml up -d   # 若用容器化数据库
 - 登录、CRUD 正常
 - 容器名 / 数据库连接使用新项目名
 
+### Step 7: 部署配置（可选）
+
+推送代码到 GitHub 后，如需自动部署到服务器，完成以下一次性设置。
+
+#### 7.1 在 GitHub Secrets 中配置部署密钥
+
+前往仓库 `Settings → Secrets and variables → Actions`，添加：
+
+| Secret           | 说明                                        |
+| ---------------- | ------------------------------------------- |
+| `DEPLOY_HOST`    | 服务器 IP 或域名                            |
+| `DEPLOY_USER`    | SSH 用户名（如 `root`）                     |
+| `DEPLOY_SSH_KEY` | SSH 私钥全文                                |
+| `DEPLOY_PATH`    | 服务器上 `docker-compose.prod.yml` 所在目录 |
+| `DEPLOY_PORT`    | SSH 端口（可选，默认 `22`）                 |
+
+#### 7.2 生成 SSH 密钥对
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github-actions
+ssh-copy-id -i ~/.ssh/github-actions.pub root@<你的服务器IP>
+cat ~/.ssh/github-actions          # 复制输出到 GitHub DEPLOY_SSH_KEY
+```
+
+#### 7.3 服务器首次部署
+
+```bash
+cd /root/opencode
+cp .env.prod.example .env.prod     # 填写真实配置
+docker login ghcr.io -u <你的GitHub用户名>
+
+# 拉取并启动
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+#### 完整 CI/CD 流程
+
+推送到 `main` 后自动执行：
+
+```
+push → type-check → lint → test → migrate → 构建镜像 → 推送 GHCR → SSH 到服务器 → pull → 重启
+```
+
+手动回滚：前往 GitHub Actions → "CI / Deploy" → `Run workflow` → 输入目标 TAG。
+
+#### 服务器 `.env.prod` 需要配置的关键变量
+
+```bash
+DATABASE_URL=      # PostgreSQL 连接串
+JWT_SECRET=        # 生产环境密钥（至少 32 字符）
+CORS_ORIGIN=       # 允许的前端域名
+WX_APP_ID=         # 微信小程序 AppID
+WX_PAY_MCH_ID=     # 微信支付商户号
+# ... 其余按需配置
+```
+
 ## 注意事项
 
 - **幂等可重复**：脚本找不到源 token 时为 no-op，重复运行不会叠加破坏。若需换一套名称，先 `git checkout .` 回到脚手架状态再重跑。
