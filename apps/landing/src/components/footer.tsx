@@ -3,43 +3,30 @@ export function Footer() {
     <footer className="bg-neutral-950 py-12">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col items-center justify-between gap-8 sm:flex-row">
-          {/* Brand */}
           <div>
             <a href="#" className="text-lg font-bold tracking-tight text-white">
-              Open<span className="text-brand-500">Code</span>
+              Loom
             </a>
             <p className="mt-1 text-sm text-neutral-500">Agent-Centric 全栈开发框架</p>
           </div>
 
-          {/* Links */}
           <div className="flex flex-wrap justify-center gap-6">
-            <a
-              href="#harness"
-              className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
-            >
-              Agent Harness
-            </a>
             <a
               href="#features"
               className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
             >
-              功能特性
-            </a>
-            <a
-              href="#donate"
-              className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
-            >
-              赞助支持
+              框架特性
             </a>
             <a
               href="https://github.com/xinnix/loom"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
             >
               GitHub
             </a>
           </div>
 
-          {/* GitHub icon */}
           <a
             href="https://github.com/xinnix/loom"
             className="text-neutral-500 transition-colors hover:text-neutral-300"
@@ -55,13 +42,9 @@ export function Footer() {
           </a>
         </div>
 
-        <div className="mt-8 border-t border-neutral-800 pt-6 text-center sm:flex sm:items-center sm:justify-between">
+        <div className="mt-8 border-t border-neutral-800 pt-6 text-center">
           <p className="text-sm text-neutral-500">
             &copy; {new Date().getFullYear()} Loom. MIT License.
-          </p>
-          <p className="mt-2 text-xs text-neutral-600 sm:mt-0">
-            用<span className="mx-1 text-brand-500">❤</span>
-            构建 · 开源 · Agent-Driven
           </p>
         </div>
       </div>
