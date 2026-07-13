@@ -30,16 +30,17 @@
 
 ## 变更文件清单
 
-| 文件                                           | 变更 | 原因               |
-| ---------------------------------------------- | ---- | ------------------ |
-| `docs/task/README.md`                          | 新增 | 任务看板索引       |
-| `docs/task/TEMPLATE.md`                        | 新增 | 任务文档模板       |
-| `docs/task/active/`                            | 新增 | 进行中任务存放目录 |
-| `docs/task/completed/`                         | 新增 | 已完成任务存档目录 |
-| `docs/task/active/add-task-tracking-system.md` | 新增 | 本任务自身         |
-| `.claude/skills/task/SKILL.md`                 | 新增 | 任务追踪技能定义   |
-| `.claude/commands/task.md`                     | 新增 | `/task` 快捷命令   |
-| `CLAUDE.md`                                    | 修改 | 加入任务追踪节     |
+| 文件                                           | 变更   | 原因                                      |
+| ---------------------------------------------- | ------ | ----------------------------------------- |
+| `docs/task/README.md`                          | 新增   | 任务看板索引                              |
+| `docs/task/TEMPLATE.md`                        | 新增   | 任务文档模板                              |
+| `docs/task/active/`                            | 新增   | 进行中任务存放目录                        |
+| `docs/task/completed/`                         | 新增   | 已完成任务存档目录                        |
+| `docs/task/active/add-task-tracking-system.md` | 新增   | 本任务自身                                |
+| `.claude/skills/task/SKILL.md`                 | 新增   | 任务追踪技能定义                          |
+| `.claude/commands/task.md`                     | 新增   | `/task` 快捷命令                          |
+| `CLAUDE.md`                                    | 修改   | 加入任务追踪节                            |
+| —                                              | 已提交 | `b12ccb8 chore: add task tracking system` |
 
 ## 备注
 
