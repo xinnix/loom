@@ -1,4 +1,4 @@
-import { Prisma } from '@roundtable/database';
+import { Prisma } from '@loom/database';
 
 let currentUserId: string | undefined;
 

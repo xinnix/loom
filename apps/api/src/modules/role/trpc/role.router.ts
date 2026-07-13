@@ -3,7 +3,7 @@ import {
   CreateRoleSchema,
   UpdateRoleSchema,
   UpdateRolePermissionsSchema,
-} from '@roundtable/shared';
+} from '@loom/shared';
 import { createCrudRouterWithCustom } from '../../../trpc/trpc.helper';
 import { permissionProcedure, publicProcedure } from '../../../trpc/trpc';
 import {

@@ -316,7 +316,7 @@ ${customProcBlocks.map((b) => '  ' + b).join(',\n')}
   const searchFieldsStr = analysis.schema.prismaModelFields > 5 ? "['name']" : '';
 
   const newRouterContent = `import { ${crudFunction} } from '../../../trpc/trpc.helper';
-import { Create${pascalName}Schema, Update${pascalName}Schema } from '@roundtable/shared';
+import { Create${pascalName}Schema, Update${pascalName}Schema } from '@loom/shared';
 
 export const ${moduleName}Router = ${crudFunction}('${pascalName}', {
   create: { input: Create${pascalName}Schema },

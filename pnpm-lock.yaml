@@ -39,7 +39,7 @@ importers:
       '@ant-design/icons':
         specifier: ^6.1.0
         version: 6.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@roundtable/shared':
+      '@loom/shared':
         specifier: workspace:*
         version: link:../../infra/shared
       '@refinedev/antd':
@@ -166,6 +166,12 @@ importers:
       '@bull-board/express':
         specifier: ^6.21.2
         version: 6.21.2
+      '@loom/database':
+        specifier: workspace:*
+        version: link:../../infra/database
+      '@loom/shared':
+        specifier: workspace:*
+        version: link:../../infra/shared
       '@nestjs/bull':
         specifier: ^11.0.4
         version: 11.0.4(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(bull@4.16.5)
@@ -193,12 +199,6 @@ importers:
       '@nestjs/throttler':
         specifier: ^6.5.0
         version: 6.5.0(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(reflect-metadata@0.2.2)
-      '@roundtable/database':
-        specifier: workspace:*
-        version: link:../../infra/database
-      '@roundtable/shared':
-        specifier: workspace:*
-        version: link:../../infra/shared
       '@prisma/adapter-pg':
         specifier: ^7.2.0
         version: 7.2.0
@@ -429,7 +429,7 @@ importers:
       '@dcloudio/uni-ui':
         specifier: ^1.5.12
         version: 1.5.12
-      '@roundtable/shared':
+      '@loom/shared':
         specifier: workspace:*
         version: link:../../infra/shared
       '@vueuse/core':
@@ -559,7 +559,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@roundtable/shared':
+      '@loom/shared':
         specifier: workspace:*
         version: link:../../infra/shared
       next:

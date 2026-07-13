@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcryptjs';
-import { PrismaClient } from '@roundtable/database';
+import { PrismaClient } from '@loom/database';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 

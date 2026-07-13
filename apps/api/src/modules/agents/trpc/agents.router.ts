@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CreateAgentSchema, UpdateAgentSchema } from '@roundtable/shared';
+import { CreateAgentSchema, UpdateAgentSchema } from '@loom/shared';
 import { createCrudRouterWithCustom } from '../../../trpc/trpc.helper';
 import { permissionProcedure, protectedProcedure, publicProcedure } from '../../../trpc/trpc';
 import { DifyService } from '../services/dify.service';

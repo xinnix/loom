@@ -90,7 +90,7 @@ const defaultDeleteManySchema = z.object({
  * @example
  * ```typescript
  * import { createCrudRouter } from './trpc.helper';
- * import { TodoSchema } from '@roundtable/shared';
+ * import { TodoSchema } from '@loom/shared';
  *
  * export const todoRouter = createCrudRouter('Todo', {
  *   create: TodoSchema.createInput,

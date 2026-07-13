@@ -16,8 +16,8 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 FROM deps AS builder
 WORKDIR /app
 COPY . .
-RUN pnpm --filter @opencode/shared build
-RUN pnpm --filter @opencode/web build
+RUN pnpm --filter @loom/shared build
+RUN pnpm --filter @loom/web build
 
 # Stage 4: Production
 FROM node:22-alpine AS runner

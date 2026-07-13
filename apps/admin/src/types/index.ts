@@ -1,5 +1,5 @@
 // Define local types
-// Note: AppRouter type has been removed from @roundtable/shared to avoid circular dependency
+// Note: AppRouter type has been removed from @loom/shared to avoid circular dependency
 export interface Todo {
   id: string;
   title: string;

@@ -65,7 +65,7 @@ function goToProfile() {
     <!-- Welcome Section -->
     <view class="px-4 py-8">
       <view class="welcome-card rounded-xl p-6 shadow-sm">
-        <text class="mb-2 block text-2xl text-on-surface font-bold">OpenCode Scaffold</text>
+        <text class="mb-2 block text-2xl text-on-surface font-bold">Loom</text>
         <text class="block text-sm text-on-surface-variant">全栈管理系统脚手架，开箱即用</text>
         <view class="mt-4 flex gap-2">
           <view v-if="!isLoggedIn" class="rounded-lg bg-primary px-4 py-2" @click="goToLogin">

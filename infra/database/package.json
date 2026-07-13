@@ -1,5 +1,5 @@
 {
-  "name": "@roundtable/database",
+  "name": "@loom/database",
   "version": "1.0.0",
   "description": "",
   "main": "index.cjs",

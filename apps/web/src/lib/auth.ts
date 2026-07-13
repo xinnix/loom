@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from './api-client';
-import type { User } from '@roundtable/shared';
+import type { User } from '@loom/shared';
 
 export interface AuthResponse {
   user: User;

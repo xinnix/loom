@@ -1,4 +1,4 @@
-import { Prisma } from '@roundtable/database';
+import { Prisma } from '@loom/database';
 
 const SOFT_DELETE_MODELS = new Set(['Admin', 'User', 'Role', 'Permission']);
 

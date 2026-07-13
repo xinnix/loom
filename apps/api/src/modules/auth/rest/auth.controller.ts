@@ -4,7 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { Public, CurrentUser } from '../decorators/decorators';
 import { JwtAuthGuard } from '../../../core/guards/jwt.guard';
 
-import { LoginSchema, RegisterSchema, RefreshTokenSchema } from '@roundtable/shared';
+import { LoginSchema, RegisterSchema, RefreshTokenSchema } from '@loom/shared';
 
 @Controller('auth')
 export class AuthController {

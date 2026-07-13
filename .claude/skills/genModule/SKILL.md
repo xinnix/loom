@@ -188,7 +188,7 @@ export const ProductSchema = {
 
 ```typescript
 import { createCrudRouter } from '../../../trpc/trpc.helper';
-import { ProductSchema } from '@roundtable/shared';
+import { ProductSchema } from '@loom/shared';
 
 export const productRouter = createCrudRouter('Product', {
   create: ProductSchema.createInput,
@@ -201,7 +201,7 @@ export const productRouter = createCrudRouter('Product', {
 **⚠️ Important Notes:**
 
 - Use **relative import path** `../../../trpc/trpc.helper` (NOT `@shared/trpc/trpc.helper`)
-- Use **@roundtable/shared** for schema imports (NOT `@shared/index`)
+- Use **@loom/shared** for schema imports (NOT `@shared/index`)
 - Parameters format: `(modelName, { create, update, getMany, getOne })` - NOT object format
 
 **Option B: Custom Router (For complex logic)**
@@ -426,7 +426,7 @@ import { ProductSchema } from '@shared/index';
 
 // ✅ CORRECT
 import { createCrudRouter } from '../../../trpc/trpc.helper';
-import { ProductSchema } from '@roundtable/shared';
+import { ProductSchema } from '@loom/shared';
 ```
 
 ---
@@ -755,7 +755,7 @@ Make sure you're running the script from the correct project root directory. The
 
 - [ ] tRPC router created with correct import paths
   - [ ] Use relative path: `../../../trpc/trpc.helper`
-  - [ ] Use `@roundtable/shared` for schema imports
+  - [ ] Use `@loom/shared` for schema imports
 - [ ] tRPC router registered in `apps/api/src/trpc/app.router.ts`
 - [ ] Router uses correct parameter format: `(modelName, { create, update, getMany, getOne })`
 

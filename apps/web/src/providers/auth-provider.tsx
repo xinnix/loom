@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useEffect, useState, type ReactNode } from 'react';
-import type { User } from '@roundtable/shared';
+import type { User } from '@loom/shared';
 import {
   login as authLogin,
   logout as authLogout,

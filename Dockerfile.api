@@ -26,10 +26,10 @@ COPY . .
 RUN cd infra/database && npx prisma generate
 
 # 2. 编译 shared 包（API 依赖于 shared 的编译产物）
-RUN pnpm --filter @opencode/shared build
+RUN pnpm --filter @loom/shared build
 
 # 3. 编译 API 项目
-RUN pnpm --filter @opencode/api build
+RUN pnpm --filter @loom/api build
 
 # --- Stage 4: Deployer (生产环境提取) ---
 FROM node:22-alpine AS deployer
@@ -54,9 +54,9 @@ COPY --from=builder /app/node_modules ./node_modules
 # 在完整 workspace 环境中运行 pnpm deploy
 # 使用 --legacy 标志以确保正确处理 workspace 依赖
 # 不使用 --prod 标志，确保包含运行时必需的 peer dependencies（如 express）
-# 这会分析 @opencode/api 的所有依赖（包括 workspace 依赖）
+# 这会分析 @loom/api 的所有依赖（包括 workspace 依赖）
 # 并创建一个包含所有必要生产依赖的独立目录
-RUN pnpm deploy --filter @opencode/api --legacy /out
+RUN pnpm deploy --filter @loom/api --legacy /out
 
 # --- Stage 5: Runner (最终运行镜像) ---
 FROM node:22-alpine AS runner
@@ -86,18 +86,18 @@ COPY --from=builder /app/apps/api/dist ./dist
 # 包含 migrations 目录，用于 prisma migrate deploy
 COPY --from=builder /app/infra/database ./infra/database
 
-# 4. 手动补充 @opencode/database 包的缺失文件到 node_modules
+# 4. 手动补充 @loom/database 包的缺失文件到 node_modules
 # pnpm deploy 不会复制 workspace 包的源文件和编译产物
 # 注意：这些拷贝不会影响上面的 /app/infra/database 目录
-COPY --from=builder /app/infra/database/index.cjs ./node_modules/@opencode/database/index.cjs
-COPY --from=builder /app/infra/database/index.d.ts ./node_modules/@opencode/database/index.d.ts
-COPY --from=builder /app/infra/database/prisma ./node_modules/@opencode/database/prisma
-COPY --from=builder /app/infra/database/prisma.config.ts ./node_modules/@opencode/database/prisma.config.ts
-COPY --from=builder /app/infra/database/generated ./node_modules/@opencode/database/generated
+COPY --from=builder /app/infra/database/index.cjs ./node_modules/@loom/database/index.cjs
+COPY --from=builder /app/infra/database/index.d.ts ./node_modules/@loom/database/index.d.ts
+COPY --from=builder /app/infra/database/prisma ./node_modules/@loom/database/prisma
+COPY --from=builder /app/infra/database/prisma.config.ts ./node_modules/@loom/database/prisma.config.ts
+COPY --from=builder /app/infra/database/generated ./node_modules/@loom/database/generated
 
-# 5. 手动补充 @opencode/shared 包的编译产物
+# 5. 手动补充 @loom/shared 包的编译产物
 # API 运行时需要 shared 的编译产物
-COPY --from=builder /app/infra/shared/dist ./node_modules/@opencode/shared/dist
+COPY --from=builder /app/infra/shared/dist ./node_modules/@loom/shared/dist
 
 # 6. 确保 Prisma CLI 可用（简化版）
 # pnpm deploy 已经包含了完整的 prisma 和 @prisma/engines

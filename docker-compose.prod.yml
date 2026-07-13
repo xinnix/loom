@@ -10,8 +10,8 @@ version: '3.8'
 
 services:
   api:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-roundtable}-api:${TAG:-latest}
-    container_name: ${PROJECT_NAME:-roundtable}-api-prod
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-loom}-api:${TAG:-latest}
+    container_name: ${PROJECT_NAME:-loom}-api-prod
     env_file:
       - .env.prod
     environment:
@@ -35,8 +35,8 @@ services:
         max-file: '3'
 
   admin:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-roundtable}-admin:${TAG:-latest}
-    container_name: ${PROJECT_NAME:-roundtable}-admin-prod
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-loom}-admin:${TAG:-latest}
+    container_name: ${PROJECT_NAME:-loom}-admin-prod
     profiles: [admin]
     env_file:
       - .env.prod
@@ -55,8 +55,8 @@ services:
         max-file: '3'
 
   web:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-roundtable}-web:${TAG:-latest}
-    container_name: ${PROJECT_NAME:-roundtable}-web-prod
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-loom}-web:${TAG:-latest}
+    container_name: ${PROJECT_NAME:-loom}-web-prod
     profiles: [web]
     env_file:
       - .env.prod
@@ -76,8 +76,8 @@ services:
         max-file: '3'
 
   landing:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-roundtable}-landing:${TAG:-latest}
-    container_name: ${PROJECT_NAME:-roundtable}-landing-prod
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-loom}-landing:${TAG:-latest}
+    container_name: ${PROJECT_NAME:-loom}-landing-prod
     profiles: [landing]
     environment:
       - TZ=Asia/Shanghai

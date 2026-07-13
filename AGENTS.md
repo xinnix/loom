@@ -1,4 +1,4 @@
-# AGENTS.md - OpenCode Monorepo 脚手架指南
+# AGENTS.md - Loom Monorepo 脚手架指南
 
 ## 🎯 脚手架定位
 
@@ -68,18 +68,18 @@ pnpm build                      # 构建全部项目
 ### 单独启动
 
 ```bash
-pnpm --filter @roundtable/api dev       # 后端
-pnpm --filter @roundtable/admin dev     # Admin 前端
-pnpm --filter @roundtable/miniapp dev   # 小程序 H5
-pnpm --filter @roundtable/miniapp dev:mp-weixin  # 微信小程序
+pnpm --filter @loom/api dev       # 后端
+pnpm --filter @loom/admin dev     # Admin 前端
+pnpm --filter @loom/miniapp dev   # 小程序 H5
+pnpm --filter @loom/miniapp dev:mp-weixin  # 微信小程序
 ```
 
 ### 数据库操作
 
 ```bash
-pnpm --filter @roundtable/database prisma generate   # 生成 Client
-pnpm --filter @roundtable/database prisma migrate dev # 运行迁移
-pnpm --filter @roundtable/database prisma db seed     # 执行 Seed（推荐使用 /seed-data）
+pnpm --filter @loom/database prisma generate   # 生成 Client
+pnpm --filter @loom/database prisma migrate dev # 运行迁移
+pnpm --filter @loom/database prisma db seed     # 执行 Seed（推荐使用 /seed-data）
 ```
 
 **⚠️ 重要：Prisma Seed 问题解决方案**
@@ -91,10 +91,10 @@ pnpm --filter @roundtable/database prisma db seed     # 执行 Seed（推荐使�
 
    ```bash
    # 基础数据（用户、角色、权限）
-   docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-base.sql
+   docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base.sql
 
    # 业务数据（商户、券模板、订单等）
-   docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-data.sql
+   docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-data.sql
    ```
 
 **Seed 脚本位置：**
@@ -136,7 +136,7 @@ export class ProductService extends BaseService<Product> {
 
 - `schema.prisma` 是唯一的模型真理源
 - `infra/shared` 是唯一的验证真理源
-- 所有端共享 `@roundtable/shared` 类型
+- 所有端共享 `@loom/shared` 类型
 
 ### 2. 双用户认证体系
 

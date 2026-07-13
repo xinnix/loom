@@ -5,7 +5,7 @@ import {
   SendMessageSchema,
   SendKfMessageSchema,
   SyncKfMessageSchema,
-} from '@roundtable/shared';
+} from '@loom/shared';
 import { createCrudRouterWithCustom, createReadOnlyRouter } from '../../../trpc/trpc.helper';
 import { permissionProcedure, protectedProcedure } from '../../../trpc/trpc';
 import { WecomApiService } from '../services/wecom-api.service';

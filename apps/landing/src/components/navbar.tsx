@@ -43,7 +43,7 @@ export function Navbar() {
           ))}
           <li>
             <a
-              href="https://github.com/xinnix/opencode-scaffold"
+              href="https://github.com/xinnix/loom"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-brand-600"
@@ -111,7 +111,7 @@ export function Navbar() {
             ))}
             <li>
               <a
-                href="https://github.com/xinnix/opencode-scaffold"
+                href="https://github.com/xinnix/loom"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm font-medium text-neutral-600"

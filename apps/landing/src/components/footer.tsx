@@ -32,7 +32,7 @@ export function Footer() {
               赞助支持
             </a>
             <a
-              href="https://github.com/xinnix/opencode-scaffold"
+              href="https://github.com/xinnix/loom"
               className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
             >
               GitHub
@@ -41,7 +41,7 @@ export function Footer() {
 
           {/* GitHub icon */}
           <a
-            href="https://github.com/xinnix/opencode-scaffold"
+            href="https://github.com/xinnix/loom"
             className="text-neutral-500 transition-colors hover:text-neutral-300"
             aria-label="GitHub"
           >
@@ -57,7 +57,7 @@ export function Footer() {
 
         <div className="mt-8 border-t border-neutral-800 pt-6 text-center sm:flex sm:items-center sm:justify-between">
           <p className="text-sm text-neutral-500">
-            &copy; {new Date().getFullYear()} OpenCode Scaffold. MIT License.
+            &copy; {new Date().getFullYear()} Loom. MIT License.
           </p>
           <p className="mt-2 text-xs text-neutral-600 sm:mt-0">
             用<span className="mx-1 text-brand-500">❤</span>

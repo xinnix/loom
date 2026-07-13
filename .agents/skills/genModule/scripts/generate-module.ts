@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Full-Stack Module Generator for OpenCode Scaffold
+ * Full-Stack Module Generator for Loom
  *
  * Rapidly generates complete CRUD modules from database schema to frontend management pages.
  * Supports smart field analysis for 10+ business patterns, file upload capabilities.
@@ -335,7 +335,7 @@ function generateTRPCRouter(moduleName: string): string {
   const camelName = toCamelCase(moduleName);
 
   return `import { createCrudRouter } from '../../../trpc/trpc.helper';
-import { ${pascalName}Schema } from '@roundtable/shared';
+import { ${pascalName}Schema } from '@loom/shared';
 
 export const ${camelName}Router = createCrudRouter(
   '${pascalName}',

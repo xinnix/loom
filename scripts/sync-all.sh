@@ -2,9 +2,9 @@
 set -e
 
 echo "Generating Prisma Client..."
-pnpm --filter @opencode/database exec prisma generate
+pnpm --filter @loom/database exec prisma generate
 
 echo "Building shared package..."
-pnpm --filter @opencode/shared build
+pnpm --filter @loom/shared build
 
 echo "Sync complete."

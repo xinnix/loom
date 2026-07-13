@@ -11,8 +11,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    image: ${PROJECT_NAME:-roundtable}-api:v1-local
-    container_name: ${PROJECT_NAME:-roundtable}-api-local
+    image: ${PROJECT_NAME:-loom}-api:v1-local
+    container_name: ${PROJECT_NAME:-loom}-api-local
     ports:
       - '3000:3000'
     env_file:
@@ -20,8 +20,8 @@ services:
     restart: unless-stopped
 
   admin:
-    image: ${PROJECT_NAME:-roundtable}-admin:v1-local
-    container_name: ${PROJECT_NAME:-roundtable}-admin-local
+    image: ${PROJECT_NAME:-loom}-admin:v1-local
+    container_name: ${PROJECT_NAME:-loom}-admin-local
     profiles: [admin]
     ports:
       - '8081:80'
@@ -37,8 +37,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
-    image: ${PROJECT_NAME:-roundtable}-web:v1-local
-    container_name: ${PROJECT_NAME:-roundtable}-web-local
+    image: ${PROJECT_NAME:-loom}-web:v1-local
+    container_name: ${PROJECT_NAME:-loom}-web-local
     profiles: [web]
     ports:
       - '3002:3002'
@@ -55,8 +55,8 @@ services:
       context: .
       dockerfile: Dockerfile.landing
       target: production
-    image: ${PROJECT_NAME:-roundtable}-landing:v1-local
-    container_name: ${PROJECT_NAME:-roundtable}-landing-local
+    image: ${PROJECT_NAME:-loom}-landing:v1-local
+    container_name: ${PROJECT_NAME:-loom}-landing-local
     profiles: [landing]
     ports:
       - '8080:80'

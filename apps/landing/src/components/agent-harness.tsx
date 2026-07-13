@@ -272,7 +272,7 @@ export function AgentHarness() {
         <div className="mt-12 rounded-2xl bg-neutral-900 p-8 text-white">
           <h3 className="text-lg font-semibold">Agent-Centric 工作流</h3>
           <p className="mt-2 text-sm text-neutral-400">
-            传统脚手架给你代码，OpenCode 给你代码 + 全程 AI 搭档。开发不再是磕磕碰碰的 solo 之旅：
+            传统脚手架给你代码， Loom 给你代码 + 全程 AI 搭档。开发不再是磕磕碰碰的 solo 之旅：
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl bg-neutral-800 p-4">

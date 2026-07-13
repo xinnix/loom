@@ -52,7 +52,7 @@ function getMemoryRegistryPath(): string {
   const home = process.env.HOME || process.env.USERPROFILE || '';
   return path.join(
     home,
-    '.claude/projects/-Users-xinnix-code-opencode-scaffold/memory/module-registry.md',
+    '.claude/projects/-Users-xinnix-code-loom/memory/module-registry.md',
   );
 }
 

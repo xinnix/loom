@@ -1,4 +1,4 @@
-<h1 align="center">OpenCode Scaffold</h1>
+<h1 align="center">Loom</h1>
 
 <p align="center">
   <strong>Agent-Centric 全栈管理系统脚手架 — 让 Claude Code 写代码，人类做决策</strong>
@@ -37,13 +37,13 @@
 | **Web**      | Next.js 15 + Tailwind CSS v4 + REST     | 用户端 Web 应用            |
 | **Landing**  | Next.js 15 + Tailwind CSS v4 (SSG)      | 落地页 / 营销站            |
 | **Miniapp**  | uni-app + Vue 3 + TypeScript            | 微信小程序                 |
-| **Shared**   | Zod + `@roundtable/shared`              | 验证 Schema + 类型注册中心 |
+| **Shared**   | Zod + `@loom/shared`              | 验证 Schema + 类型注册中心 |
 
 **类型流：**
 
 ```
-schema.prisma ──► Prisma Client ──► AppRouter ──► @roundtable/shared ──► tRPC Client
-     (SSOT)        (@roundtable/db)     (tRPC)       (Zod Schema)       (Admin/Miniapp)
+schema.prisma ──► Prisma Client ──► AppRouter ──► @loom/shared ──► tRPC Client
+     (SSOT)        (@loom/db)     (tRPC)       (Zod Schema)       (Admin/Miniapp)
 ```
 
 ## 架构
@@ -82,7 +82,7 @@ schema.prisma ──► Prisma Client ──► AppRouter ──► @roundtable/
 ## 目录结构
 
 ```
-opencode-scaffold/
+loom/
 ├── apps/
 │   ├── api/                    # NestJS 后端
 │   │   └── src/
@@ -106,7 +106,7 @@ opencode-scaffold/
 │           └── api/            # REST API 调用
 ├── infra/
 │   ├── database/               # Prisma Schema + Client + Seed + Migrations
-│   └── shared/                 # @roundtable/shared (Zod Schema + 类型)
+│   └── shared/                 # @loom/shared (Zod Schema + 类型)
 ├── .claude/                    # Claude Code skills + agents + hooks
 └── .env.example                # 环境变量模板
 ```
@@ -114,7 +114,7 @@ opencode-scaffold/
 ## 快速开始
 
 ```bash
-git clone https://github.com/your-org/opencode-scaffold.git my-project
+git clone https://github.com/your-org/loom.git my-project
 cd my-project
 pnpm install
 cp .env.example .env          # 编辑 .env，填写 DATABASE_URL 和 JWT_SECRET
@@ -271,7 +271,7 @@ const fields: FieldDefinition[] = [
 | tRPC 路由   | 与 Prisma 模型名对齐                    |
 | Zod Schema  | `CreateXxxSchema` / `UpdateXxxSchema`   |
 
-**SSOT 原则：** `schema.prisma` 是唯一模型源，`infra/shared` 是唯一验证源，所有端共享 `@roundtable/shared` 类型。
+**SSOT 原则：** `schema.prisma` 是唯一模型源，`infra/shared` 是唯一验证源，所有端共享 `@loom/shared` 类型。
 
 **数据隔离：** Admin 可访问所有数据，User 只能访问自己的数据（`where: { userId: user.id }`），`createdById` / `updatedById` 从 JWT 自动注入。
 

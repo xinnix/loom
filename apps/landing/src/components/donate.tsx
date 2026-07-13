@@ -19,7 +19,7 @@ export function Donate() {
         </h2>
 
         <p className="mx-auto mt-4 max-w-xl text-lg text-neutral-500">
-          OpenCode Scaffold 是一个开源项目，由个人开发者利用业余时间维护。
+          Loom 是一个开源项目，由个人开发者利用业余时间维护。
           <br />
           如果这个项目帮到了你，不妨请我喝杯咖啡，支持持续更新！
         </p>
@@ -43,7 +43,7 @@ export function Donate() {
 
           {/* Buy Me a Coffee */}
           <a
-            href="https://github.com/xinnix/opencode-scaffold"
+            href="https://github.com/xinnix/loom"
             target="_blank"
             rel="noopener noreferrer"
             className="group w-48 rounded-xl border border-neutral-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"

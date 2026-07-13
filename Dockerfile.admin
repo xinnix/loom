@@ -41,7 +41,7 @@ ARG VITE_API_URL=/trpc
 ENV VITE_API_URL=${VITE_API_URL}
 
 # Build shared package first (admin depends on it)
-RUN pnpm --filter @opencode/shared build
+RUN pnpm --filter @loom/shared build
 
 # Build admin
 WORKDIR /app/apps/admin

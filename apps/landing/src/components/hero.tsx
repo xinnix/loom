@@ -53,7 +53,7 @@ export function Hero() {
               框架特性
             </a>
             <a
-              href="https://github.com/xinnix/opencode-scaffold"
+              href="https://github.com/xinnix/loom"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-5 py-3 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-400 hover:bg-neutral-50"

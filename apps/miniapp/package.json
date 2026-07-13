@@ -1,5 +1,5 @@
 {
-  "name": "@roundtable/miniapp",
+  "name": "@loom/miniapp",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -35,7 +35,7 @@
     "@dcloudio/uni-mp-xhs": "3.0.0-5000520260324001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-5000520260324001",
     "@dcloudio/uni-ui": "^1.5.12",
-    "@roundtable/shared": "workspace:*",
+    "@loom/shared": "workspace:*",
     "@vueuse/core": "^13.5.0",
     "uqrcodejs": "^4.0.7",
     "vue": "3.4.21",

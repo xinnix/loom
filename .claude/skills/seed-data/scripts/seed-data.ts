@@ -864,7 +864,7 @@ function generateInsertSQL(model: ModelDef, count: number): string {
 // ============================================================
 
 function executeSQL(sql: string): void {
-  const dockerCommand = 'docker exec -i postgres psql -U xinnix -d opencode';
+  const dockerCommand = 'docker exec -i postgres psql -U xinnix -d loom';
   try {
     execSync(dockerCommand, {
       input: sql,
