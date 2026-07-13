@@ -228,6 +228,24 @@ docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-
 - 多步任务先简述计划：1. [步骤] → verify: [检查] 2. [步骤] → verify: [检查]
 - 强成功标准让你能独立循环；弱标准（"让它能跑"）需要不断确认
 
+## 任务追踪
+
+Agent 必须在开发全生命周期使用 `docs/task/` 持久化任务追踪系统，详见 `/task` 技能。
+
+### 核心规则
+
+| 时机                    | 行为                                                                     |
+| ----------------------- | ------------------------------------------------------------------------ |
+| **开始新功能/修复前**   | 创建 `docs/task/active/{特征名}.md` 并填写检查清单                       |
+| **开发中**              | 逐步勾选清单、更新「当前状态」和「变更文件清单」                         |
+| **完成时**              | 文件移入 `docs/task/completed/`，更新 `README.md` 看板                   |
+| **新会话 / 恢复上下文** | 先读 `docs/task/README.md` 和 `active/` 下的所有文件，向用户汇报后再继续 |
+| **查询进度**            | 用户问「做到哪了」→ 读 README + active 下文件                            |
+
+### Command
+
+- `/task` — 查看/管理当前任务
+
 ## Known Issues
 
 - `types/api.ts` uses `type AppRouter = any` instead of importing the real type (tRPC monorepo type resolution issue)
