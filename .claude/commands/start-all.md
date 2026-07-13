@@ -1,8 +1,8 @@
 ---
-description: 同时启动后端、前端和小程序服务
+description: 同时启动后端 API、Admin、Web、Landing 和小程序服务
 ---
 
-同时在后台启动后端、前端和小程序服务，使用 Monitor 工具实时监控日志。
+同时在后台启动所有开发服务器，使用 Monitor 工具实时监控日志。
 
 启动命令：
 
@@ -17,12 +17,34 @@ Monitor({
 });
 ```
 
-**前端管理后台 (React + Refine)**
+**管理后台 (React + Refine)**
 
 ```typescript
 Monitor({
   command: 'cd apps/admin && pnpm dev',
-  description: '前端管理后台监控（React + Refine）',
+  description: '管理后台监控（React + Refine）',
+  persistent: true,
+  timeout_ms: 3600000,
+});
+```
+
+**Web 用户端 (Next.js SSR)**
+
+```typescript
+Monitor({
+  command: 'cd apps/web && pnpm dev',
+  description: 'Web 用户端监控（Next.js SSR）',
+  persistent: true,
+  timeout_ms: 3600000,
+});
+```
+
+**营销落地页 (Next.js SSG)**
+
+```typescript
+Monitor({
+  command: 'cd apps/landing && pnpm dev',
+  description: '营销落地页监控（Next.js SSG）',
   persistent: true,
   timeout_ms: 3600000,
 });
@@ -43,7 +65,9 @@ Monitor({
 
 - 后端 tRPC: http://localhost:3000/trpc
 - 后端 Swagger: http://localhost:3000/api/docs
-- 前端管理后台: http://localhost:5173（如果端口被占用会自动切换）
+- 管理后台: http://localhost:5173（如果端口被占用会自动切换）
+- Web 用户端: http://localhost:3002
+- Landing 落地页: http://localhost:3001
 - 小程序: 在微信开发者工具中打开 `dist/dev/mp-weixin` 目录
 
 停止服务：

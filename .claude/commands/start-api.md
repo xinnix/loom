@@ -2,7 +2,7 @@
 description: 启动后端 API 服务（NestJS + tRPC）
 ---
 
-启动后端开发服务器，使用 Monitor 工具实时监控日志。
+启动后端 API 开发服务器，使用 Monitor 工具实时监控日志。
 
 启动命令：
 

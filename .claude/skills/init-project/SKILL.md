@@ -85,8 +85,8 @@ docker compose -f docker-compose.local.yml up -d   # 若用容器化数据库
 ### Step 6: 验证
 
 ```bash
-/start-backend
-/start-frontend
+/start-api
+/start-admin
 ```
 
 确认：

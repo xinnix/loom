@@ -53,9 +53,10 @@ pnpm dev                        # 启动全部服务（API + Admin + Miniapp）
 /db-migrate                     # 运行迁移 + 生成 Prisma Client + Seed
 
 # 开发
-/start-backend                  # 启动后端 API（localhost:3000）
-/start-frontend                 # 启动管理后台（localhost:5173）
+/start-api                      # 启动后端 API（localhost:3000）
+/start-admin                    # 启动管理后台（localhost:5173）
 /start-web                      # 启动 Web 用户端（localhost:3002）
+/start-landing                  # 启动营销落地页（localhost:3001）
 /start-mini                     # 启动小程序 H5
 /start-all                      # 同时启动全部服务
 

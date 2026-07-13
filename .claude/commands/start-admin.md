@@ -1,15 +1,15 @@
 ---
-description: 启动前端管理后台（React + Refine）
+description: 启动管理后台（React + Refine + Ant Design）
 ---
 
-启动前端开发服务器，使用 Monitor 工具实时监控日志。
+启动管理后台开发服务器，使用 Monitor 工具实时监控日志。
 
 启动命令：
 
 ```typescript
 Monitor({
   command: 'cd apps/admin && pnpm dev',
-  description: '前端管理后台监控（React + Refine）',
+  description: '管理后台监控（React + Refine）',
   persistent: true,
   timeout_ms: 3600000,
 });
