@@ -4,7 +4,7 @@
 
 1. 修改 `schema.prisma`
 2. `/db-migrate` → 生成迁移 + 应用 + 生成 Client + Seed
-3. `/sync` → 重新构建 @opencode/shared
+3. `/sync` → 重新构建 @roundtable/shared
 4. 提交迁移文件到 git
 
 ## 关键规则

@@ -1,4 +1,4 @@
-import { Prisma } from '@opencode/database';
+import { Prisma } from '@roundtable/database';
 
 let currentUserId: string | undefined;
 

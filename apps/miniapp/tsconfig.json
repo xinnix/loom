@@ -5,8 +5,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@opencode/shared": ["../../infra/shared/src"],
-      "@opencode/shared/*": ["../../infra/shared/src/*"]
+      "@roundtable/shared": ["../../infra/shared/src"],
+      "@roundtable/shared/*": ["../../infra/shared/src/*"]
     },
     "types": [
       "@dcloudio/types",

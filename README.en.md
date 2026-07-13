@@ -41,13 +41,13 @@ A full-stack management system scaffold for developers. Ships with RBAC, dual-id
 | **Backend**  | NestJS + tRPC + Prisma + PostgreSQL     | API + type-safe RPC + ORM              |
 | **Admin UI** | React 19 + Refine + Ant Design 5 + tRPC | Admin dashboard + strongly-typed calls |
 | **Miniapp**  | uni-app + Vue 3 + TypeScript            | WeChat Mini Program                    |
-| **Shared**   | Zod + `@opencode/shared`                | Validation Schema + type registry      |
+| **Shared**   | Zod + `@roundtable/shared`              | Validation Schema + type registry      |
 | **Infra**    | pnpm Workspace + Docker + Nginx         | Monorepo + containerized deployment    |
 
 **Type flow — end-to-end type safety from database to UI:**
 
 ```
-schema.prisma ──► @opencode/database ──► AppRouter ──► @opencode/shared ──► tRPC Client
+schema.prisma ──► @roundtable/database ──► AppRouter ──► @roundtable/shared ──► tRPC Client
      (SSOT)         (Prisma Client)      (tRPC)        (Zod Schema)       (Admin/Miniapp)
 ```
 
@@ -100,7 +100,7 @@ opencode-scaffold/
 │           └── utils/          # HTTP Client (token refresh + mutex)
 ├── infra/
 │   ├── database/               # Prisma Schema + Client + Seed + Migrations
-│   └── shared/                 # @opencode/shared (Zod Schema + types)
+│   └── shared/                 # @roundtable/shared (Zod Schema + types)
 ├── docs/                       # Technical documentation
 ├── .claude/                    # Claude Code skills + agents + hooks
 ├── docker-compose.prod.yml     # Production Docker Compose
@@ -148,9 +148,9 @@ pnpm dev
 | Command                                       | Description                                |
 | --------------------------------------------- | ------------------------------------------ |
 | `pnpm dev`                                    | Start all services (API + Admin + Miniapp) |
-| `pnpm --filter @opencode/api dev`             | Start backend API only                     |
+| `pnpm --filter @roundtable/api dev`           | Start backend API only                     |
 | `pnpm --filter admin dev`                     | Start admin dashboard only                 |
-| `pnpm --filter @opencode/miniapp dev`         | Start miniapp H5 only                      |
+| `pnpm --filter @roundtable/miniapp dev`       | Start miniapp H5 only                      |
 | `pnpm build`                                  | Build entire monorepo                      |
 | `pnpm type-check`                             | TypeScript type checking                   |
 | `cd infra/database && npx prisma migrate dev` | Run database migration                     |
@@ -309,7 +309,7 @@ One command generates a complete full-stack CRUD module:
 
 - `schema.prisma` is the single model truth source
 - `infra/shared` is the single validation truth source
-- All apps share `@opencode/shared` types
+- All apps share `@roundtable/shared` types
 
 **Data isolation:**
 
@@ -388,7 +388,7 @@ See `.env.example` for the complete list.
 4. Push to the branch: `git push origin feature/my-feature`
 5. Submit a Pull Request
 
-Follow existing patterns — prefer `BaseService` and `createCrudRouter`, add Zod schemas to `@opencode/shared`. Run `pnpm type-check` before submitting.
+Follow existing patterns — prefer `BaseService` and `createCrudRouter`, add Zod schemas to `@roundtable/shared`. Run `pnpm type-check` before submitting.
 
 ## License
 

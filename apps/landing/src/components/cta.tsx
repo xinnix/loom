@@ -6,7 +6,7 @@ export function Cta() {
           准备好上线你的下一个 SaaS 了吗？
         </h2>
         <p className="mt-4 text-lg text-brand-200">
-          立即使用 OpenCode Scaffold，从克隆到部署只需数小时。
+          立即使用 Roundtable Scaffold，从克隆到部署只需数小时。
         </p>
         <a
           href="#"

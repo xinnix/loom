@@ -4,7 +4,7 @@ import { AuthProvider } from '@/providers/auth-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'OpenCode',
+  title: 'Roundtable',
   description: '用户端 Web 应用',
 };
 

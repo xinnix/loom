@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { CreateRoleSchema, UpdateRoleSchema, UpdateRolePermissionsSchema } from '@opencode/shared';
+import {
+  CreateRoleSchema,
+  UpdateRoleSchema,
+  UpdateRolePermissionsSchema,
+} from '@roundtable/shared';
 import { createCrudRouterWithCustom } from '../../../trpc/trpc.helper';
 import { permissionProcedure, publicProcedure } from '../../../trpc/trpc';
 import {

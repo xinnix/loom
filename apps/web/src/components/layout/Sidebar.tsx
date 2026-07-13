@@ -15,7 +15,7 @@ export function Sidebar() {
     <aside className="hidden w-60 shrink-0 border-r border-neutral-200 bg-white md:block">
       <div className="flex h-14 items-center px-6">
         <Link href="/dashboard" className="text-lg font-bold text-brand-600">
-          OpenCode
+          Roundtable
         </Link>
       </div>
       <nav className="mt-4 space-y-1 px-3">

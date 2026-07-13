@@ -335,7 +335,7 @@ function generateTRPCRouter(moduleName: string): string {
   const camelName = toCamelCase(moduleName);
 
   return `import { createCrudRouter } from '../../../trpc/trpc.helper';
-import { ${pascalName}Schema } from '@opencode/shared';
+import { ${pascalName}Schema } from '@roundtable/shared';
 
 export const ${camelName}Router = createCrudRouter(
   '${pascalName}',

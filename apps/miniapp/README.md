@@ -34,7 +34,7 @@ Vitesse for uni-app
 
 ---
 
-# @opencode/miniapp
+# @roundtable/miniapp
 
 基于 uni-app 的微信小程序，使用 Vue 3 + TypeScript + Vite 开发。
 
@@ -59,7 +59,7 @@ pnpm install
 pnpm dev:miniapp
 
 # 或使用 pnpm filter
-pnpm --filter @opencode/miniapp dev
+pnpm --filter @roundtable/miniapp dev
 ```
 
 ### 构建生产版本
@@ -101,11 +101,11 @@ VITE_API_BASE_URL=http://localhost:3000/api
 
 ## 使用共享包
 
-小程序可以使用 `@opencode/shared` 包中的类型和工具：
+小程序可以使用 `@roundtable/shared` 包中的类型和工具：
 
 ```typescript
-import { someUtil } from '@opencode/shared';
-import type { User } from '@opencode/shared';
+import { someUtil } from '@roundtable/shared';
+import type { User } from '@roundtable/shared';
 ```
 
 ## 注意事项

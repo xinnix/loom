@@ -181,7 +181,7 @@ export function AdminLayout() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <img src="../logo.png" alt="" width={36} height={36} />
               <div style={{ color: '#fff', fontWeight: 600, fontSize: 16, whiteSpace: 'nowrap' }}>
-                OpenCode
+                Roundtable
               </div>
             </div>
           )}

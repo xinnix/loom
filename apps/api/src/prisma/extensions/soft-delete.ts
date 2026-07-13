@@ -1,4 +1,4 @@
-import { Prisma } from '@opencode/database';
+import { Prisma } from '@roundtable/database';
 
 const SOFT_DELETE_MODELS = new Set(['Admin', 'User', 'Role', 'Permission']);
 

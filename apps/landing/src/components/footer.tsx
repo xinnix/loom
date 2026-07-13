@@ -43,7 +43,7 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-neutral-800 pt-8 sm:flex-row">
           <p className="text-sm text-neutral-500">
-            &copy; {new Date().getFullYear()} OpenCode. 保留所有权利。
+            &copy; {new Date().getFullYear()} Roundtable. 保留所有权利。
           </p>
           <a
             href="https://github.com"

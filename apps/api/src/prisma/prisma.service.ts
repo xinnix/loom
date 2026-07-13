@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@opencode/database';
+import { PrismaClient } from '@roundtable/database';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { softDeleteExtension } from './extensions/soft-delete';

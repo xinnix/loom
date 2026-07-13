@@ -103,7 +103,7 @@ export class ProductService extends BaseService<Product> {
 
 - `schema.prisma` 是唯一的模型真理源
 - `infra/shared` 是唯一的验证真理源
-- 所有端共享 `@opencode/shared` 类型
+- 所有端共享 `@roundtable/shared` 类型
 
 ## Schema 变更流程
 
@@ -112,7 +112,7 @@ export class ProductService extends BaseService<Product> {
 ```
 1. 修改 schema.prisma
 2. /db-migrate                    → 生成迁移 SQL + 应用到本地库 + 生成 Prisma Client + Seed
-3. /sync                          → 重新构建 @opencode/shared（Zod Schema 与 Prisma Client 对齐）
+3. /sync                          → 重新构建 @roundtable/shared（Zod Schema 与 Prisma Client 对齐）
 4. git add infra/database/prisma/migrations/ && git commit && git push
 5. CI 自动 prisma migrate deploy  → 生产数据库同步
 ```
@@ -234,4 +234,4 @@ docker exec -i postgres psql -U xinnix -d opencode < infra/database/prisma/seed-
 - No Prisma enums in schema — all enum-like fields are `String` with comments
 - StandardListPage and generated list pages have duplicated mutation callback patterns
 - tRPC context (`verifyJwtToken`) only resolves Admin users — Web/Miniapp users must use REST endpoints
-- `@opencode/shared` `User` interface lacks `nickname`/`phone` fields that exist in Prisma `users` model
+- `@roundtable/shared` `User` interface lacks `nickname`/`phone` fields that exist in Prisma `users` model

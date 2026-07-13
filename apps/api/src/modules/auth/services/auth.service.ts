@@ -6,8 +6,8 @@ import { z } from 'zod';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { WechatService } from '../../wechat/wechat.service';
 
-// 🔥 使用 @opencode/shared 的类型和 schema
-import { LoginSchema, RegisterSchema, RefreshTokenSchema, User } from '@opencode/shared';
+// 🔥 使用 @roundtable/shared 的类型和 schema
+import { LoginSchema, RegisterSchema, RefreshTokenSchema, User } from '@roundtable/shared';
 
 @Injectable()
 export class AuthService {

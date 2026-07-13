@@ -14,7 +14,7 @@ export function Header() {
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-neutral-200 bg-white px-6">
-      <div className="md:hidden text-lg font-bold text-brand-600">OpenCode</div>
+      <div className="md:hidden text-lg font-bold text-brand-600">Roundtable</div>
       <div className="hidden md:block" />
 
       <div className="flex items-center gap-4">

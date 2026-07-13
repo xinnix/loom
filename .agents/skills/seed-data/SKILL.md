@@ -155,5 +155,5 @@ docker exec -i postgres psql -U xinnix -c "CREATE DATABASE opencode;"
 
 ```bash
 # 运行数据库迁移
-pnpm --filter @opencode/database prisma migrate dev
+pnpm --filter @roundtable/database prisma migrate dev
 ```

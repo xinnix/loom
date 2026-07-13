@@ -25,7 +25,7 @@ pnpm type-check
 
 ```bash
 pnpm --filter admin lint
-pnpm --filter @opencode/web lint
+pnpm --filter @roundtable/web lint
 ```
 
 ### 3. 构建
@@ -43,7 +43,7 @@ pnpm build:landing
 ```bash
 pnpm test
 pnpm --filter admin run test
-pnpm --filter @opencode/api run test
+pnpm --filter @roundtable/api run test
 ```
 
 ### 5. 输出汇总

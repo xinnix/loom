@@ -159,7 +159,7 @@ export const merchantRouter = router({
 
 ```typescript
 import { createCrudRouter } from '../../../trpc/trpc.helper';
-import { MerchantSchema } from '@opencode/shared';
+import { MerchantSchema } from '@roundtable/shared';
 
 export const merchantRouter = createCrudRouter('Merchant', {
   create: MerchantSchema.createInput,

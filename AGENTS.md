@@ -68,18 +68,18 @@ pnpm build                      # 构建全部项目
 ### 单独启动
 
 ```bash
-pnpm --filter @opencode/api dev       # 后端
-pnpm --filter @opencode/admin dev     # Admin 前端
-pnpm --filter @opencode/miniapp dev   # 小程序 H5
-pnpm --filter @opencode/miniapp dev:mp-weixin  # 微信小程序
+pnpm --filter @roundtable/api dev       # 后端
+pnpm --filter @roundtable/admin dev     # Admin 前端
+pnpm --filter @roundtable/miniapp dev   # 小程序 H5
+pnpm --filter @roundtable/miniapp dev:mp-weixin  # 微信小程序
 ```
 
 ### 数据库操作
 
 ```bash
-pnpm --filter @opencode/database prisma generate   # 生成 Client
-pnpm --filter @opencode/database prisma migrate dev # 运行迁移
-pnpm --filter @opencode/database prisma db seed     # 执行 Seed（推荐使用 /seed-data）
+pnpm --filter @roundtable/database prisma generate   # 生成 Client
+pnpm --filter @roundtable/database prisma migrate dev # 运行迁移
+pnpm --filter @roundtable/database prisma db seed     # 执行 Seed（推荐使用 /seed-data）
 ```
 
 **⚠️ 重要：Prisma Seed 问题解决方案**
@@ -136,7 +136,7 @@ export class ProductService extends BaseService<Product> {
 
 - `schema.prisma` 是唯一的模型真理源
 - `infra/shared` 是唯一的验证真理源
-- 所有端共享 `@opencode/shared` 类型
+- 所有端共享 `@roundtable/shared` 类型
 
 ### 2. 双用户认证体系
 

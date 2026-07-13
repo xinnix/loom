@@ -3,7 +3,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   output: 'standalone',
   reactStrictMode: true,
-  transpilePackages: ['@opencode/shared'],
+  transpilePackages: ['@roundtable/shared'],
 
   async rewrites() {
     return [

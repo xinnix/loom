@@ -1,5 +1,5 @@
 // apps/api/src/shared/permissions.ts
-import { User } from '@opencode/shared';
+import { User } from '@roundtable/shared';
 
 /**
  * 基础权限检查工具
