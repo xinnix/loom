@@ -3,12 +3,14 @@ import { inter } from '@/lib/fonts';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Roundtable — 全栈 SaaS 脚手架',
+  title: 'OpenCode Scaffold — Agent-Centric 全栈开发框架',
   description:
-    '开箱即用的全栈管理系统脚手架。NestJS + React + tRPC + Prisma，内置 Auth、RBAC、支付、Admin，数天即可上线。',
+    '不止是脚手架。19 个内置 Skill、11 个 Command、7 个自动化 Hook，让 Claude Code 成为你的全职开发搭档。NestJS + React + tRPC + Prisma，克隆即开工。',
+  icons: { icon: '/favicon.svg' },
   openGraph: {
-    title: 'Roundtable — 全栈 SaaS 脚手架',
-    description: '开箱即用的全栈管理系统脚手架，数天即可上线。',
+    title: 'OpenCode Scaffold — Agent-Centric 全栈开发框架',
+    description:
+      'Agent-Centric 全栈开发框架。内置完整 Skill/Command/Hook 生态，Claude Code 驱动的全栈开发体验。',
     type: 'website',
   },
 };

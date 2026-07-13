@@ -11,7 +11,7 @@ const features = [
       </svg>
     ),
     title: '端到端类型安全',
-    desc: 'tRPC + Zod 全链路强类型，从数据库到前端零手动同步，编译即校验。',
+    desc: 'tRPC + Zod 全链路强类型，从数据库到前端零手动同步。修改 Schema，Agent 自动触发迁移与类型重建。',
   },
   {
     icon: (
@@ -25,7 +25,7 @@ const features = [
       </svg>
     ),
     title: 'Auth & RBAC',
-    desc: '双用户认证体系（Admin + User），JWT + 角色权限控制，微信登录开箱即用。',
+    desc: '双用户认证体系（Admin + User），JWT + 角色权限控制。微信登录、邮箱注册开箱即用。',
   },
   {
     icon: (
@@ -45,7 +45,7 @@ const features = [
       </svg>
     ),
     title: 'Admin 后台',
-    desc: 'Refine + Ant Design 管理后台，标准 CRUD 模板一键生成，配置驱动。',
+    desc: 'Refine + Ant Design 管理后台，StandardListPage / StandardForm 配置驱动。Agent 自动生成 CRUD 页面。',
   },
   {
     icon: (
@@ -59,7 +59,7 @@ const features = [
       </svg>
     ),
     title: '支付集成',
-    desc: '微信支付 JSAPI + 退款流程已集成，对接即用，无需从零搭建。',
+    desc: '微信支付 JSAPI + 退款流程，对接即用。支付模块与订单系统无缝集成，无需从零搭建。',
   },
   {
     icon: (
@@ -72,8 +72,8 @@ const features = [
         />
       </svg>
     ),
-    title: '数据库迁移',
-    desc: 'Prisma ORM + PostgreSQL，schema 即真理源，迁移一键生成与部署。',
+    title: 'SSOT 数据层',
+    desc: 'Prisma Schema 是唯一真理源。Schema 变更 → Hook 自动提示 → Agent 执行迁移 → 类型自动同步至全端。',
   },
   {
     icon: (
@@ -82,12 +82,12 @@ const features = [
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={1.5}
-          d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-6.75 9h9m-9 3h9m-9 3h9"
+          d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5"
         />
       </svg>
     ),
-    title: '微信小程序',
-    desc: 'uni-app + Vue 3 小程序端，登录 + 个人中心 + 首页模板已就绪。',
+    title: '五端一体',
+    desc: 'API / Admin / Web / Landing / Miniapp 一套代码五端覆盖。Monorepo 共享类型，多端并行开发。',
   },
 ];
 
@@ -97,10 +97,10 @@ export function Features() {
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
-            开箱即用，应有尽有
+            坚实的技术底座
           </h2>
           <p className="mt-4 text-lg text-neutral-500">
-            Batteries-included Monorepo，认证、权限、支付、Admin 全内置
+            全栈 TypeScript，NestJS + React + tRPC + Prisma 的现代技术栈
           </p>
         </div>
 

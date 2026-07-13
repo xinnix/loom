@@ -1,52 +1,47 @@
-const columns = [
-  {
-    title: '产品',
-    links: ['功能特性', '定价方案', '更新日志', '路线图'],
-  },
-  {
-    title: '资源',
-    links: ['文档中心', 'API 参考', '使用指南', '示例项目'],
-  },
-  {
-    title: '公司',
-    links: ['关于我们', '技术博客', '联系我们', '加入团队'],
-  },
-  {
-    title: '法律',
-    links: ['隐私政策', '服务条款', '开源许可', 'Cookie 政策'],
-  },
-];
-
 export function Footer() {
   return (
-    <footer className="bg-neutral-950 py-16">
+    <footer className="bg-neutral-950 py-12">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {columns.map((col) => (
-            <div key={col.title}>
-              <h4 className="text-sm font-semibold text-neutral-200">{col.title}</h4>
-              <ul className="mt-4 flex flex-col gap-2">
-                {col.links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+        <div className="flex flex-col items-center justify-between gap-8 sm:flex-row">
+          {/* Brand */}
+          <div>
+            <a href="#" className="text-lg font-bold tracking-tight text-white">
+              Open<span className="text-brand-500">Code</span>
+            </a>
+            <p className="mt-1 text-sm text-neutral-500">Agent-Centric 全栈开发框架</p>
+          </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-neutral-800 pt-8 sm:flex-row">
-          <p className="text-sm text-neutral-500">
-            &copy; {new Date().getFullYear()} Roundtable. 保留所有权利。
-          </p>
+          {/* Links */}
+          <div className="flex flex-wrap justify-center gap-6">
+            <a
+              href="#harness"
+              className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
+            >
+              Agent Harness
+            </a>
+            <a
+              href="#features"
+              className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
+            >
+              功能特性
+            </a>
+            <a
+              href="#donate"
+              className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
+            >
+              赞助支持
+            </a>
+            <a
+              href="https://github.com/xinnix/opencode-scaffold"
+              className="text-sm text-neutral-400 transition-colors hover:text-neutral-200"
+            >
+              GitHub
+            </a>
+          </div>
+
+          {/* GitHub icon */}
           <a
-            href="https://github.com"
+            href="https://github.com/xinnix/opencode-scaffold"
             className="text-neutral-500 transition-colors hover:text-neutral-300"
             aria-label="GitHub"
           >
@@ -58,6 +53,16 @@ export function Footer() {
               />
             </svg>
           </a>
+        </div>
+
+        <div className="mt-8 border-t border-neutral-800 pt-6 text-center sm:flex sm:items-center sm:justify-between">
+          <p className="text-sm text-neutral-500">
+            &copy; {new Date().getFullYear()} OpenCode Scaffold. MIT License.
+          </p>
+          <p className="mt-2 text-xs text-neutral-600 sm:mt-0">
+            用<span className="mx-1 text-brand-500">❤</span>
+            构建 · 开源 · Agent-Driven
+          </p>
         </div>
       </div>
     </footer>
