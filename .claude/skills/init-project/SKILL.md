@@ -39,6 +39,16 @@ description: 交互式初始化新项目 — 运行替换脚本把脚手架身�
 
 ### Step 2: 运行替换脚本
 
+先确保已删除原来的 git remote（避免污染脚手架模板仓库）：
+
+```bash
+git remote remove origin 2>/dev/null || true
+# 确认已删除：
+git remote -v    # 应无输出
+```
+
+然后运行替换脚本：
+
 ```bash
 bash scripts/init-project.sh "<项目名>" "<包名前缀>" "<数据库名>" "<品牌名>" "<生产API域名>" "<启用APP列表>"
 ```
@@ -113,6 +123,8 @@ gh auth status
 - 如果提示 `gh: command not found`，先安装：[https://cli.github.com](https://cli.github.com)
 
 #### 7.2 创建仓库并推送
+
+> 替换脚本已在 Step 2 自动移除了旧的 `origin` remote，避免误推到脚手架模板仓库。`gh repo create --push` 会为你创建并设置新的 remote。
 
 确认已 `git commit` 当前状态，然后：
 

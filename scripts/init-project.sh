@@ -102,6 +102,15 @@ APPS_JSON="[\"$(echo "$ENABLED_APPS" | sed 's/ /", "/g')\"]"
 echo "$APPS_JSON" > .scaffold-config.json
 echo "  ✓ 已生成 .scaffold-config.json: ${ENABLED_APPS}"
 
+# ---- 清理旧的 git origin（防止污染模板仓库）----
+if git remote get-url origin &>/dev/null; then
+  OLD_ORIGIN=$(git remote get-url origin)
+  echo ""
+  echo "  ⚠ 发现旧的 git remote: origin → ${OLD_ORIGIN}"
+  echo "  ✗ 正在移除（避免误推到脚手架模板仓库）"
+  git remote remove origin
+fi
+
 # ---- Step 1: 包 scope @opencode/* → @<prefix>/* （全局，保护技能自身）----
 echo ""
 echo "[1/7] 替换包 scope @opencode/* → @${PKG_PREFIX}/*"
