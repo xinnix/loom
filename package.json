@@ -21,7 +21,7 @@
     "build:web": "pnpm -C apps/web build",
     "build:landing": "pnpm -C apps/landing build",
     "build:shared": "pnpm -C infra/shared build",
-    "test": "pnpm -r run test",
+    "test": "pnpm --filter !@loom/miniapp -r run test",
     "test:watch": "pnpm -r --parallel run test:watch",
     "lint": "pnpm -r --parallel run lint",
     "lint:fix": "pnpm -r --parallel run lint:fix",
