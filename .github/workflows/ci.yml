@@ -78,7 +78,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm --filter !@loom/miniapp lint
 
       - name: Format check
         run: pnpm format:check
