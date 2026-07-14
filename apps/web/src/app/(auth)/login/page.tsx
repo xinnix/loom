@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 
-export const dynamic = 'force-dynamic';
-
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -90,5 +88,13 @@ export default function LoginPage() {
         </a>
       </p>
     </form>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-neutral-500">加载中...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
