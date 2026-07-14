@@ -7,17 +7,17 @@ description: 交互式初始化新项目 — 运行替换脚本把脚手架身�
 
 ## Overview
 
-把 OpenCode Scaffold 初始化成一个全新的项目。核心是一个可重复运行的替换脚本 `scripts/init-project.sh`，负责**机械、可穷举的全局替换**；本技能负责收集输入、调用脚本、补脚本覆盖不到的文案、重建并验证。
+把 Loom Scaffold 初始化成一个全新的项目。核心是一个可重复运行的替换脚本 `scripts/init-project.sh`，负责**机械、可穷举的全局替换**；本技能负责收集输入、调用脚本、补脚本覆盖不到的文案、重建并验证。
 
 替换目标（脚手架默认 token → 新项目）：
 
 | 维度             | 脚手架 token                  | 新项目                      |
 | ---------------- | ----------------------------- | --------------------------- |
-| 包 scope         | `@opencode/*`                 | `@<前缀>/*`                 |
-| 顶层包名         | `opencode-scaffold`           | `<项目名>`                  |
-| 数据库名         | `opencode`                    | `<数据库名>`                |
-| 容器/镜像默认    | `${PROJECT_NAME:-opencode}`   | `${PROJECT_NAME:-<项目名>}` |
-| UI 品牌文案      | `OpenCode`                    | `<品牌名>`                  |
+| 包 scope         | `@loom/*`                     | `@<前缀>/*`                 |
+| 顶层包名         | `loom`                        | `<项目名>`                  |
+| 数据库名         | `loom`                        | `<数据库名>`                |
+| 容器/镜像默认    | `${PROJECT_NAME:-loom}`       | `${PROJECT_NAME:-<项目名>}` |
+| UI 品牌文案      | `Loom`                        | `<品牌名>`                  |
 | miniapp 生产域名 | `https://api.example.com/api` | `<生产API域名>`             |
 
 ## Instructions
@@ -71,8 +71,8 @@ bash scripts/init-project.sh my-app mycompany my_app_db "我的应用" "https://
 逐项核对，按需手动处理：
 
 - **本地 `.env`**：若用户已从 `.env.example` 复制出 `.env`，脚本不会改它（`.env` 被排除）。提示用户把 `DATABASE_URL` 的库名手动改成新值。
-- **README 溯源**：`README.md` / `README.en.md` 里的 `git clone .../opencode-scaffold.git` 是脚手架获取说明，默认保留。若用户希望 README 完全项目化，可手动替换其中的 `opencode-scaffold` 为新仓库名。
-- **CLAUDE.md / AGENTS.md**：这些是脚手架文档，标题 `OpenCode Scaffold` 默认保留为脚手架出处说明；其中的数据库名示例已在脚手架归一化阶段统一为 `opencode`，无需改。
+- **README 溯源**：`README.md` / `README.en.md` 里的 `git clone .../loom.git` 是脚手架获取说明，默认保留。若用户希望 README 完全项目化，可手动替换其中的 `loom` 为新仓库名。
+- **CLAUDE.md / AGENTS.md**：这些是脚手架文档，标题 `Loom Scaffold` 默认保留为脚手架出处说明；其中的数据库名示例已在脚手架归一化阶段统一为 `loom`，无需改。
 - **微信小程序 appId / 支付商户号**：需在新项目中单独申请，填入 `.env`，不在本技能范围。
 
 ### Step 4: 重新安装与重建
@@ -175,7 +175,7 @@ cat ~/.ssh/github-actions          # 复制输出到 GitHub DEPLOY_SSH_KEY
 #### 8.3 服务器首次部署
 
 ```bash
-cd /root/opencode
+cd /root/loom
 cp .env.prod.example .env.prod     # 填写真实配置
 docker login ghcr.io -u <你的GitHub用户名>
 
