@@ -41,7 +41,7 @@ A full-stack management system scaffold for developers. Ships with RBAC, dual-id
 | **Backend**  | NestJS + tRPC + Prisma + PostgreSQL     | API + type-safe RPC + ORM              |
 | **Admin UI** | React 19 + Refine + Ant Design 5 + tRPC | Admin dashboard + strongly-typed calls |
 | **Miniapp**  | uni-app + Vue 3 + TypeScript            | WeChat Mini Program                    |
-| **Shared**   | Zod + `@loom/shared`              | Validation Schema + type registry      |
+| **Shared**   | Zod + `@loom/shared`                    | Validation Schema + type registry      |
 | **Infra**    | pnpm Workspace + Docker + Nginx         | Monorepo + containerized deployment    |
 
 **Type flow — end-to-end type safety from database to UI:**
@@ -148,9 +148,9 @@ pnpm dev
 | Command                                       | Description                                |
 | --------------------------------------------- | ------------------------------------------ |
 | `pnpm dev`                                    | Start all services (API + Admin + Miniapp) |
-| `pnpm --filter @loom/api dev`           | Start backend API only                     |
+| `pnpm --filter @loom/api dev`                 | Start backend API only                     |
 | `pnpm --filter admin dev`                     | Start admin dashboard only                 |
-| `pnpm --filter @loom/miniapp dev`       | Start miniapp H5 only                      |
+| `pnpm --filter @loom/miniapp dev`             | Start miniapp H5 only                      |
 | `pnpm build`                                  | Build entire monorepo                      |
 | `pnpm type-check`                             | TypeScript type checking                   |
 | `cd infra/database && npx prisma migrate dev` | Run database migration                     |

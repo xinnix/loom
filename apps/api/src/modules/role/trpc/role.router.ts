@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  CreateRoleSchema,
-  UpdateRoleSchema,
-  UpdateRolePermissionsSchema,
-} from '@loom/shared';
+import { CreateRoleSchema, UpdateRoleSchema, UpdateRolePermissionsSchema } from '@loom/shared';
 import { createCrudRouterWithCustom } from '../../../trpc/trpc.helper';
 import { permissionProcedure, publicProcedure } from '../../../trpc/trpc';
 import {

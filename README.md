@@ -37,7 +37,7 @@
 | **Web**      | Next.js 15 + Tailwind CSS v4 + REST     | 用户端 Web 应用            |
 | **Landing**  | Next.js 15 + Tailwind CSS v4 (SSG)      | 落地页 / 营销站            |
 | **Miniapp**  | uni-app + Vue 3 + TypeScript            | 微信小程序                 |
-| **Shared**   | Zod + `@loom/shared`              | 验证 Schema + 类型注册中心 |
+| **Shared**   | Zod + `@loom/shared`                    | 验证 Schema + 类型注册中心 |
 
 **类型流：**
 

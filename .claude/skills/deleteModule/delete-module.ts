@@ -50,10 +50,7 @@ function getFilePath(relativePath: string): string {
 // Memory registry path (user-level, not in git)
 function getMemoryRegistryPath(): string {
   const home = process.env.HOME || process.env.USERPROFILE || '';
-  return path.join(
-    home,
-    '.claude/projects/-Users-xinnix-code-loom/memory/module-registry.md',
-  );
+  return path.join(home, '.claude/projects/-Users-xinnix-code-loom/memory/module-registry.md');
 }
 
 function removeMemoryRegistryEntry(moduleName: string): void {
