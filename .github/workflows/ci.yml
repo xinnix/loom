@@ -256,13 +256,22 @@ jobs:
       github.event_name == 'push'
       || (github.event_name == 'workflow_dispatch' && inputs.deploy != 'skip')
     steps:
-      - name: Deploy via SSH
-        if: ${{ secrets.DEPLOY_HOST != '' }}
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Check deploy secrets
+        id: check
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          if [ -z "$HOST" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "⚠️  DEPLOY_HOST not configured, skipping deployment"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "✅ Deploy secrets configured"
+          fi
 
-      - name: Deploy skipped (secrets not configured)
-        if: ${{ secrets.DEPLOY_HOST == '' }}
-        run: echo "⚠️  DEPLOY_HOST not configured, skipping deployment. To deploy, set DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY in repo secrets."
+      - name: Deploy via SSH
+        if: steps.check.outputs.skip != 'true'
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
