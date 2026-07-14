@@ -1,0 +1,30 @@
+{
+  "name": "create-loom",
+  "version": "1.0.0",
+  "description": "Scaffold a full-stack project with NestJS + tRPC + Refine + UniApp",
+  "keywords": [
+    "nestjs",
+    "trpc",
+    "refine",
+    "monorepo",
+    "scaffold"
+  ],
+  "homepage": "https://github.com/Xinnix/loom",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xinnix/loom.git"
+  },
+  "bin": {
+    "create-loom": "index.js"
+  },
+  "files": [
+    "index.js",
+    "src/"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "enquirer": "^2.4.0"
+  }
+}
