@@ -1,43 +1,137 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-800: #3730a3;
-  --color-brand-900: #312e81;
-  --color-brand-950: #1e1b4b;
+  --color-surface: #ffffff;
+  --color-surface-dim: #fcfcfc;
+  --color-surface-bright: #ffffff;
+  --color-surface-tint: #10b981;
+  --color-inverse-surface: #131313;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f8fafc;
+  --color-surface-container: #f1f5f9;
+  --color-surface-container-high: #e2e8f0;
+  --color-surface-container-highest: #cbd5e1;
+  --color-signal-red: #ef4444;
+  --color-signal-amber: #f59e0b;
+  --color-inverse-on-surface: #ffffff;
+  --color-secondary-container: #f8fafc;
+  --color-error: #b91c1c;
+  --color-outline-variant: #e2e8f0;
+  --color-on-error-container: #450a0a;
+  --color-secondary: #64748b;
+  --color-on-primary-fixed-variant: #064e3b;
+  --color-on-error: #ffffff;
+  --color-error-container: #fee2e2;
+  --color-emerald-glow: #10b981;
+  --color-primary-fixed-dim: #34d399;
+  --color-surface-variant: #f1f5f9;
+  --color-primary-fixed: #10b981;
+  --color-tertiary: #6366f1;
+  --color-tertiary-fixed-dim: #818cf8;
+  --color-primary-container: #ecfdf5;
+  --color-background: #ffffff;
+  --color-terminal-black: #0f172a;
+  --color-on-tertiary: #ffffff;
+  --color-on-secondary-fixed: #0f172a;
+  --color-on-primary-fixed: #064e3b;
+  --color-on-secondary: #475569;
+  --color-on-secondary-fixed-variant: #334155;
+  --color-outline: #cbd5e1;
+  --color-on-secondary-container: #1e293b;
+  --color-on-primary-container: #064e3b;
+  --color-secondary-fixed: #e2e8f0;
+  --color-inverse-primary: #4edea3;
+  --color-on-surface-variant: #64748b;
+  --color-slate-surface: #f8fafc;
+  --color-primary: #10b981;
+  --color-on-tertiary-fixed-variant: #3730a3;
+  --color-on-primary: #ffffff;
+  --color-on-background: #0f172a;
+  --color-on-surface: #0f172a;
+  --color-secondary-fixed-dim: #94a3b8;
+  --color-tertiary-container: #e0e7ff;
+  --color-on-tertiary-container: #312e81;
+  --color-tertiary-fixed: #c7d2fe;
+  --color-on-tertiary-fixed: #1e1b4b;
 
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
-  --color-neutral-950: #020617;
+  --font-headline-md: 'IBM Plex Serif', serif;
+  --font-body-md: Inter, sans-serif;
+  --font-display-hero: 'IBM Plex Serif', serif;
+  --font-headline-lg: 'IBM Plex Serif', serif;
+  --font-body-lg: Inter, sans-serif;
+  --font-label-mono: 'JetBrains Mono', monospace;
+  --font-code-sm: 'JetBrains Mono', monospace;
 
-  --color-accent-400: #fbbf24;
-  --color-accent-500: #f59e0b;
-  --color-accent-600: #d97706;
+  --spacing-section-gap-lg: 120px;
+  --spacing-section-gap-sm: 80px;
+  --spacing-margin-mobile: 16px;
+  --spacing-gutter: 32px;
+  --spacing-grid-unit: 48px;
+  --spacing-container-max: 1200px;
 
-  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-size-display-hero: 72px;
+  --font-size-display-hero-mobile: 40px;
+  --font-size-headline-md: 24px;
+  --font-size-headline-lg: 42px;
+  --font-size-body-md: 14px;
+  --font-size-body-lg: 18px;
+  --font-size-label-mono: 10px;
+  --font-size-code-sm: 13px;
 }
 
-html {
-  scroll-behavior: smooth;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.blueprint-grid {
+  background-image:
+    linear-gradient(#f1f5f9 1px, transparent 1px),
+    linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.tech-border {
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.tech-border::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  z-index: 10;
+}
+
+.tech-border::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  z-index: 10;
+}
+
+.mono-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #64748b;
 }

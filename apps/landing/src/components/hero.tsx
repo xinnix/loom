@@ -1,44 +1,95 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+const stats = [
+  { value: '19', label: '内置 Skill' },
+  { value: '10', label: 'Slash 命令' },
+  { value: '7', label: '自动化钩子' },
+  { value: '5', label: '端覆盖' },
+];
+
+const AnimatedStat = ({ value, label, index }: { value: string; label: string; index: number }) => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 200 + index * 150);
+    return () => clearTimeout(timer);
+  }, [index]);
+
+  return (
+    <div
+      className={`flex flex-col items-center transition-all duration-700 ${
+        visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+      }`}
+    >
+      <span className="text-3xl font-bold tracking-tight text-white sm:text-4xl">{value}</span>
+      <span className="mt-1 text-xs font-medium text-neutral-400 sm:text-sm">{label}</span>
+    </div>
+  );
+};
+
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-white pt-32 pb-28 lg:pt-40 lg:pb-32">
-      {/* Subtle decorative orb */}
-      <div className="pointer-events-none absolute -right-24 top-20 h-80 w-80 rounded-full bg-gradient-to-tr from-brand-400 to-brand-600 opacity-15 blur-3xl" />
+    <section className="relative overflow-hidden bg-neutral-950 pt-28 pb-24 sm:pt-32 sm:pb-28 lg:pt-40 lg:pb-32">
+      {/* Decorative gradient orbs */}
+      <div className="pointer-events-none absolute -left-48 -top-48 h-[500px] w-[500px] rounded-full bg-brand-600 opacity-8 blur-[120px]" />
+      <div className="pointer-events-none absolute -right-32 top-12 h-72 w-72 rounded-full bg-brand-500 opacity-10 blur-[100px]" />
+
+      {/* Subtle grid overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+      />
 
       <div className="relative mx-auto max-w-5xl px-6 text-center">
         {/* Badge */}
-        <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
-          <span className="flex h-1.5 w-1.5 rounded-full bg-brand-500" />
-          Agent-Centric 全栈开发框架
+        <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-brand-800 bg-brand-950/60 px-3 py-1 text-xs font-medium text-brand-300 backdrop-blur-sm">
+          <span className="flex h-1.5 w-1.5 rounded-full bg-brand-400" />为 Claude Code 量身定制
         </div>
 
-        <h1 className="text-4xl font-bold leading-tight tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
-          为 <span className="text-brand-600">Claude Code</span> 打造的
+        {/* H1 */}
+        <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+          第一个为 <span className="text-brand-400">Claude Code</span> 打造的
           <br />
           全栈开发底座
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-neutral-600 sm:text-xl">
-          <strong className="font-semibold text-neutral-800">19 个内置 Skill</strong>、
-          <strong className="font-semibold text-neutral-800">10 个 Command</strong>、
-          <strong className="font-semibold text-neutral-800">7 个自动化 Hook</strong> — 一套为
-          Claude Code 量身定制的工程化基础设施，让 AI 从"聊天助手"进化为"全职开发搭档"。
-          <br />
-          克隆即开工，数天上线 SaaS。
+        {/* Subtitle */}
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-neutral-400 sm:text-lg">
+          Loom 不是又一个脚手架模板。
+          <br className="hidden sm:inline" />
+          它是围绕 AI Agent 工作流重新设计的全栈基础设施 —
+          <br className="hidden sm:inline" />
+          <span className="text-neutral-300">
+            19 个 Skill · 10 个命令 · 7 个自动化钩子
+            <br className="sm:hidden" /> Claude Code 开箱即用
+          </span>
         </p>
 
-        {/* Loom name explanation */}
-        <p className="mx-auto mt-8 max-w-xl text-sm text-neutral-400 italic leading-relaxed">
-          Loom，即织布机 — 将 AI
-          Agent、后端、前端与数据库精密编织为完整的全栈开发体验。这座脚手架因此得名。
+        {/* Stats row */}
+        <div className="mx-auto mt-10 grid max-w-lg grid-cols-4 gap-4 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-4 py-5 backdrop-blur-sm sm:px-6 sm:py-6">
+          {stats.map((s, i) => (
+            <AnimatedStat key={s.label} {...s} index={i} />
+          ))}
+        </div>
+
+        {/* One-liner contrast */}
+        <p className="mx-auto mt-6 max-w-xl text-xs text-neutral-500 sm:text-sm">
+          不是又一个无差别的模板起点&mdash;而是让 Claude 真正理解你项目结构的开发基础设施
         </p>
 
         {/* CTAs */}
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <a
             href="#features"
-            className="inline-flex items-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition-all hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30"
+            className="inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/30 transition-all hover:bg-brand-500 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.97]"
           >
-            探索框架特性
+            git clone 开始
             <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -52,7 +103,7 @@ export function Hero() {
             href="https://github.com/xinnix/loom"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-6 py-3 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-400 hover:bg-neutral-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-7 py-3 text-sm font-medium text-neutral-300 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
               <path
@@ -61,7 +112,7 @@ export function Hero() {
                 clipRule="evenodd"
               />
             </svg>
-            GitHub Star
+            GitHub
           </a>
         </div>
       </div>

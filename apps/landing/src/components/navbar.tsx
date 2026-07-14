@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -14,26 +15,38 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm' : 'bg-transparent'
+        scrolled ? 'bg-neutral-950/80 backdrop-blur-md shadow-lg shadow-black/20' : 'bg-transparent'
       }`}
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="#" className="text-xl font-bold tracking-tight text-neutral-900">
+        <Link href="/" className="text-xl font-bold tracking-tight text-white">
           Loom
-        </a>
+        </Link>
 
         <div className="flex items-center gap-6">
           <a
             href="#features"
-            className="hidden text-sm font-medium text-neutral-600 transition-colors hover:text-brand-600 sm:inline"
+            className="hidden text-sm font-medium text-neutral-400 transition-colors hover:text-white sm:inline"
           >
-            框架特性
+            特性
+          </a>
+          <a
+            href="#comparison"
+            className="hidden text-sm font-medium text-neutral-400 transition-colors hover:text-white sm:inline"
+          >
+            对比
+          </a>
+          <a
+            href="#sponsor"
+            className="hidden text-sm font-medium text-neutral-400 transition-colors hover:text-accent-400 sm:inline"
+          >
+            赞助 ☕
           </a>
           <a
             href="https://github.com/xinnix/loom"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-brand-600"
+            className="flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-white"
             aria-label="GitHub"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -49,9 +62,9 @@ export function Navbar() {
             href="https://github.com/xinnix/loom"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-500"
           >
-            立即开始
+            git clone
           </a>
         </div>
       </nav>
