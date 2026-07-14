@@ -120,7 +120,6 @@ async function main() {
     if (args.yes) {
       projectName = 'my-app';
     } else {
-      const { askProjectName } = require('./src/cli');
       projectName = await askProjectName();
     }
   }

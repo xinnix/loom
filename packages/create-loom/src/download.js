@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const TEMPLATE_REPO = 'https://github.com/Xinnix/loom.git';
+const TEMPLATE_REPO = 'https://github.com/xinnix/loom.git';
 
 /**
  * Download template via git clone --depth=1
