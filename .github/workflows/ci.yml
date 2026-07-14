@@ -206,7 +206,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push API image
-        if: contains(needs.parse-config.outputs.apps,'api')
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -216,7 +215,6 @@ jobs:
           labels: ${{ steps.meta-api.outputs.labels }}
 
       - name: Build and push Admin image
-        if: contains(needs.parse-config.outputs.apps,'admin')
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -229,7 +227,6 @@ jobs:
             VITE_API_URL=${{ env.VITE_API_URL }}
 
       - name: Build and push Landing image
-        if: contains(needs.parse-config.outputs.apps,'landing')
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -240,7 +237,6 @@ jobs:
           target: production
 
       - name: Build and push Web image
-        if: contains(needs.parse-config.outputs.apps,'web')
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -309,7 +305,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Extra metadata for API image
-        if: contains(needs.parse-config.outputs.apps,'api')
         run: |
           echo "### API Image" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
@@ -318,7 +313,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Extra metadata for Admin image
-        if: contains(needs.parse-config.outputs.apps,'admin')
         run: |
           echo "### Admin Image" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
@@ -327,7 +321,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Extra metadata for Landing image
-        if: contains(needs.parse-config.outputs.apps,'landing')
         run: |
           echo "### Landing Image" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
@@ -336,7 +329,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Extra metadata for Web image
-        if: contains(needs.parse-config.outputs.apps,'web')
         run: |
           echo "### Web Image" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
