@@ -253,24 +253,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-push, parse-config]
     if: >
-      (github.event_name == 'push'
-        || (github.event_name == 'workflow_dispatch' && inputs.deploy != 'skip'))
-      && secrets.DEPLOY_HOST != ''
+      github.event_name == 'push'
+      || (github.event_name == 'workflow_dispatch' && inputs.deploy != 'skip')
     steps:
-      - name: Check deploy secrets
-        run: |
-          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ] || [ -z "$DEPLOY_SSH_KEY" ]; then
-            echo "⚠️  Deploy secrets not configured, skipping deployment"
-            exit 0
-          fi
-          echo "✅ Deploy secrets configured"
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-
       - name: Deploy via SSH
+        if: ${{ secrets.DEPLOY_HOST != '' }}
         uses: appleboy/ssh-action@v1.2.0
+
+      - name: Deploy skipped (secrets not configured)
+        if: ${{ secrets.DEPLOY_HOST == '' }}
+        run: echo "⚠️  DEPLOY_HOST not configured, skipping deployment. To deploy, set DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY in repo secrets."
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
