@@ -131,41 +131,9 @@ jobs:
         run: pnpm audit --audit-level moderate
         continue-on-error: true
 
-  migrate:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    needs: [type-check, lint, test]
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @loom/database exec prisma generate
-
-      - name: Run database migrations
-        run: pnpm --filter @loom/database exec prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
-
   build-and-push:
-    needs: [migrate, parse-config]
-    if: >
-      always() && (needs.migrate.result == 'skipped' || needs.migrate.result == 'success')
-      && needs.parse-config.result == 'success'
+    needs: [type-check, lint, test, parse-config]
+    if: needs.parse-config.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
