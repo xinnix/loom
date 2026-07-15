@@ -1,5 +1,5 @@
 {
-  "name": "create-loom",
+  "name": "@xinnix/create-loom",
   "version": "1.0.0",
   "description": "Scaffold a full-stack project with NestJS + tRPC + Refine + UniApp",
   "keywords": [

@@ -32,7 +32,7 @@ export default function LandingPage() {
             </nav>
           </div>
           <div className="flex items-center gap-6">
-            <span className="mono-label hidden sm:block">v1.0.4-稳定版</span>
+            <span className="mono-label hidden sm:block">v0.1</span>
             <div className="w-px h-6 bg-slate-200" />
             <a
               className="text-on-surface hover:text-primary transition-colors"
@@ -58,67 +58,19 @@ export default function LandingPage() {
               <div className="h-px w-8 bg-slate-300" />
             </div>
 
-            <h1 className="font-display-hero text-display-hero-mobile md:text-display-hero text-on-surface mb-8 max-w-5xl mx-auto">
-              为 AI 智能体构建 <span className="italic font-light text-slate-400">确定性</span>{' '}
-              全栈完整性架构。
+            <h1 className="font-display-hero text-4xl md:text-5xl lg:text-6xl text-on-surface mb-8 max-w-5xl mx-auto leading-tight tracking-tight">
+              以智能体为中心构建应用的脚手架
             </h1>
 
-            <p className="font-body-lg text-secondary max-w-2xl mx-auto mb-12">
-              Loom 是一款专为自主智能体工作流设计的架构框架。
-              <span className="block mt-4 text-on-surface font-medium">
-                19 种模块化技能 • 10 种核心指令 • 精准编织。
-              </span>
+            <p className="font-headline-md text-lg md:text-xl text-secondary max-w-3xl mx-auto mb-8 leading-relaxed">
+              Loom 意为织机，将 AI Agent、后端、前端与数据库精密编织为完整的全栈开发体验
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-0">
-              <a
-                href="https://github.com/xinnix/loom"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto bg-on-surface text-white px-10 py-5 font-bold hover:bg-primary transition-all tech-border"
-              >
-                初始化项目
-              </a>
-              <div className="hidden sm:block w-12 h-px bg-slate-300" />
-              <button className="w-full sm:w-auto bg-white border border-slate-200 text-on-surface px-10 py-5 font-bold hover:border-primary transition-all">
-                技术文档
-              </button>
-            </div>
-
-            {/* Technical SVG diagram */}
-            <div className="mt-24 max-w-5xl mx-auto tech-border bg-white p-8 md:p-12 shadow-sm">
-              <div className="aspect-[21/9] w-full flex items-center justify-center bg-slate-50 relative overflow-hidden">
-                <svg
-                  className="absolute inset-0 w-full h-full opacity-20"
-                  fill="none"
-                  viewBox="0 0 1000 400"
-                >
-                  <path d="M0 200H1000" stroke="#64748b" strokeWidth="0.5" />
-                  <path d="M500 0V400" stroke="#64748b" strokeWidth="0.5" />
-                  <circle
-                    cx="500"
-                    cy="200"
-                    r="150"
-                    stroke="#10b981"
-                    strokeDasharray="4 4"
-                    strokeWidth="0.5"
-                  />
-                  <rect height="200" stroke="#64748b" strokeWidth="1" width="300" x="350" y="100" />
-                </svg>
-                <div className="relative z-10 text-center space-y-4">
-                  <div className="mono-label">系统架构可视化引擎</div>
-                  <div className="flex gap-4 justify-center">
-                    <div className="w-2 h-2 bg-primary" />
-                    <div className="w-2 h-2 bg-slate-300" />
-                    <div className="w-2 h-2 bg-slate-300" />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 flex justify-between items-center px-2">
-                <span className="mono-label text-[9px]">图 01. 自主智能体交互矩阵</span>
-                <span className="mono-label text-[9px]">状态：已校验</span>
-              </div>
-            </div>
+            <p className="font-body-lg text-secondary max-w-2xl mx-auto mb-0">
+              <span className="text-on-surface font-medium">
+                19 种模块化技能 • 10 种核心指令 • 精准编织
+              </span>
+            </p>
           </div>
         </section>
 
@@ -127,7 +79,7 @@ export default function LandingPage() {
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 divide-x-0 md:divide-x divide-slate-100">
               {[
-                { label: '系统能力', value: '19.0', desc: '集成化智能体技能' },
+                { label: '系统能力', value: '19', desc: '集成化智能体技能' },
                 { label: '接口标准', value: '10', desc: '斜杠协议指令集' },
                 { label: '自动化深度', value: '07', desc: '确定性生命周期钩子' },
                 { label: '类型覆盖', value: '100%', desc: '类型安全同步率' },
@@ -150,7 +102,7 @@ export default function LandingPage() {
             <div className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="max-w-xl">
                 <div className="mono-label text-primary mb-4">[ 架构完整性 ]</div>
-                <h2 className="font-headline-lg text-on-surface">以智能体为核心的优化。</h2>
+                <h2 className="font-headline-lg text-on-surface">以智能体为核心的优化</h2>
               </div>
               <p className="text-secondary max-w-sm font-body-md">
                 通过标准化的系统编织，消除人类意图与机器执行之间的摩擦。
@@ -330,15 +282,16 @@ export default function LandingPage() {
                 <div className="mono-label text-primary/80 mb-4">命令行界面</div>
                 <h2 className="font-headline-md text-3xl mb-8">快速部署协议</h2>
                 <p className="text-slate-400 font-body-lg mb-10">
-                  Loom 消除了环境开销。仅需三个离散操作即可初始化生产就绪系统。
+                  一行 npx
+                  命令即可初始化完整的全栈项目。自动配置数据库、认证系统、文件存储和支付接口。
                 </p>
                 <div className="space-y-6">
                   {[
                     {
-                      title: '集成化持久层',
-                      desc: '预配置的 PostgreSQL 钩子与自动化 Prisma 迁移。',
+                      title: '脚手架即开即用',
+                      desc: '项目骨架、数据库连接、认证系统全部预配置，克隆即开工。',
                     },
-                    { title: '同步化类型', desc: '跨整个系统表面积的自动化类型生成。' },
+                    { title: '类型安全同步', desc: '跨整个系统表面积的自动化类型生成与校验。' },
                   ].map((item) => (
                     <div key={item.title} className="flex gap-4 items-start">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2" />
@@ -364,20 +317,20 @@ export default function LandingPage() {
                 <div className="p-10 font-label-mono text-sm space-y-6 text-slate-300">
                   <div className="flex gap-4">
                     <span className="text-primary opacity-60">01</span>
-                    <span>git clone https://github.com/loom/core.git</span>
+                    <span>npx create-loom@latest my-app</span>
                   </div>
                   <div className="flex gap-4">
                     <span className="text-primary opacity-60">02</span>
-                    <span>cd loom &amp;&amp; pnpm setup</span>
+                    <span>cd my-app &amp;&amp; pnpm install</span>
                   </div>
                   <div className="flex gap-4">
                     <span className="text-primary opacity-60">03</span>
-                    <span>pnpm run weave:init</span>
+                    <span>pnpm run dev</span>
                   </div>
                   <div className="pt-6 border-t border-slate-800 text-slate-500 italic text-xs">
-                    [系统] 架构完整性已校验。
+                    [系统] 项目脚手架生成完成。
                     <br />
-                    [系统] 编织完成 API:3000, Admin:5173, Web:3001
+                    [系统] API:3000 Admin:5173 Web:3002 Landing:3001
                   </div>
                 </div>
               </div>
@@ -389,7 +342,7 @@ export default function LandingPage() {
         <section className="py-section-gap-lg" id="ecosystem">
           <div className="max-w-3xl mx-auto px-margin-mobile text-center">
             <div className="mono-label text-slate-400 mb-6">开源生态网络</div>
-            <h2 className="font-headline-md text-3xl mb-8">维护愿景。</h2>
+            <h2 className="font-headline-md text-3xl mb-8">维护愿景</h2>
             <p className="text-secondary mb-16 max-w-xl mx-auto">
               Loom 由社区共同维系。支持确定性智能体核心框架的持续开发。
             </p>
@@ -423,26 +376,6 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Final CTA */}
-        <section className="py-32 bg-on-surface text-white relative">
-          <div className="max-w-container-max mx-auto px-margin-mobile text-center relative z-10">
-            <h2 className="font-display-hero text-headline-lg mb-10 tracking-tight">
-              部署卓越架构。
-            </h2>
-            <p className="text-slate-400 font-body-lg mb-16 max-w-2xl mx-auto">
-              从传统开发转向自主编织模式。今日即可初始化您的首个项目。
-            </p>
-            <a
-              href="https://github.com/xinnix/loom"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-primary text-white px-16 py-6 font-bold text-lg hover:bg-primary/90 transition-all tech-border inline-block"
-            >
-              免费开始使用
-            </a>
           </div>
         </section>
       </main>
