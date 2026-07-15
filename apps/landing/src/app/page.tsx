@@ -348,31 +348,23 @@ export default function LandingPage() {
             </p>
             <div className="grid sm:grid-cols-2 gap-px bg-slate-200 border border-slate-200 shadow-sm">
               <div className="bg-white p-12 text-center group hover:bg-slate-50 transition-all">
-                <div className="mono-label mb-8 group-hover:text-primary">支付向量：微信</div>
+                <div className="mono-label mb-8 group-hover:text-primary">支持一下</div>
                 <div className="w-40 h-40 mx-auto bg-white border border-slate-100 flex items-center justify-center tech-border">
-                  <svg
-                    className="w-20 h-20 text-slate-200"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect height="18" rx="1" width="18" x="3" y="3" />
-                    <path d="M7 7h2v2H7zM15 7h2v2h-2zM7 15h2v2H7zM15 15h2v2h-2z" />
-                  </svg>
+                  <span className="px-2 text-center text-[10px] text-neutral-400">
+                    赞赏码占位
+                    <br />
+                    （替换为实际二维码）
+                  </span>
                 </div>
               </div>
               <div className="bg-white p-12 text-center group hover:bg-slate-50 transition-all">
-                <div className="mono-label mb-8 group-hover:text-primary">支付向量：支付宝</div>
+                <div className="mono-label mb-8 group-hover:text-primary">加入客服群</div>
                 <div className="w-40 h-40 mx-auto bg-white border border-slate-100 flex items-center justify-center tech-border">
-                  <svg
-                    className="w-20 h-20 text-slate-200"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect height="18" rx="1" width="18" x="3" y="3" />
-                    <path d="M7 7h2v2H7zM15 7h2v2h-2zM7 15h2v2H7zM15 15h2v2h-2z" />
-                  </svg>
+                  <span className="px-2 text-center text-[10px] text-neutral-400">
+                    客服群码占位
+                    <br />
+                    （替换为实际二维码）
+                  </span>
                 </div>
               </div>
             </div>

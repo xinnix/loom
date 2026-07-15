@@ -492,6 +492,20 @@ docker compose -f docker-compose.prod.yml up -d
 
 ---
 
+---
+
+## 赞助支持
+
+用爱发电，不如来爱发电支持我们 ⚡️
+
+<p align="center">
+  <a href="https://afdian.com/a/myloom" target="_blank">
+    <img src="https://img.shields.io/badge/爱发电-赞助我们-946ce6?style=flat-square" alt="爱发电赞助">
+  </a>
+  &nbsp;
+  <a href="https://afdian.com/a/myloom" target="_blank">https://afdian.com/a/myloom</a>
+</p>
+
 ## 许可证
 
 [MIT](LICENSE)
