@@ -54,7 +54,7 @@ export default function LandingPage() {
           <div className="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-gutter text-center">
             <div className="inline-flex items-center gap-3 mb-10">
               <div className="h-px w-8 bg-slate-300" />
-              <span className="mono-label text-primary">专为 Claude Code 架构优化</span>
+              <span className="mono-label !text-sm !text-primary">专为 Claude Code 架构优化</span>
               <div className="h-px w-8 bg-slate-300" />
             </div>
 
@@ -85,9 +85,9 @@ export default function LandingPage() {
                 { label: '类型覆盖', value: '100%', desc: '类型安全同步率' },
               ].map((s) => (
                 <div key={s.label} className="px-8 text-center md:text-left">
-                  <div className="mono-label mb-2">{s.label}</div>
+                  <div className="mono-label text-primary mb-2">{s.label}</div>
                   <div className="font-headline-md text-4xl text-on-surface">{s.value}</div>
-                  <p className="text-[11px] text-slate-400 mt-2 uppercase tracking-tighter">
+                  <p className="text-[11px] text-primary/60 mt-2 uppercase tracking-tighter">
                     {s.desc}
                   </p>
                 </div>
@@ -113,7 +113,7 @@ export default function LandingPage() {
               {/* Large featured block */}
               <div className="col-span-12 lg:col-span-8 tech-border p-10 bg-slate-50 flex flex-col justify-between min-h-[400px]">
                 <div>
-                  <div className="mono-label mb-6">模块 // 01</div>
+                  <div className="mono-label text-primary mb-6">模块 // 01</div>
                   <h3 className="font-headline-md text-3xl mb-4">精准指令协议</h3>
                   <p className="text-secondary max-w-lg mb-8">
                     为 Claude Code
@@ -129,7 +129,7 @@ export default function LandingPage() {
 
               {/* Vertical block */}
               <div className="col-span-12 lg:col-span-4 tech-border p-10 flex flex-col justify-center border-l-4 border-l-primary/20">
-                <div className="mono-label mb-6">技能 // 矩阵</div>
+                <div className="mono-label text-primary mb-6">技能 // 矩阵</div>
                 <h3 className="font-headline-md text-2xl mb-4">19 种预编译技能</h3>
                 <p className="text-secondary text-sm leading-relaxed mb-6">
                   从自动化 CRUD 生成到复杂的数据库迁移，Loom
@@ -204,7 +204,7 @@ export default function LandingPage() {
                     key={t.name}
                     className="bg-white p-8 flex flex-col items-center justify-center text-center group"
                   >
-                    <span className="mono-label text-[9px] mb-2">{t.label}</span>
+                    <span className="mono-label text-[9px] text-primary/70 mb-2">{t.label}</span>
                     <div className="font-bold text-on-surface group-hover:text-primary transition-colors">
                       {t.name}
                     </div>
@@ -219,7 +219,7 @@ export default function LandingPage() {
         <section className="py-section-gap-lg">
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
             <div className="text-center mb-16">
-              <div className="mono-label mb-4">性能基准对比</div>
+              <div className="mono-label text-primary mb-4">性能基准对比</div>
               <h2 className="font-headline-lg">Weaving 编织 vs. Scaffolding 脚手架</h2>
             </div>
             <div className="tech-border overflow-hidden">
@@ -341,7 +341,7 @@ export default function LandingPage() {
         {/* Sponsor */}
         <section className="py-section-gap-lg" id="ecosystem">
           <div className="max-w-3xl mx-auto px-margin-mobile text-center">
-            <div className="mono-label text-slate-400 mb-6">开源生态网络</div>
+            <div className="mono-label text-primary mb-6">开源生态网络</div>
             <h2 className="font-headline-md text-3xl mb-8">维护愿景</h2>
             <p className="text-secondary mb-16 max-w-xl mx-auto">
               Loom 由社区共同维系。支持确定性智能体核心框架的持续开发。
