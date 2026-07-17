@@ -111,6 +111,12 @@ export const PERMISSIONS = {
     UPDATE: 'agent:update',
     DELETE: 'agent:delete',
   },
+  TODO: {
+    CREATE: 'todo:create',
+    READ: 'todo:read',
+    UPDATE: 'todo:update',
+    DELETE: 'todo:delete',
+  },
 } as const;
 
 export type PermissionString =
@@ -374,3 +380,95 @@ export type UpdateWecomConfigInput = z.infer<typeof UpdateWecomConfigSchema>;
 export type SendMessageInput = z.infer<typeof SendMessageSchema>;
 export type SendKfMessageInput = z.infer<typeof SendKfMessageSchema>;
 export type SyncKfMessageInput = z.infer<typeof SyncKfMessageSchema>;
+
+// ============================================
+// Todo Schemas
+// ============================================
+// Todo 作为参考模块，展示了完整的 Zod Schema 写法：
+//   - CreateSchema：创建时的必填字段和可选字段
+//   - UpdateSchema：更新时的所有可选字段（部分更新）
+//   - Schema：完整的数据库模型定义（用于前端展示）
+//   - ListQuerySchema：列表查询参数（分页 + 搜索 + 筛选）
+
+export const TodoStatus = {
+  PENDING: 'pending',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+} as const;
+
+export type TodoStatusType = (typeof TodoStatus)[keyof typeof TodoStatus];
+
+export const TodoPriority = {
+  LOW: 0,
+  MEDIUM: 1,
+  HIGH: 2,
+} as const;
+
+export type TodoPriorityType = (typeof TodoPriority)[keyof typeof TodoPriority];
+
+/**
+ * 完整的 Todo 模型，用于详情展示
+ */
+export const TodoSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable().optional(),
+  status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']),
+  priority: z.number().int().min(0).max(2),
+  dueDate: z.date().nullable().optional(),
+  isCompleted: z.boolean(),
+  userId: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  completedAt: z.date().nullable().optional(),
+});
+
+/**
+ * 创建 Todo 时提交的数据
+ * 必填：title
+ * 可选：description, status, priority, dueDate
+ * 自动填充：userId（从 JWT 中获取）
+ */
+export const CreateTodoSchema = z.object({
+  title: z.string().min(1, '标题不能为空').max(200, '标题不能超过200个字符'),
+  description: z.string().max(1000, '描述不能超过1000个字符').optional().nullable(),
+  status: z
+    .enum(['pending', 'in_progress', 'completed', 'cancelled'])
+    .optional()
+    .default('pending'),
+  priority: z.number().int().min(0).max(2).optional().default(0),
+  dueDate: z.date().optional().nullable(),
+  isCompleted: z.boolean().optional().default(false),
+});
+
+/**
+ * 更新 Todo 时提交的数据
+ * 所有字段均为可选（部分更新）
+ */
+export const UpdateTodoSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).nullable().optional(),
+  status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
+  priority: z.number().int().min(0).max(2).optional(),
+  dueDate: z.date().nullable().optional(),
+  isCompleted: z.boolean().optional(),
+});
+
+/**
+ * Todo 列表查询参数
+ * 支持分页 + 关键字搜索 + 状态/优先级筛选
+ */
+export const TodoListQuerySchema = z.object({
+  page: z.number().int().positive().optional().default(1),
+  pageSize: z.number().int().positive().optional().default(10),
+  search: z.string().optional(),
+  status: z.string().optional(),
+  priority: z.number().int().optional(),
+  isCompleted: z.boolean().optional(),
+});
+
+export type Todo = z.infer<typeof TodoSchema>;
+export type CreateTodoInput = z.infer<typeof CreateTodoSchema>;
+export type UpdateTodoInput = z.infer<typeof UpdateTodoSchema>;
+export type TodoListQueryInput = z.infer<typeof TodoListQuerySchema>;

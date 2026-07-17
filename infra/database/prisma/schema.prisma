@@ -64,6 +64,7 @@ model User {
 
   // 关联
   refreshTokens UserRefreshToken[]
+  todos         Todo[]
 
   @@index([openid])
   @@index([email])
@@ -293,5 +294,49 @@ model WecomEvent {
   @@index([eventType])
   @@index([createdAt])
   @@map("wecom_events")
+}
+
+// ============================================
+// Todo 示例模型
+// ============================================
+// 这是一个完整的参考示例，演示如何创建一个标准的业务模块。
+// 它展示了：
+//   - 基础字段（title, description）
+//   - 状态枚举字段（status）
+//   - 优先级字段（priority）
+//   - 可选日期字段（dueDate）
+//   - 布尔字段（isCompleted）
+//   - 用户关联（外键）
+//   - 审计字段（timestamps）
+//
+// 配套查看：infra/shared/src/schemas/todo/（Zod 验证）
+//           apps/api/src/modules/todo/（后端 API）
+//           apps/admin/src/modules/todo/（Admin 端）
+//           apps/web/src/app/(protected)/todos/（Web 端）
+//           apps/miniapp/src/pages/todos/（小程序端）
+// ============================================
+model Todo {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("pending") // pending | in_progress | completed | cancelled
+  priority    Int      @default(0)          // 0-low, 1-medium, 2-high
+  dueDate     DateTime?
+  isCompleted Boolean  @default(false)
+
+  // 用户关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 审计
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([isCompleted])
+  @@index([createdAt])
+  @@map("todos")
 }
 
