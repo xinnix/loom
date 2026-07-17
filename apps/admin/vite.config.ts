@@ -25,10 +25,10 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          quill: ['quill'],
-          antd: ['antd'],
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+        manualChunks(id: string) {
+          if (id.includes('quill')) return 'quill';
+          if (id.includes('antd')) return 'antd';
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
         },
       },
     },

@@ -25,6 +25,6 @@
     "node": ">=18"
   },
   "dependencies": {
-    "enquirer": "^2.4.0"
+    "enquirer": "^2.4.1"
   }
 }

@@ -178,16 +178,17 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 
 ## Module Registry
 
-| Module     | Prisma Model | tRPC Router      | REST Controller   | Admin Page    | Web Page       | Miniapp API |
-| ---------- | ------------ | ---------------- | ----------------- | ------------- | -------------- | ----------- |
-| admin      | Admin        | adminRouter      | -                 | AdminListPage | -              | -           |
-| user       | User         | userRouter       | UserController    | UserListPage  | -              | authApi     |
-| role       | Role         | roleRouter       | -                 | RoleListPage  | -              | -           |
-| agents     | Agent        | agentsRouter     | AgentsController  | AgentListPage | -              | agentsApi   |
-| auth       | -            | authRouter       | AuthController    | LoginPage     | Login/Register | authApi     |
-| upload     | -            | uploadRouter     | UploadController  | -             | -              | uploadApi   |
-| payment    | -            | paymentRouter    | PaymentController | -             | -              | -           |
-| permission | Permission   | permissionRouter | -                 | -             | -              | -           |
+| Module     | Prisma Model | tRPC Router      | REST Controller   | Admin Page        | Web Page          | Miniapp API    |
+| ---------- | ------------ | ---------------- | ----------------- | ----------------- | ----------------- | -------------- |
+| admin      | Admin        | adminRouter      | -                 | AdminListPage     | -                 | -              |
+| user       | User         | userRouter       | UserController    | UserListPage      | -                 | authApi        |
+| role       | Role         | roleRouter       | -                 | RoleListPage      | -                 | -              |
+| agents     | Agent        | agentsRouter     | AgentsController  | AgentListPage     | -                 | agentsApi      |
+| auth       | -            | authRouter       | AuthController    | LoginPage         | Login/Register    | authApi        |
+| upload     | -            | uploadRouter     | UploadController  | -                 | -                 | uploadApi      |
+| payment    | -            | paymentRouter    | PaymentController | -                 | -                 | -              |
+| permission | Permission   | permissionRouter | -                 | -                 | -                 | -              |
+| **_todo_** | **_Todo_**   | **_todoRouter_** | **_TodoController_** | **_TodoListPage_** | **_todos/list/detail_** | **_todosApi_** |
 
 ### Web 端架构说明
 
