@@ -1,5 +1,8 @@
 /**
  * Agent 相关 API
+ *
+ * 注：Agent 流式聊天功能已移至 LLM 抽象层（LlmService），
+ * 小程序端可直接调用 REST 端点 /agents/:id/chat 获取 SSE 流。
  */
 import { http } from '@/utils/http';
 import { API_ENDPOINTS } from '@/config/api';
@@ -10,23 +13,15 @@ export interface Agent {
   slug: string;
   description?: string;
   icon?: string;
-  difyAppType: string;
+  model: string;
+  systemPrompt?: string;
+  temperature?: number;
+  maxTokens?: number;
+  provider: string;
   sort: number;
 }
 
-export interface Conversation {
-  id: string;
-  name: string;
-  created_at: number;
-  updated_at: number;
-}
-
 export const agentsApi = {
+  /** 获取已激活的 Agent 列表 */
   getActiveAgents: () => http.get<Agent[]>(API_ENDPOINTS.agentsActive),
-
-  getConversations: (agentId: string, limit = 20) =>
-    http.get<any>(API_ENDPOINTS.agentConversations(agentId), { limit, user: 'me' }),
-
-  getMessages: (agentId: string, conversationId: string, limit = 20) =>
-    http.get<any>(API_ENDPOINTS.agentMessages(agentId, conversationId), { limit }),
 };

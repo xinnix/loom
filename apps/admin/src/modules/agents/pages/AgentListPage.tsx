@@ -16,7 +16,7 @@ import {
   App,
   Popconfirm,
 } from 'antd';
-import { SearchOutlined, PlusOutlined, MessageOutlined, RobotOutlined } from '@ant-design/icons';
+import { SearchOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons';
 import { AgentForm } from '../components/AgentForm';
 
 interface Agent {
@@ -25,9 +25,13 @@ interface Agent {
   slug: string;
   description?: string;
   icon?: string;
-  difyApiUrl: string;
-  difyApiKey: string;
-  difyAppType: string;
+  model: string;
+  systemPrompt?: string;
+  temperature?: number;
+  maxTokens?: number;
+  provider: string;
+  apiUrl?: string;
+  apiKey?: string;
   isActive: boolean;
   sort: number;
   createdAt: Date;
@@ -63,8 +67,8 @@ export const AgentListPage = () => {
     setEditingRecord(null);
     form.resetFields();
     form.setFieldsValue({
-      difyApiUrl: 'https://api.dify.ai/v1',
-      difyAppType: 'agent',
+      model: 'gpt-4o',
+      provider: 'openai',
       isActive: true,
       sort: 0,
     });
@@ -78,9 +82,13 @@ export const AgentListPage = () => {
       slug: record.slug,
       description: record.description,
       icon: record.icon,
-      difyApiUrl: record.difyApiUrl,
-      difyApiKey: '',
-      difyAppType: record.difyAppType,
+      model: record.model,
+      systemPrompt: record.systemPrompt,
+      temperature: record.temperature ?? undefined,
+      maxTokens: record.maxTokens ?? undefined,
+      provider: record.provider,
+      apiUrl: record.apiUrl || '',
+      apiKey: '',
       isActive: record.isActive,
       sort: record.sort,
     });
@@ -93,7 +101,8 @@ export const AgentListPage = () => {
 
       if (editingRecord) {
         const updateData: any = { ...values };
-        if (!updateData.difyApiKey) delete updateData.difyApiKey;
+        if (!updateData.apiKey) delete updateData.apiKey;
+        if (updateData.apiUrl === '') updateData.apiUrl = null;
 
         update(
           { resource: 'agents', id: editingRecord.id, values: updateData },
@@ -175,20 +184,30 @@ export const AgentListPage = () => {
     {
       title: '标识',
       dataIndex: 'slug',
-      width: 150,
+      width: 130,
       render: (slug: string) => <Tag color="default">{slug}</Tag>,
     },
     {
-      title: '描述',
-      dataIndex: 'description',
-      ellipsis: true,
-      render: (desc: string) => desc || '-',
+      title: '模型',
+      dataIndex: 'model',
+      width: 120,
+      render: (model: string) => <Tag color="blue">{model}</Tag>,
     },
     {
-      title: 'API Key',
-      dataIndex: 'difyApiKey',
-      width: 120,
-      render: (key: string) => <Tag color="orange">{key}</Tag>,
+      title: '提供商',
+      dataIndex: 'provider',
+      width: 100,
+      render: (provider: string) => (
+        <Tag color={provider === 'openai' ? 'green' : provider === 'anthropic' ? 'purple' : 'default'}>
+          {provider}
+        </Tag>
+      ),
+    },
+    {
+      title: '温度',
+      dataIndex: 'temperature',
+      width: 70,
+      render: (temp: number | null) => (temp !== null && temp !== undefined ? temp.toFixed(1) : '-'),
     },
     {
       title: '状态',
@@ -205,18 +224,10 @@ export const AgentListPage = () => {
     },
     {
       title: '操作',
-      width: 220,
+      width: 160,
       fixed: 'right' as const,
       render: (_: any, record: Agent) => (
         <Space size="small">
-          <Button
-            size="small"
-            type="link"
-            icon={<MessageOutlined />}
-            onClick={() => navigate(`/agents/chat/${record.id}`)}
-          >
-            对话
-          </Button>
           <Button size="small" type="link" onClick={() => handleEdit(record)}>
             编辑
           </Button>
@@ -236,9 +247,9 @@ export const AgentListPage = () => {
         <Card>
           <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
             <Col>
-              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 'bold' }}>Agent 管理</h1>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 'bold' }}>AI 助手管理</h1>
               <div style={{ fontSize: 14, color: '#999', marginTop: 8 }}>
-                配置和管理 Dify AI Agent
+                配置和管理 AI 助手的 LLM 模型与参数
               </div>
             </Col>
             <Col>
@@ -252,7 +263,7 @@ export const AgentListPage = () => {
                   </Popconfirm>
                 )}
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-                  新建 Agent
+                  新建 AI 助手
                 </Button>
               </Space>
             </Col>
@@ -290,13 +301,13 @@ export const AgentListPage = () => {
           />
 
           <Modal
-            title={editingRecord ? '编辑 Agent' : '新建 Agent'}
+            title={editingRecord ? '编辑 AI 助手' : '新建 AI 助手'}
             open={isModalVisible}
             onOk={handleSubmit}
             onCancel={() => setIsModalVisible(false)}
             okText="确定"
             cancelText="取消"
-            width={600}
+            width={640}
           >
             <AgentForm form={form} isEdit={!!editingRecord} />
           </Modal>
