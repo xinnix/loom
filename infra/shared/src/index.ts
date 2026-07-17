@@ -247,43 +247,7 @@ export type RoleListQueryInput = z.infer<typeof RoleListQuerySchema>;
 export type UpdateRolePermissionsInput = z.infer<typeof UpdateRolePermissionsSchema>;
 
 // ============================================
-// Agent Config Schemas (Dify)
-// ============================================
-
-export const AgentConfigSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().optional().default(''),
-  tags: z.array(z.string()).optional().default([]),
-  dify: z.object({
-    app_id: z.string().min(1),
-    api_key: z.string().optional().default(''),
-    mode: z
-      .enum(['chat', 'completion', 'agent-chat', 'advanced-chat', 'workflow'])
-      .optional()
-      .default('chat'),
-    api_base_url: z.string().optional().default(''),
-  }),
-  parameters: z
-    .object({
-      response_mode: z.enum(['streaming', 'blocking']).optional().default('blocking'),
-      inputs: z.record(z.string(), z.any()).optional().default({}),
-      temperature: z.number().min(0).max(2).nullable().optional(),
-      max_tokens: z.number().int().positive().nullable().optional(),
-    })
-    .optional(),
-  conversation: z
-    .object({
-      enabled: z.boolean().optional().default(true),
-      auto_generate_name: z.boolean().optional().default(true),
-    })
-    .optional(),
-});
-
-export type AgentConfig = z.infer<typeof AgentConfigSchema>;
-
-// ============================================
-// Agent CRUD Schemas (Database Model)
+// Agent CRUD Schemas（LLM 配置）
 // ============================================
 
 export const CreateAgentSchema = z.object({
@@ -291,9 +255,13 @@ export const CreateAgentSchema = z.object({
   slug: z.string().min(1, '标识不能为空'),
   description: z.string().optional(),
   icon: z.string().optional(),
-  difyApiUrl: z.string().min(1).optional().default('https://api.dify.ai/v1'),
-  difyApiKey: z.string().min(1, 'API Key 不能为空'),
-  difyAppType: z.string().optional().default('agent'),
+  model: z.string().optional().default('gpt-4o'),
+  systemPrompt: z.string().optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  maxTokens: z.number().int().positive().optional(),
+  provider: z.string().optional().default('openai'),
+  apiUrl: z.string().optional(),
+  apiKey: z.string().optional(),
   isActive: z.boolean().optional().default(true),
   sort: z.number().int().optional().default(0),
 });
@@ -303,9 +271,13 @@ export const UpdateAgentSchema = z.object({
   slug: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
   icon: z.string().nullable().optional(),
-  difyApiUrl: z.string().min(1).optional(),
-  difyApiKey: z.string().min(1).optional(),
-  difyAppType: z.string().optional(),
+  model: z.string().optional(),
+  systemPrompt: z.string().nullable().optional(),
+  temperature: z.number().min(0).max(2).nullable().optional(),
+  maxTokens: z.number().int().positive().nullable().optional(),
+  provider: z.string().optional(),
+  apiUrl: z.string().nullable().optional(),
+  apiKey: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
   sort: z.number().int().optional(),
 });

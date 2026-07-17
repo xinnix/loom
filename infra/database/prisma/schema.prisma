@@ -198,23 +198,27 @@ model UserRefreshToken {
 }
 
 // ============================================
-// Dify Agent 模型
+// Agent 模型（LLM 配置）
 // ============================================
 model Agent {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  icon        String?
-  difyApiUrl  String   @default("https://api.dify.ai/v1")
-  difyApiKey  String
-  difyAppType String   @default("agent")
-  isActive    Boolean  @default(true)
-  sort        Int      @default(0)
-  createdById String?
-  updatedById String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  icon         String?
+  model        String   @default("gpt-4o")
+  systemPrompt String?
+  temperature  Float?
+  maxTokens    Int?
+  provider     String   @default("openai")
+  apiUrl       String?
+  apiKey       String?
+  isActive     Boolean  @default(true)
+  sort         Int      @default(0)
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   createdBy Admin? @relation("AgentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy Admin? @relation("AgentUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)

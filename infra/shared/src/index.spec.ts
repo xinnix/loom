@@ -156,16 +156,15 @@ describe('Agent Schemas', () => {
       const result = CreateAgentSchema.parse({
         name: 'My Agent',
         slug: 'my-agent',
-        difyApiKey: 'sk-xxx',
       });
       expect(result.isActive).toBe(true);
       expect(result.sort).toBe(0);
+      expect(result.model).toBe('gpt-4o');
+      expect(result.provider).toBe('openai');
     });
 
     it('rejects empty name', () => {
-      expect(() =>
-        CreateAgentSchema.parse({ name: '', slug: 'test', difyApiKey: 'sk-xxx' }),
-      ).toThrow();
+      expect(() => CreateAgentSchema.parse({ name: '', slug: 'test' })).toThrow();
     });
   });
 
