@@ -65,6 +65,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
     renderModalContent,
   } = props;
 
+  const FormComponent = formComponent;
   const { message } = App.useApp();
 
   // 状态管理
@@ -250,7 +251,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
                 <Space>
                   {specialActions}
                   {!hideCreateButton && (
-                    <PermissionGuard permission={permissions?.create}>
+                    <PermissionGuard {...({ permission: permissions?.create } as any)}>
                       <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
                         新建
                       </Button>
@@ -300,7 +301,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
               <Button size="small" onClick={() => setSelectedRowKeys([])}>
                 取消选择
               </Button>
-              <PermissionGuard permission={permissions?.delete}>
+              <PermissionGuard {...({ permission: permissions?.delete } as any)}>
                 <Popconfirm
                   title="确认批量删除？"
                   description={`将删除 ${selectedRowKeys.length} 个${title}`}
@@ -392,7 +393,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
       </List>
 
       {/* Create/Edit Modal */}
-      {formComponent && (
+      {FormComponent && (
         <Modal
           title={editingRecord ? `编辑${title}` : `新建${title}`}
           open={isModalVisible}
@@ -406,7 +407,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
           {renderModalContent ? (
             renderModalContent()
           ) : (
-            <formComponent form={form} isEdit={!!editingRecord} />
+            <FormComponent form={form} isEdit={!!editingRecord} />
           )}
         </Modal>
       )}

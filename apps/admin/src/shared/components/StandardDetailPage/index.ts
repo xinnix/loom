@@ -1,2 +1,2 @@
-export { StandardDetailPage } from './index';
+export { StandardDetailPage } from './index.tsx';
 export * from './types';

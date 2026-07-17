@@ -45,7 +45,7 @@ export const OSSUploadMultiple: React.FC<OSSUploadMultipleProps> = ({
     safeValue.map((url, index) => ({
       uid: `${index}`,
       name: `image-${index}`,
-      status: 'done',
+      status: 'done' as const,
       url: url,
     })),
   );
@@ -84,7 +84,7 @@ export const OSSUploadMultiple: React.FC<OSSUploadMultipleProps> = ({
         {
           uid: file.uid,
           name: file.name,
-          status: 'done',
+          status: 'done' as const,
           url: result.url,
         },
       ];

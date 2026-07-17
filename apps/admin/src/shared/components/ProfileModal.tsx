@@ -20,7 +20,7 @@ export const ProfileModal = ({ visible, onCancel, onSuccess }: ProfileModalProps
   // Update avatar mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (avatarUrl: string) => {
-      const trpcClient = await getTrpcClient();
+      const trpcClient = (await getTrpcClient()) as any;
       return trpcClient.auth.updateAdminProfile.mutate({ avatar: avatarUrl });
     },
   });

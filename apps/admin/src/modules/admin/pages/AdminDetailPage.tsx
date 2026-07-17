@@ -60,7 +60,7 @@ export const AdminDetailPage = () => {
   } = useOne<AdminDetail>({
     resource: 'admin',
     id: id!,
-  });
+  }) as any;
 
   const { result: rolesResult } = useList({
     resource: 'role',

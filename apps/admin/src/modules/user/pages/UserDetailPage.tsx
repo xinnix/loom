@@ -32,7 +32,7 @@ export const UserDetailPage = () => {
   const { result: user, isLoading } = useOne<UserDetail>({
     resource: 'user',
     id: id || '',
-  });
+  }) as any;
 
   if (isLoading) {
     return <div>加载中...</div>;

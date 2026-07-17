@@ -1,2 +1,2 @@
-export { StandardForm } from './index';
+export { StandardForm } from './index.tsx';
 export * from './types';

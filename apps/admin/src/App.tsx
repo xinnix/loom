@@ -13,6 +13,7 @@ import { UserListPage, UserDetailPage } from './modules/user';
 import { RoleListPage, RoleDetailPage } from './modules/role';
 import { AgentListPage, AgentChatPage } from './modules/agents';
 import { WecomConfigListPage, WecomMessageListPage, WecomEventListPage } from './modules/wecom';
+import { TodoListPage, TodoDetailPage } from './modules/todo';
 import { useMessageInitializer } from './shared/hooks/useMessageInitializer';
 // Create QueryClient outside component to prevent re-creation
 const queryClient = new QueryClient({
@@ -79,6 +80,7 @@ function AppContent() {
           { name: 'wecom.config', list: '/wecom' },
           { name: 'wecom.message', list: '/wecom/messages' },
           { name: 'wecom.event', list: '/wecom/events' },
+          { name: 'todo', list: '/todos' },
         ]}
       >
         <Routes>
@@ -97,6 +99,8 @@ function AppContent() {
             <Route path="wecom" element={<WecomConfigListPage />} />
             <Route path="wecom/messages" element={<WecomMessageListPage />} />
             <Route path="wecom/events" element={<WecomEventListPage />} />
+            <Route path="todos" element={<TodoListPage />} />
+            <Route path="todos/:id" element={<TodoDetailPage />} />
           </Route>
           <Route path="/404" element={<NotFoundPage />} />
           <Route path="*" element={<NotFoundPage />} />

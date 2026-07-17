@@ -77,7 +77,7 @@ export function SearchBar({
             <DatePicker.RangePicker
               key={field.field}
               placeholder={[field.placeholder || '开始日期', '结束日期']}
-              value={filterValues[field.field] as [unknown, unknown] | null}
+              value={filterValues[field.field] as any}
               onChange={(dates) => onFilterChange(field.field, dates)}
               style={{ width: field.width || 240 }}
             />
@@ -105,7 +105,7 @@ function DynamicSelectFilter({
   const { result } = useList<Record<string, unknown>>({
     resource: field.resource!,
     pagination: { pageSize: 100 },
-    filters: field.resourceFilter ? [field.resourceFilter] : [],
+    filters: field.resourceFilter ? [field.resourceFilter as any] : [],
   });
 
   const data = result?.data || [];

@@ -16,7 +16,7 @@ export const ChangePasswordModal = ({ visible, onCancel, onSuccess }: ChangePass
   // Change password mutation
   const changePasswordMutation = useMutation({
     mutationFn: async (values: { oldPassword: string; newPassword: string }) => {
-      const trpcClient = await getTrpcClient();
+      const trpcClient = (await getTrpcClient()) as any;
       return trpcClient.auth.changePassword.mutate(values);
     },
   });

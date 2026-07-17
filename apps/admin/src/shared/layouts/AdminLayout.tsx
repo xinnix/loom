@@ -13,6 +13,7 @@ import {
   WechatOutlined,
   MessageOutlined,
   ThunderboltOutlined,
+  CheckSquareOutlined,
 } from '@ant-design/icons';
 import { useState, useMemo } from 'react';
 import { useAuth } from '../auth';
@@ -31,6 +32,7 @@ const iconMap: Record<string, React.ReactNode> = {
   WechatOutlined: <WechatOutlined />,
   MessageOutlined: <MessageOutlined />,
   ThunderboltOutlined: <ThunderboltOutlined />,
+  CheckSquareOutlined: <CheckSquareOutlined />,
 };
 
 // prettier-ignore
@@ -63,6 +65,15 @@ const menuConfig = [
       { key: "/wecom", label: "应用配置", icon: "SettingOutlined", permission: "menu:wecom" },
       { key: "/wecom/messages", label: "消息记录", icon: "MessageOutlined", permission: "menu:wecom" },
       { key: "/wecom/events", label: "事件记录", icon: "ThunderboltOutlined", permission: "menu:wecom" },
+    ],
+  },
+  {
+    key: "todo",
+    label: "Todo 示例",
+    icon: "CheckSquareOutlined",
+    permission: null,
+    children: [
+      { key: "/todos", label: "Todo 管理", icon: "CheckSquareOutlined", permission: null },
     ],
   },
 ];

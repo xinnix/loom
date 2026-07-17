@@ -42,7 +42,7 @@ export const WecomEventListPage = () => {
     location: 'cyan',
   };
 
-  const columns = [
+  const columns: any[] = [
     {
       title: '时间',
       dataIndex: 'createdAt',

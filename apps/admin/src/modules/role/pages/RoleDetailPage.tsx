@@ -67,7 +67,7 @@ export const RoleDetailPage = () => {
     queryOptions: {
       enabled: !!id,
     },
-  });
+  }) as any;
 
   const { result: usersResult, query: usersQuery } = useList<User>({
     resource: 'role',
@@ -77,7 +77,7 @@ export const RoleDetailPage = () => {
     queryOptions: {
       enabled: !!id && activeTab === 'users',
     },
-  });
+  }) as any;
 
   const { mutate: deleteOne } = useDelete();
   void deleteOne; // available for future delete operations

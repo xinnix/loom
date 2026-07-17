@@ -46,7 +46,7 @@ export const AgentChatPage = () => {
   const { data: agentData } = useOne({
     resource: 'agents',
     id: id!,
-  });
+  }) as any;
 
   const agent = (agentData as any)?.data;
 

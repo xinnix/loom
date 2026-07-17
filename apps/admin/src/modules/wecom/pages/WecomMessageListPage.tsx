@@ -42,7 +42,7 @@ export const WecomMessageListPage = () => {
     sent: { color: 'green', label: '发送' },
   };
 
-  const columns = [
+  const columns: any[] = [
     {
       title: '时间',
       dataIndex: 'createdAt',

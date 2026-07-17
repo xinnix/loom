@@ -28,11 +28,7 @@ export interface UploadResult {
 }
 
 export type UploadType =
-  | 'merchant_logo'
-  | 'news_banner'
-  | 'merchant_gallery'
-  | 'news_content'
-  | 'avatar';
+  'merchant_logo' | 'news_banner' | 'merchant_gallery' | 'news_content' | 'avatar';
 
 /**
  * OSS 直传上传类
@@ -47,7 +43,7 @@ export class OSSUploader {
    */
   static async upload(file: File, type: UploadType): Promise<UploadResult> {
     // 1. 获取上传凭证
-    const credentials = await trpcClient.upload.getUploadCredentials.query({ type });
+    const credentials = await (trpcClient as any).upload.getUploadCredentials.query({ type });
 
     // 2. 生成文件名
     const timestamp = Date.now();
