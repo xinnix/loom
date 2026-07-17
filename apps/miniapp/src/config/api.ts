@@ -28,8 +28,8 @@ export const API_ENDPOINTS = {
   wechatLogin: '/auth/wechat/login',
 
   // TODO 相关（示例模块）
-  todos: '/todo',
-  todoDetail: (id: string) => `/todo/${id}`,
+  todos: '/todos',
+  todoDetail: (id: string) => `/todos/${id}`,
 
   // Agent 相关
   agentsActive: '/agents/active',
