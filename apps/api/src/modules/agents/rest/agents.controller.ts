@@ -12,7 +12,7 @@ import {
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../../../core/guards/jwt.guard';
 import { AgentsService } from '../services/agents.service';
-import { DifyService } from '../services/dify.service';
+import { LlmService } from '../../../llm/llm.service';
 
 @Controller('agents')
 export class AgentsController {
@@ -20,23 +20,28 @@ export class AgentsController {
 
   constructor(
     private readonly agentsService: AgentsService,
-    private readonly difyService: DifyService,
+    private readonly llmService: LlmService,
   ) {}
 
+  /**
+   * Agent 聊天流式接口
+   *
+   * 使用 Agent 配置的模型和参数调用 LLM，以 SSE 格式流式返回。
+   * 适用于 Admin 端和 Web 端用户。
+   */
   @Post(':id/chat')
   @UseGuards(JwtAuthGuard)
   async chat(
     @Param('id') id: string,
-    @Body() body: { query: string; conversationId?: string; inputs?: Record<string, any> },
+    @Body() body: { query: string; systemPromptOverride?: string },
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const agent = await this.agentsService.findOneWithKey(id);
+    const agent = await this.agentsService.getOne(id);
     if (!agent) throw new NotFoundException('Agent not found');
     if (!agent.isActive) throw new NotFoundException('Agent is not active');
 
-    const user = (req as any).user;
-    const difyUser = `admin_${user.id}`;
+    const systemPrompt = body.systemPromptOverride || agent.systemPrompt || '你是一位智能助手。';
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -44,16 +49,18 @@ export class AgentsController {
     res.flushHeaders();
 
     try {
-      for await (const event of this.difyService.chatStream({
-        apiUrl: agent.difyApiUrl,
-        apiKey: agent.difyApiKey,
-        query: body.query,
-        user: difyUser,
-        conversationId: body.conversationId,
-        inputs: body.inputs,
+      for await (const chunk of this.llmService.chatStream({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: body.query },
+        ],
+        model: agent.model || undefined,
+        temperature: agent.temperature ?? undefined,
+        maxTokens: agent.maxTokens ?? undefined,
       })) {
-        res.write(`data: ${JSON.stringify(event)}\n\n`);
+        res.write(`data: ${JSON.stringify({ event: 'message', content: chunk })}\n\n`);
       }
+      res.write(`data: ${JSON.stringify({ event: 'done' })}\n\n`);
     } catch (error: any) {
       this.logger.error(`Chat stream error: ${error.message}`);
       res.write(`data: ${JSON.stringify({ event: 'error', message: error.message })}\n\n`);
@@ -62,11 +69,15 @@ export class AgentsController {
     res.end();
   }
 
+  /**
+   * 用户端 Agent 聊天流式接口
+   * 仅供 user 类型账号调用
+   */
   @Post(':id/user-chat')
   @UseGuards(JwtAuthGuard)
   async userChat(
     @Param('id') id: string,
-    @Body() body: { query: string; conversationId?: string; inputs?: Record<string, any> },
+    @Body() body: { query: string },
     @Req() req: Request,
     @Res() res: Response,
   ) {
@@ -76,11 +87,11 @@ export class AgentsController {
       return;
     }
 
-    const agent = await this.agentsService.findOneWithKey(id);
+    const agent = await this.agentsService.getOne(id);
     if (!agent) throw new NotFoundException('Agent not found');
     if (!agent.isActive) throw new NotFoundException('Agent is not active');
 
-    const difyUser = `user_${user.id}`;
+    const systemPrompt = agent.systemPrompt || '你是一位智能助手。';
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -88,39 +99,23 @@ export class AgentsController {
     res.flushHeaders();
 
     try {
-      for await (const event of this.difyService.chatStream({
-        apiUrl: agent.difyApiUrl,
-        apiKey: agent.difyApiKey,
-        query: body.query,
-        user: difyUser,
-        conversationId: body.conversationId,
-        inputs: body.inputs,
+      for await (const chunk of this.llmService.chatStream({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: body.query },
+        ],
+        model: agent.model || undefined,
+        temperature: agent.temperature ?? undefined,
+        maxTokens: agent.maxTokens ?? undefined,
       })) {
-        res.write(`data: ${JSON.stringify(event)}\n\n`);
+        res.write(`data: ${JSON.stringify({ event: 'message', content: chunk })}\n\n`);
       }
+      res.write(`data: ${JSON.stringify({ event: 'done' })}\n\n`);
     } catch (error: any) {
       this.logger.error(`User chat stream error: ${error.message}`);
       res.write(`data: ${JSON.stringify({ event: 'error', message: error.message })}\n\n`);
     }
 
     res.end();
-  }
-
-  @Post(':id/stop')
-  @UseGuards(JwtAuthGuard)
-  async stop(@Param('id') id: string, @Body() body: { taskId: string }, @Req() req: Request) {
-    const agent = await this.agentsService.findOneWithKey(id);
-    if (!agent) throw new NotFoundException('Agent not found');
-
-    const user = (req as any).user;
-    const userType = user.type || 'admin';
-    const difyUser = userType === 'user' ? `user_${user.id}` : `admin_${user.id}`;
-
-    return this.difyService.stopGeneration(
-      agent.difyApiUrl,
-      agent.difyApiKey,
-      body.taskId,
-      difyUser,
-    );
   }
 }

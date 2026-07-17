@@ -20,7 +20,7 @@ import { TodoModule } from './modules/todo/module';
 // 全局拦截器
 import { TransformInterceptor } from './core/interceptors/transform.interceptor';
 import { FileStorageService } from './shared/services/file-storage.service';
-import { LlmService } from './shared/services/llm.service';
+import { LlmModule } from './llm/llm.module';
 
 @Module({
   imports: [
@@ -36,7 +36,8 @@ import { LlmService } from './shared/services/llm.service';
     ]),
     // 数据库模块（全局，必须在最前）
     PrismaModule,
-    // 基础模块
+    // 基础设施模块
+    LlmModule.forRoot(),
     AuthModule,
     UserModule,
     RoleModule,
@@ -51,7 +52,6 @@ import { LlmService } from './shared/services/llm.service';
   providers: [
     Reflector,
     FileStorageService,
-    LlmService,
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,
