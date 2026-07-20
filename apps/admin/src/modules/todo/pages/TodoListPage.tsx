@@ -10,7 +10,7 @@ import {
   PRIORITY_COLORS,
   PRIORITY_LABELS,
 } from '../components';
-import { PERMISSIONS } from '@loom/shared';
+import { Permission } from '@loom/shared';
 import dayjs from 'dayjs';
 
 /**
@@ -102,9 +102,9 @@ export function TodoListPage() {
         },
       ]}
       permissions={{
-        create: PERMISSIONS.TODO.CREATE,
-        update: PERMISSIONS.TODO.UPDATE,
-        delete: PERMISSIONS.TODO.DELETE,
+        create: Permission.todo.create,
+        update: Permission.todo.update,
+        delete: Permission.todo.delete,
       }}
       renderRowActions={(record: any) => (
         <Space>

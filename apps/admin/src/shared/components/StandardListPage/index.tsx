@@ -251,7 +251,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
                 <Space>
                   {specialActions}
                   {!hideCreateButton && (
-                    <PermissionGuard {...({ permission: permissions?.create } as any)}>
+                    <PermissionGuard permission={permissions?.create}>
                       <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
                         新建
                       </Button>
@@ -301,7 +301,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
               <Button size="small" onClick={() => setSelectedRowKeys([])}>
                 取消选择
               </Button>
-              <PermissionGuard {...({ permission: permissions?.delete } as any)}>
+              <PermissionGuard permission={permissions?.delete}>
                 <Popconfirm
                   title="确认批量删除？"
                   description={`将删除 ${selectedRowKeys.length} 个${title}`}

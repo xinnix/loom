@@ -19,6 +19,7 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '../auth';
 import { ProfileModal } from '../components/ProfileModal';
 import { ChangePasswordModal } from '../components/ChangePasswordModal';
+import { Permission } from '@loom/shared';
 
 const { Header, Sider, Content } = Layout;
 
@@ -43,7 +44,7 @@ const menuConfig = [
     icon: "RobotOutlined",
     permission: null,
     children: [
-      { key: "/agents", label: "Agent 管理", icon: "RobotOutlined", permission: "menu:agents" },
+      { key: "/agents", label: "Agent 管理", icon: "RobotOutlined", permission: Permission.menu.agents },
     ],
   },
   {
@@ -52,8 +53,8 @@ const menuConfig = [
     icon: "SettingOutlined",
     permission: null,
     children: [
-      { key: "/admins", label: "管理员管理", icon: "SafetyCertificateOutlined", permission: "menu:admins" },
-      { key: "/roles", label: "角色管理", icon: "SafetyCertificateOutlined", permission: "menu:roles" },
+      { key: "/admins", label: "管理员管理", icon: "SafetyCertificateOutlined", permission: Permission.menu.admins },
+      { key: "/roles", label: "角色管理", icon: "SafetyCertificateOutlined", permission: Permission.menu.roles },
     ],
   },
   {
@@ -62,9 +63,9 @@ const menuConfig = [
     icon: "WechatOutlined",
     permission: null,
     children: [
-      { key: "/wecom", label: "应用配置", icon: "SettingOutlined", permission: "menu:wecom" },
-      { key: "/wecom/messages", label: "消息记录", icon: "MessageOutlined", permission: "menu:wecom" },
-      { key: "/wecom/events", label: "事件记录", icon: "ThunderboltOutlined", permission: "menu:wecom" },
+      { key: "/wecom", label: "应用配置", icon: "SettingOutlined", permission: Permission.menu.wecom },
+      { key: "/wecom/messages", label: "消息记录", icon: "MessageOutlined", permission: Permission.menu.wecom },
+      { key: "/wecom/events", label: "事件记录", icon: "ThunderboltOutlined", permission: Permission.menu.wecom },
     ],
   },
   {

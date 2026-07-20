@@ -3,6 +3,7 @@
 import type { FormInstance } from 'antd/es/form';
 import type { ColumnType } from 'antd/es/table';
 import type { ReactNode } from 'react';
+import type { PermissionKey } from '@loom/shared';
 
 /**
  * 搜索字段配置
@@ -54,9 +55,9 @@ export interface StatisticConfig {
  * 权限配置
  */
 export interface PermissionConfig {
-  create?: string; // 创建权限
-  update?: string; // 更新权限
-  delete?: string; // 删除权限
+  create?: PermissionKey; // 创建权限
+  update?: PermissionKey; // 更新权限
+  delete?: PermissionKey; // 删除权限
 }
 
 /**
