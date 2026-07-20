@@ -5,6 +5,7 @@ import {
   SendMessageSchema,
   SendKfMessageSchema,
   SyncKfMessageSchema,
+  Permission,
 } from '@loom/shared';
 import { createCrudRouterWithCustom, createReadOnlyRouter } from '../../../trpc/trpc.helper';
 import { permissionProcedure, protectedProcedure } from '../../../trpc/trpc';
@@ -95,7 +96,7 @@ const configRouter = createCrudRouterWithCustom(
         };
       }),
 
-    getOne: permissionProcedure('wecom_config', 'read')
+    getOne: permissionProcedure(Permission.wecom.read)
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
         const config = await ctx.prisma.wecomConfig.findUnique({
@@ -104,7 +105,7 @@ const configRouter = createCrudRouterWithCustom(
         return maskConfig(config);
       }),
 
-    create: permissionProcedure('wecom_config', 'create')
+    create: permissionProcedure(Permission.wecom.create)
       .input(
         z.object({
           data: CreateWecomConfigSchema,
@@ -124,7 +125,7 @@ const configRouter = createCrudRouterWithCustom(
         });
       }),
 
-    update: permissionProcedure('wecom_config', 'update')
+    update: permissionProcedure(Permission.wecom.update)
       .input(
         z.object({
           id: z.string(),
@@ -145,7 +146,7 @@ const configRouter = createCrudRouterWithCustom(
         });
       }),
 
-    delete: permissionProcedure('wecom_config', 'delete')
+    delete: permissionProcedure(Permission.wecom.delete)
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
         await ctx.prisma.wecomConfig.delete({ where: { id: input.id } });

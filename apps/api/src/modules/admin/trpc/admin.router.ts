@@ -1,3 +1,4 @@
+import { Permission } from '@loom/shared';
 import { router, permissionProcedure, publicProcedure } from '../../../trpc/trpc';
 import { z } from 'zod';
 import * as bcrypt from 'bcryptjs';
@@ -108,7 +109,7 @@ export const adminRouter = router({
     }),
 
   // Custom getOne with roles
-  getOne: permissionProcedure('admin', 'read')
+  getOne: permissionProcedure(Permission.admin.read)
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const admin = await ctx.prisma.admin.findUnique({
@@ -158,7 +159,7 @@ export const adminRouter = router({
     }),
 
   // Custom create with password hashing and default role
-  create: permissionProcedure('admin', 'create')
+  create: permissionProcedure(Permission.admin.create)
     .input(
       z.object({
         data: z.object({
@@ -234,7 +235,7 @@ export const adminRouter = router({
     }),
 
   // Custom update with validation
-  update: permissionProcedure('admin', 'update')
+  update: permissionProcedure(Permission.admin.update)
     .input(
       z.object({
         id: z.string(),
@@ -301,7 +302,7 @@ export const adminRouter = router({
     }),
 
   // Custom delete with protection for last super admin
-  delete: permissionProcedure('admin', 'delete')
+  delete: permissionProcedure(Permission.admin.delete)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Prevent self-deletion
@@ -371,7 +372,7 @@ export const adminRouter = router({
     }),
 
   // Custom deleteMany with protection
-  deleteMany: permissionProcedure('admin', 'delete')
+  deleteMany: permissionProcedure(Permission.admin.delete)
     .input(z.object({ ids: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
       const { ids } = input;
@@ -443,7 +444,7 @@ export const adminRouter = router({
     }),
 
   // Toggle admin active status
-  toggleActive: permissionProcedure('admin', 'update')
+  toggleActive: permissionProcedure(Permission.admin.update)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Prevent self-deactivation
@@ -476,7 +477,7 @@ export const adminRouter = router({
     }),
 
   // Get admin roles
-  getRoles: permissionProcedure('admin', 'read')
+  getRoles: permissionProcedure(Permission.admin.read)
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const adminRoles = await ctx.prisma.adminRole.findMany({
@@ -501,7 +502,7 @@ export const adminRouter = router({
     }),
 
   // Assign role to admin
-  assignRole: permissionProcedure('admin', 'manage_roles')
+  assignRole: permissionProcedure(Permission.admin.manage_roles)
     .input(
       z.object({
         adminId: z.string(),
@@ -544,7 +545,7 @@ export const adminRouter = router({
     }),
 
   // Remove role from admin
-  removeRole: permissionProcedure('admin', 'manage_roles')
+  removeRole: permissionProcedure(Permission.admin.manage_roles)
     .input(
       z.object({
         adminId: z.string(),
@@ -597,7 +598,7 @@ export const adminRouter = router({
     }),
 
   // Reset admin password
-  resetPassword: permissionProcedure('admin', 'update')
+  resetPassword: permissionProcedure(Permission.admin.update)
     .input(
       z.object({
         adminId: z.string(),

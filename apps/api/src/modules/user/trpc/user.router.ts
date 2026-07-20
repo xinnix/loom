@@ -1,3 +1,4 @@
+import { Permission } from '@loom/shared';
 import { router, publicProcedure, permissionProcedure } from '../../../trpc/trpc';
 import { z } from 'zod';
 import { NotFoundBusinessException, ErrorCodes } from '../../../core/exceptions';
@@ -82,7 +83,7 @@ export const userRouter = router({
     }),
 
   // Get single user detail
-  getOne: permissionProcedure('user', 'read')
+  getOne: permissionProcedure(Permission.user.read)
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findUnique({
@@ -117,7 +118,7 @@ export const userRouter = router({
     }),
 
   // Update user (limited fields)
-  update: permissionProcedure('user', 'update')
+  update: permissionProcedure(Permission.user.update)
     .input(
       z.object({
         id: z.string(),
@@ -151,7 +152,7 @@ export const userRouter = router({
     }),
 
   // Toggle user active status
-  toggleActive: permissionProcedure('user', 'update')
+  toggleActive: permissionProcedure(Permission.user.update)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findUnique({

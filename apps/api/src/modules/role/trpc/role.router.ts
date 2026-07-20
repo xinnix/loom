@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { CreateRoleSchema, UpdateRoleSchema, UpdateRolePermissionsSchema } from '@loom/shared';
+import {
+  CreateRoleSchema,
+  UpdateRoleSchema,
+  UpdateRolePermissionsSchema,
+  Permission,
+} from '@loom/shared';
 import { createCrudRouterWithCustom } from '../../../trpc/trpc.helper';
 import { permissionProcedure, publicProcedure } from '../../../trpc/trpc';
 import {
@@ -86,7 +91,7 @@ export const roleRouter = createCrudRouterWithCustom(
       };
     }),
 
-    getOne: permissionProcedure('role', 'read')
+    getOne: permissionProcedure(Permission.role.read)
       .input(
         z.object({
           id: z.string(),
@@ -124,7 +129,7 @@ export const roleRouter = createCrudRouterWithCustom(
         };
       }),
 
-    create: permissionProcedure('role', 'create')
+    create: permissionProcedure(Permission.role.create)
       .input(
         z.object({
           data: CreateRoleSchema,
@@ -154,7 +159,7 @@ export const roleRouter = createCrudRouterWithCustom(
         });
       }),
 
-    update: permissionProcedure('role', 'update')
+    update: permissionProcedure(Permission.role.update)
       .input(
         z.object({
           id: z.string(),
@@ -188,7 +193,7 @@ export const roleRouter = createCrudRouterWithCustom(
         });
       }),
 
-    delete: permissionProcedure('role', 'delete')
+    delete: permissionProcedure(Permission.role.delete)
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
         const role = await ctx.prisma.role.findUnique({
@@ -224,7 +229,7 @@ export const roleRouter = createCrudRouterWithCustom(
         return { success: true };
       }),
 
-    deleteMany: permissionProcedure('role', 'delete')
+    deleteMany: permissionProcedure(Permission.role.delete)
       .input(z.object({ ids: z.array(z.string()) }))
       .mutation(async ({ ctx, input }) => {
         const roles = await ctx.prisma.role.findMany({
@@ -255,7 +260,7 @@ export const roleRouter = createCrudRouterWithCustom(
         });
       }),
 
-    getPermissions: permissionProcedure('role', 'read')
+    getPermissions: permissionProcedure(Permission.role.read)
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
         const rolePermissions = await ctx.prisma.rolePermission.findMany({
@@ -272,7 +277,7 @@ export const roleRouter = createCrudRouterWithCustom(
         return rolePermissions.map((item) => item.permission);
       }),
 
-    getUsers: permissionProcedure('role', 'read')
+    getUsers: permissionProcedure(Permission.role.read)
       .input(
         z.object({
           id: z.string(),
@@ -319,7 +324,7 @@ export const roleRouter = createCrudRouterWithCustom(
         };
       }),
 
-    updatePermissions: permissionProcedure('role', 'update')
+    updatePermissions: permissionProcedure(Permission.role.update)
       .input(UpdateRolePermissionsSchema)
       .mutation(async ({ ctx, input }) => {
         const { roleId, permissionIds } = input;

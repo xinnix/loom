@@ -1,36 +1,35 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../../modules/auth/decorators/decorators';
+import type { PermissionKey } from '@loom/shared';
+import { hasSuperAdminRole } from '../../shared/permissions';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredPermission = this.reflector.getAllAndOverride<{
-      resource: string;
-      action: string;
-    }>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
+    const requiredPermissions = this.reflector.getAllAndOverride<PermissionKey[]>(PERMISSIONS_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
-    if (!requiredPermission) {
+    if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
     }
 
     const { user } = context.switchToHttp().getRequest();
+    if (!user?.permissions) {
+      return false;
+    }
 
-    // Check if user has the required permission
-    const permissionString = `${requiredPermission.resource}:${requiredPermission.action}`;
+    // super_admin 跳过权限检查
+    if (hasSuperAdminRole(user)) {
+      return true;
+    }
 
-    // Get all user permissions from roles
-    const userPermissions = new Set<string>();
-    user.roles?.forEach((userRole: any) => {
-      userRole.role?.permissions?.forEach((rolePermission: any) => {
-        userPermissions.add(
-          `${rolePermission.permission.resource}:${rolePermission.permission.action}`,
-        );
-      });
-    });
-
-    return userPermissions.has(permissionString);
+    // 需要用户拥有所有列出的权限
+    const userPermSet = new Set<string>(user.permissions);
+    return requiredPermissions.every((p) => userPermSet.has(p));
   }
 }

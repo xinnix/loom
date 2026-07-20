@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CreateAgentSchema, UpdateAgentSchema } from '@loom/shared';
+import { CreateAgentSchema, UpdateAgentSchema, Permission } from '@loom/shared';
 import { createCrudRouterWithCustom } from '../../../trpc/trpc.helper';
 import { permissionProcedure, protectedProcedure, publicProcedure } from '../../../trpc/trpc';
 import { NotFoundBusinessException, ConflictException, ErrorCodes } from '../../../core/exceptions';
@@ -77,7 +77,7 @@ export const agentsRouter = createCrudRouterWithCustom(
         };
       }),
 
-    getOne: permissionProcedure('agent', 'read')
+    getOne: permissionProcedure(Permission.agent.read)
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
         const agent = await ctx.prisma.agent.findUnique({
@@ -88,7 +88,7 @@ export const agentsRouter = createCrudRouterWithCustom(
         return agent;
       }),
 
-    create: permissionProcedure('agent', 'create')
+    create: permissionProcedure(Permission.agent.create)
       .input(
         z.object({
           data: CreateAgentSchema,
@@ -115,7 +115,7 @@ export const agentsRouter = createCrudRouterWithCustom(
         });
       }),
 
-    update: permissionProcedure('agent', 'update')
+    update: permissionProcedure(Permission.agent.update)
       .input(
         z.object({
           id: z.string(),
@@ -150,14 +150,14 @@ export const agentsRouter = createCrudRouterWithCustom(
         });
       }),
 
-    delete: permissionProcedure('agent', 'delete')
+    delete: permissionProcedure(Permission.agent.delete)
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
         await ctx.prisma.agent.delete({ where: { id: input.id } });
         return { success: true };
       }),
 
-    deleteMany: permissionProcedure('agent', 'delete')
+    deleteMany: permissionProcedure(Permission.agent.delete)
       .input(z.object({ ids: z.array(z.string()) }))
       .mutation(async ({ ctx, input }) => {
         return ctx.prisma.agent.deleteMany({

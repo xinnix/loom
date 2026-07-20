@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { INestApplication } from '@nestjs/common';
 import { BusinessException } from '../core/exceptions';
 import { businessExceptionToTRPCError } from '../core/middleware/trpc-error-formatter';
+import type { PermissionKey } from '@loom/shared';
 
 // Global service references
 let prismaServiceInstance: PrismaService | null = null;
@@ -195,9 +196,15 @@ export const protectedProcedure = t.procedure
   });
 
 // Permission procedure - requires specific permission
-export const permissionProcedure = (resource: string, action: string) =>
-  protectedProcedure.use(async ({ ctx, next }) => {
-    const permissionString = `${resource}:${action}`;
+//
+// Usage:
+//   permissionProcedure(Permission.role.read)     // 推荐：类型安全
+//   permissionProcedure('role', 'read')            // 兼容：旧语法
+export function permissionProcedure(permission: PermissionKey): typeof protectedProcedure;
+export function permissionProcedure(resource: string, action: string): typeof protectedProcedure;
+export function permissionProcedure(p1: string, p2?: string): typeof protectedProcedure {
+  return protectedProcedure.use(async ({ ctx, next }) => {
+    const permissionString = p2 ? `${p1}:${p2}` : p1;
 
     const userPermissions: string[] = ctx.user?.permissions || [];
     const hasSuperAdminRole = ctx.user?.roles?.some((r: any) => r?.slug === 'super_admin') || false;
@@ -211,6 +218,7 @@ export const permissionProcedure = (resource: string, action: string) =>
 
     return next();
   });
+}
 
 // Export permission helpers for use in routers
 export { hasPermission, hasSuperAdminRole, hasAdminRole } from '../shared/permissions';
