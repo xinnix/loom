@@ -7,6 +7,49 @@ import { buildWhereClause } from './search-filter.builder';
 export { protectedProcedure };
 
 /**
+ * Service interface that can be injected into createCrudRouter.
+ * Matches the method signatures of BaseService for seamless integration.
+ *
+ * When a service is provided, CRUD operations delegate to the service methods
+ * instead of accessing ctx.prisma directly. This enables:
+ * - Lifecycle hooks (beforeCreate, afterCreate, etc.)
+ * - Custom business logic in service methods
+ * - Consistent error handling
+ *
+ * @see BaseService in apps/api/src/common/base.service.ts
+ */
+export interface CrudService<T = any> {
+  list(args?: {
+    skip?: number;
+    take?: number;
+    where?: any;
+    orderBy?: any;
+    include?: any;
+    select?: any;
+  }): Promise<{
+    data: T[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  }>;
+
+  getOne(id: string, options?: { include?: any; select?: any }): Promise<T | null>;
+
+  create(data: any, options?: { userId?: string; include?: any; select?: any }): Promise<T>;
+
+  update(
+    id: string,
+    data: any,
+    options?: { userId?: string; include?: any; select?: any },
+  ): Promise<T>;
+
+  remove(id: string): Promise<T>;
+
+  removeMany(ids: string[]): Promise<{ count: number }>;
+}
+
+/**
  * Configuration options for createCrudRouter
  */
 export interface CrudRouterOptions {
@@ -120,6 +163,7 @@ export const createCrudRouter = <TModelName extends string>(
     getOne?: z.ZodTypeAny;
   },
   options: CrudRouterOptions = {},
+  service?: CrudService,
 ) => {
   const {
     includeGetMany = true,
@@ -191,8 +235,6 @@ export const createCrudRouter = <TModelName extends string>(
         }
         const data = parsedInput.data as any;
 
-        const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
-
         // Determine default orderBy: prefer createdAt desc, fallback to id desc
         const dmmfInfo = (ctx.prisma as any)?._dmmf;
         const modelDmmf = dmmfInfo?.modelMap?.[modelName];
@@ -220,10 +262,35 @@ export const createCrudRouter = <TModelName extends string>(
           });
         }
 
+        const skip = data.skip ?? (data.page ? (data.page - 1) * (data.limit || 10) : 0);
+        const take = data.take ?? data.limit;
+
+        // If a service is provided, delegate to its list method
+        if (service) {
+          const result = await service.list({
+            skip,
+            take,
+            where,
+            orderBy: data.orderBy ?? defaultOrderBy,
+            include: data.include,
+            select: data.select,
+          });
+          return {
+            items: result.data,
+            total: result.total,
+            page: result.page ?? data.page ?? 1,
+            pageSize: result.pageSize ?? data.limit ?? 10,
+            totalPages: result.totalPages ?? Math.ceil(result.total / (data.limit || 10)),
+          };
+        }
+
+        // Legacy path: use ctx.prisma directly
+        const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
+
         const [items, total] = await Promise.all([
           model.findMany({
-            skip: data.skip ?? (data.page ? (data.page - 1) * (data.limit || 10) : 0),
-            take: data.take ?? data.limit,
+            skip,
+            take,
             where,
             orderBy: data.orderBy ?? defaultOrderBy,
             include: data.include,
@@ -254,6 +321,13 @@ export const createCrudRouter = <TModelName extends string>(
         }
         const data = parsedInput.data as any;
 
+        if (service) {
+          return service.getOne(data.id, {
+            include: data.include,
+            select: data.select,
+          });
+        }
+
         const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
         return model.findUnique({
           where: { id: data.id },
@@ -279,9 +353,18 @@ export const createCrudRouter = <TModelName extends string>(
       }
       const data = parsedInput.data as any;
 
-      const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
       // Transform foreign key fields to relation connect syntax
       const createData = transformRelationFields(data.data, ctx.prisma);
+
+      if (service) {
+        return service.create(createData, {
+          userId: (ctx as any).user?.id,
+          include: data.include,
+          select: data.select,
+        });
+      }
+
+      const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
       // Inject userId if available in context (these are plain FK fields, not relations)
       if ((ctx as any).user?.id) {
         createData.createdById = (ctx as any).user.id;
@@ -313,9 +396,18 @@ export const createCrudRouter = <TModelName extends string>(
       }
       const data = parsedInput.data as any;
 
-      const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
       // Transform foreign key fields to relation connect syntax
       const updateData = transformRelationFields(data.data, ctx.prisma);
+
+      if (service) {
+        return service.update(data.id, updateData, {
+          userId: (ctx as any).user?.id,
+          include: data.include,
+          select: data.select,
+        });
+      }
+
+      const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
       // Inject userId if available in context (these are plain FK fields, not relations)
       // Only add updatedById if the model has this field
       if ((ctx as any).user?.id) {
@@ -343,6 +435,9 @@ export const createCrudRouter = <TModelName extends string>(
   if (includeDelete) {
     const procedure = protectedDelete ? protectedProcedure : publicProcedure;
     procedures.delete = procedure.input(defaultDeleteOneSchema).mutation(async ({ ctx, input }) => {
+      if (service) {
+        return service.remove(input.id);
+      }
       const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
       return model.delete({
         where: { id: input.id },
@@ -356,6 +451,9 @@ export const createCrudRouter = <TModelName extends string>(
     procedures.deleteMany = procedure
       .input(defaultDeleteManySchema)
       .mutation(async ({ ctx, input }) => {
+        if (service) {
+          return service.removeMany(input.ids);
+        }
         const model = (ctx.prisma as any)[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
         return model.deleteMany({
           where: { id: { in: input.ids } },
@@ -379,13 +477,19 @@ export const createReadOnlyRouter = <TModelName extends string>(
     getMany?: z.ZodTypeAny;
     getOne?: z.ZodTypeAny;
   },
+  service?: CrudService,
 ) => {
-  return createCrudRouter<TModelName>(modelName, schemas || {}, {
-    includeCreate: false,
-    includeUpdate: false,
-    includeDelete: false,
-    includeDeleteMany: false,
-  });
+  return createCrudRouter<TModelName>(
+    modelName,
+    schemas || {},
+    {
+      includeCreate: false,
+      includeUpdate: false,
+      includeDelete: false,
+      includeDeleteMany: false,
+    },
+    service,
+  );
 };
 
 /**
@@ -423,8 +527,9 @@ export const createCrudRouterWithCustom = <TModelName extends string>(
   },
   customProcedures: (t: typeof publicProcedure) => Record<string, any>,
   options: CrudRouterOptions = {},
+  service?: CrudService,
 ) => {
-  const crudRouter = createCrudRouter<TModelName>(modelName, schemas, options);
+  const crudRouter = createCrudRouter<TModelName>(modelName, schemas, options, service);
   const custom = customProcedures(publicProcedure);
   return router({
     ...crudRouter._def.procedures,

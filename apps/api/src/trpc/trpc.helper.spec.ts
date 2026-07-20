@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createPrismaMock } from '../test/prisma-mock';
-import { createCrudRouter } from './trpc.helper';
+import { createCrudRouter, createCrudRouterWithCustom } from './trpc.helper';
+import type { CrudService } from './trpc.helper';
 import { z } from 'zod';
 
 const TestSchema = z.object({
@@ -165,5 +166,123 @@ describe('createCrudRouter', () => {
       const res = await caller.deleteMany({ ids: ['1', '2'] });
       expect(res).toEqual({ count: 2 });
     });
+  });
+});
+
+describe('createCrudRouter with service injection', () => {
+  let mockService: CrudService;
+  let router: any;
+
+  beforeEach(() => {
+    mockService = {
+      list: vi.fn().mockResolvedValue({
+        data: [{ id: '1', name: 'From Service' }],
+        total: 1,
+        page: 1,
+        pageSize: 10,
+        totalPages: 1,
+      }),
+      getOne: vi.fn().mockResolvedValue({ id: '1', name: 'From Service' }),
+      create: vi.fn().mockResolvedValue({ id: 'new-1', name: 'Created via Service' }),
+      update: vi.fn().mockResolvedValue({ id: '1', name: 'Updated via Service' }),
+      remove: vi.fn().mockResolvedValue({ id: '1' }),
+      removeMany: vi.fn().mockResolvedValue({ count: 2 }),
+    };
+    router = createCrudRouter('todo', TestSchemas, {}, mockService);
+  });
+
+  it('delegates getMany to service.list and maps data to items', async () => {
+    const { caller } = createTestCaller(router);
+    const res = await caller.getMany({ page: 1, limit: 10 });
+
+    expect(mockService.list).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 10 }));
+    expect(res.items).toEqual([{ id: '1', name: 'From Service' }]);
+    expect(res.total).toBe(1);
+  });
+
+  it('delegates getOne to service.getOne', async () => {
+    const { caller } = createTestCaller(router);
+    const res = await caller.getOne({ id: '1' });
+
+    expect(mockService.getOne).toHaveBeenCalledWith('1', expect.any(Object));
+    expect(res).toEqual({ id: '1', name: 'From Service' });
+  });
+
+  it('delegates create to service.create with userId', async () => {
+    const { caller } = createTestCaller(router, { id: 'user-1', type: 'admin' });
+    const res = await caller.create({ data: { name: 'Test' } });
+
+    expect(mockService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Test' }),
+      expect.objectContaining({ userId: 'user-1' }),
+    );
+    expect(res).toEqual({ id: 'new-1', name: 'Created via Service' });
+  });
+
+  it('delegates update to service.update with userId', async () => {
+    const { caller } = createTestCaller(router, { id: 'user-1', type: 'admin' });
+    const res = await caller.update({ id: '1', data: { name: 'Updated' } });
+
+    expect(mockService.update).toHaveBeenCalledWith(
+      '1',
+      expect.objectContaining({ name: 'Updated' }),
+      expect.objectContaining({ userId: 'user-1' }),
+    );
+    expect(res).toEqual({ id: '1', name: 'Updated via Service' });
+  });
+
+  it('delegates delete to service.remove', async () => {
+    const { caller } = createTestCaller(router);
+    const res = await caller.delete({ id: '1' });
+
+    expect(mockService.remove).toHaveBeenCalledWith('1');
+    expect(res).toEqual({ id: '1' });
+  });
+
+  it('delegates deleteMany to service.removeMany', async () => {
+    const { caller } = createTestCaller(router);
+    const res = await caller.deleteMany({ ids: ['1', '2'] });
+
+    expect(mockService.removeMany).toHaveBeenCalledWith(['1', '2']);
+    expect(res).toEqual({ count: 2 });
+  });
+});
+
+describe('createCrudRouterWithCustom with service injection', () => {
+  let mockService: CrudService;
+  let router: any;
+
+  beforeEach(() => {
+    mockService = {
+      list: vi.fn().mockResolvedValue({
+        data: [{ id: '1', name: 'Custom Service' }],
+        total: 1,
+        page: 1,
+        pageSize: 10,
+        totalPages: 1,
+      }),
+      getOne: vi.fn().mockResolvedValue({ id: '1', name: 'Custom Service' }),
+      create: vi.fn().mockResolvedValue({ id: 'new-1', name: 'Created' }),
+      update: vi.fn().mockResolvedValue({ id: '1', name: 'Updated' }),
+      remove: vi.fn().mockResolvedValue({ id: '1' }),
+      removeMany: vi.fn().mockResolvedValue({ count: 3 }),
+    };
+    router = createCrudRouterWithCustom(
+      'todo',
+      TestSchemas,
+      () => ({
+        customAction: vi.fn().mockResolvedValue({ custom: true }),
+      }),
+      {},
+      mockService,
+    );
+  });
+
+  it('delegates standard CRUD to service while custom procedures still work', async () => {
+    const { caller } = createTestCaller(router, { id: 'user-1', type: 'admin' });
+
+    const res = await caller.getMany({ page: 1, limit: 10 });
+    expect(mockService.list).toHaveBeenCalled();
+    expect(res.items).toEqual([{ id: '1', name: 'Custom Service' }]);
   });
 });
