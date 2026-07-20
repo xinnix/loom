@@ -1,6 +1,25 @@
 import { z } from 'zod';
 
 // ============================================
+// Permission Registry（类型安全权限定义单一真理源）
+// ============================================
+
+import { Permission as PermissionValue } from './permissions/registry';
+export { PermissionValue as Permission };
+import type {
+  PermissionKey as PK,
+  PermissionResource as PR,
+  PermissionAction as PA,
+} from './permissions/registry';
+export type { PK as PermissionKey, PR as PermissionResource, PA as PermissionAction };
+import type { PermissionConfig as PC } from './permissions/types';
+export type { PC as PermissionConfig };
+import { getAllPermissionEntries as GAPE, generateSeedSql as GSS } from './permissions/seed';
+export { GAPE as getAllPermissionEntries, GSS as generateSeedSql };
+import type { PermissionEntry as PE } from './permissions/seed';
+export type { PE as PermissionEntry };
+
+// ============================================
 // Auth Schemas
 // ============================================
 
@@ -76,51 +95,19 @@ export interface RefreshTokenResponse {
 }
 
 // ============================================
-// Permission Constants
+// Permission Constants（向后兼容别名）
 // ============================================
 
-export const PERMISSIONS = {
-  MENU: {
-    ADMINS: 'menu:admins',
-    ROLES: 'menu:roles',
-    AGENTS: 'menu:agents',
-    WECOM: 'menu:wecom',
-  },
-  USER: {
-    CREATE: 'user:create',
-    READ: 'user:read',
-    UPDATE: 'user:update',
-    DELETE: 'user:delete',
-  },
-  ADMIN: {
-    CREATE: 'admin:create',
-    READ: 'admin:read',
-    UPDATE: 'admin:update',
-    DELETE: 'admin:delete',
-    MANAGE_ROLES: 'admin:manage_roles',
-  },
-  ROLE: {
-    CREATE: 'role:create',
-    READ: 'role:read',
-    UPDATE: 'role:update',
-    DELETE: 'role:delete',
-  },
-  AGENT: {
-    CREATE: 'agent:create',
-    READ: 'agent:read',
-    UPDATE: 'agent:update',
-    DELETE: 'agent:delete',
-  },
-  TODO: {
-    CREATE: 'todo:create',
-    READ: 'todo:read',
-    UPDATE: 'todo:update',
-    DELETE: 'todo:delete',
-  },
-} as const;
+/**
+ * @deprecated 请使用 `Permission` 常量替代
+ * 例如: `Permission.role.read` 替代 `PERMISSIONS.ROLE.READ`
+ */
+export const PERMISSIONS = PermissionValue;
 
-export type PermissionString =
-  (typeof PERMISSIONS)[keyof typeof PERMISSIONS][keyof (typeof PERMISSIONS)[keyof typeof PERMISSIONS]];
+/**
+ * @deprecated 请使用 `PermissionKey` 类型替代
+ */
+export type PermissionString = PK;
 
 // ============================================
 // Role Constants
