@@ -97,6 +97,10 @@
           {
             "type": "command",
             "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/type-check.sh\""
+          },
+          {
+            "type": "command",
+            "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/run-tests.sh\""
           }
         ]
       }

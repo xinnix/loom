@@ -1,0 +1,44 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Dependencies — massive, rebuilt in-container by pnpm install
+node_modules/
+
+# Build outputs
+apps/api/dist/
+apps/admin/dist/
+apps/web/.next/
+apps/landing/out/
+infra/database/generated/
+
+# Environment
+.env
+.env.local
+.env.prod
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Claude agent artifacts
+.claude/worktrees/
+.claude/plans/
+.claude/*
+!./.claude/hooks/
+!./.claude/settings.json
+
+# Test artifacts
+coverage/
+
+# Temporary
+tmp/
+temp/
+*.log

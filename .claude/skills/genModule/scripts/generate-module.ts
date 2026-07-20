@@ -858,184 +858,69 @@ function generateFrontendListPage(
   const moduleLabel = toLabel(moduleName);
   const pluralLabel = toLabel(pluralName);
 
-  // Generate smart columns
+  // Generate smart columns (reuse existing function)
   const columns = generateSmartColumns(fields, moduleName);
-  // Generate smart form fields
-  const formFields = generateSmartFormFields(fields, relations, moduleName);
-  // Numeric fields list for value conversion
-  const numericFields = fields
-    .filter((f) => f.type === 'number' || f.type === 'float')
-    .map((f) => `'${f.name}'`)
-    .join(', ');
 
-  // Check if we need special imports
-  const needsDatePicker = fields.some(
-    (f) => f.type === 'date' || inferFieldConfig(f)?.uiComponent === 'DatePicker',
-  );
-  const needsInputNumber = fields.some((f) => inferFieldConfig(f)?.uiComponent === 'InputNumber');
-  const needsOSSUpload = fields.some((f) => inferFieldConfig(f)?.uiComponent === 'OSSUpload');
-  const needsTreeSelect = relations.some((r) => r.uiComponent === 'TreeSelect');
-  const needsTag = columns.includes('<Tag');
+  // Search fields
+  const searchableFields = fields
+    .filter(
+      (f) => f.type === 'string' && !f.enum && f.name !== 'id' && !inferFieldConfig(f)?.hideInTable,
+    )
+    .slice(0, 2)
+    .map((f) => f.name)
+    .join('/');
 
-  const extraImports: string[] = [];
-  if (needsDatePicker) extraImports.push('DatePicker');
-  if (needsInputNumber) extraImports.push('InputNumber');
-  if (needsTag) extraImports.push('Tag');
-  if (needsTreeSelect) extraImports.push('TreeSelect');
-  const antdImports = [
-    'Table',
-    'Button',
-    'Modal',
-    'Form',
-    'Input',
-    'Select',
-    'Space',
-    'message',
-    ...extraImports,
-  ];
-  if (!antdImports.includes('Tag')) antdImports.push('Tag');
+  // Filter fields (enum and boolean fields)
+  const filterableFields = fields.filter((f) => f.enum || f.type === 'boolean');
 
-  const extraComponentImports: string[] = [];
-  if (needsOSSUpload)
-    extraComponentImports.push(`import { OSSUpload } from "../../shared/components/OSSUpload";`);
-
-  return `import { useList, useCreate, useUpdate } from "@refinedev/core";
-import { List } from "@refinedev/antd";
-import { ${[...new Set(antdImports)].join(', ')} } from "antd";
-import { useState } from "react";
-${extraComponentImports.join('\n')}
+  return `import { useNavigate } from 'react-router-dom';
+import { Button, Space, Tag } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+import { StandardListPage } from '../../../shared/components/StandardListPage';
+import { ${pascalName}Form } from '../components';
+import dayjs from 'dayjs';
 
 export const ${pascalName}ListPage = () => {
-  const { result, query } = useList({
-    resource: "${camelName}",
-    pagination: {
-      pageSize: 10,
-    },
-  });
-
-  const { mutate: create } = useCreate();
-  const { mutate: update } = useUpdate();
-
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<any>(null);
-  const [form] = Form.useForm();
+  const navigate = useNavigate();
 
 ${columns}
-  const handleCreate = () => {
-    setEditingRecord(null);
-    form.resetFields();
-    setIsModalVisible(true);
-  };
-
-  const handleEdit = (record: any) => {
-    setEditingRecord(record);
-    form.setFieldsValue(record);
-    setIsModalVisible(true);
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-
-      // Remove id field from values (it's handled separately by dataProvider)
-      const { id, ...dataValues } = values;
-
-      // Convert string to number for numeric fields (Ant Design Input type="number" returns string)
-      const numericFields = [${numericFields}];
-      const processedValues = { ...dataValues };
-      numericFields.forEach((field: string) => {
-        if (processedValues[field] !== undefined && processedValues[field] !== null) {
-          processedValues[field] = Number(processedValues[field]);
-        }
-      });
-
-${generateRelationDataFetching(relations)}
-      if (editingRecord) {
-        update(
-          {
-            resource: "${camelName}",
-            id: editingRecord.id,
-            values: processedValues,
-          },
-          {
-            onSuccess: () => {
-              message.success("更新成功");
-              setIsModalVisible(false);
-              query.refetch();
-            },
-            onError: () => {
-              message.error("更新失败");
-            },
-          }
-        );
-      } else {
-        create(
-          {
-            resource: "${camelName}",
-            values: processedValues,
-          },
-          {
-            onSuccess: () => {
-              message.success("创建成功");
-              setIsModalVisible(false);
-              query.refetch();
-            },
-            onError: () => {
-              message.error("创建失败");
-            },
-          }
-        );
-      }
-    } catch (error) {
-      console.error("Form validation error:", error);
-    }
-  };
-
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px" }}>
-      <List>
-        <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: "bold" }}>${pluralLabel}</h1>
-          <Button type="primary" onClick={handleCreate}>
-            + 新建${moduleLabel}
+    <StandardListPage
+      resource="${camelName}"
+      title="${pluralLabel}"
+      columns={allColumns}
+      formComponent={${pascalName}Form}
+      formWidth={520}
+      searchFields={[]}
+      ${
+        filterableFields.length > 0
+          ? `filterFields={[${filterableFields
+              .map((f) => {
+                if (f.enum) {
+                  const options = f
+                    .enum!.map((v) => `{ value: '${v}', label: '${toLabel(v)}' }`)
+                    .join(', ');
+                  return `\n        { field: '${f.name}', type: 'select', placeholder: '${toLabel(f.name)}', options: [${options}] },`;
+                }
+                return '';
+              })
+              .join('')}\n      ]}`
+          : ''
+      }
+      ${searchableFields.length > 0 ? `searchFields={[{ field: 'search', placeholder: '搜索${toLabel(searchableFields)}' }]}` : ''}
+      renderRowActions={(record: any) => (
+        <Space>
+          <Button
+            type="link"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => navigate(\`/${camelName}/\${record.id}\`)}
+          >
+            详情
           </Button>
-        </div>
-        <Table
-          columns={[...allColumns, {
-            title: "操作",
-            key: "actions",
-            render: (_: any, record: any) => (
-              <Space>
-                <Button type="link" size="small" onClick={() => handleEdit(record)}>编辑</Button>
-              </Space>
-            ),
-          }]}
-          rowKey="id"
-          dataSource={result?.data || []}
-          loading={query.isLoading}
-          pagination={{
-            current: 1,
-            pageSize: 10,
-            total: result?.total || 0,
-            showSizeChanger: true,
-          }}
-        />
-
-        <Modal
-          title={editingRecord ? "编辑${moduleLabel}" : "新建${moduleLabel}"}
-          open={isModalVisible}
-          onOk={handleSubmit}
-          onCancel={() => setIsModalVisible(false)}
-          okText="确定"
-          cancelText="取消"
-          width={600}
-        >
-          <Form form={form} layout="vertical">
-${formFields}
-          </Form>
-        </Modal>
-      </List>
-    </div>
+        </Space>
+      )}
+    />
   );
 };
 `;
@@ -1078,21 +963,18 @@ function generateSmartColumns(fields: Field[], moduleName: string): string {
   return columns;
 }
 
-function generateSmartFormFields(
+function generateStandardFormFields(
   fields: Field[],
   relations: RelationField[],
   moduleName: string,
 ): string {
-  let formFields = '';
+  let config = 'export const formFields: FieldDefinition[] = [\n';
 
   for (const field of fields) {
     if (field.name === 'id') continue;
 
     const inferred = inferFieldConfig(field);
     const label = toLabel(field.name);
-    const required = field.required
-      ? ` rules={[{ required: true, message: "请输入${label}" }]}`
-      : '';
 
     // Skip audit / auto-inject fields
     if (inferred?.hideInForm) continue;
@@ -1100,108 +982,124 @@ function generateSmartFormFields(
     // Check if this is a relation field
     const relation = relations.find((r) => r.field === field.name);
     if (relation) {
-      formFields += generateRelationFormField(relation, field);
+      config += generateStandardFormRelationField(relation, field);
       continue;
     }
 
     // Use inferred UI component
     if (inferred?.uiComponent === 'InputNumber') {
-      formFields += `            <Form.Item name="${field.name}" label="${label}"${required}>\n`;
-      formFields += `              <InputNumber ${inferred.uiProps} />\n`;
-      formFields += `            </Form.Item>\n`;
-    } else if (inferred?.uiComponent === 'DatePicker') {
-      formFields += `            <Form.Item name="${field.name}" label="${label}"${required}>\n`;
-      formFields += `              <DatePicker ${inferred.uiProps} />\n`;
-      formFields += `            </Form.Item>\n`;
-    } else if (inferred?.uiComponent === 'OSSUpload') {
-      formFields += `            <Form.Item name="${field.name}" label="${label}">\n`;
-      formFields += `              <OSSUpload ${inferred.uiProps} />\n`;
-      formFields += `            </Form.Item>\n`;
-    } else if (field.type === 'boolean') {
-      formFields += `            <Form.Item name="${field.name}" label="${label}" valuePropName="checked">\n`;
-      formFields += `              <Switch />\n`;
-      formFields += `            </Form.Item>\n`;
-    } else if (field.type === 'text') {
-      formFields += `            <Form.Item name="${field.name}" label="${label}">\n`;
-      formFields += `              <Input.TextArea placeholder="请输入${label}" rows={3} />\n`;
-      formFields += `            </Form.Item>\n`;
-    } else if (field.type === 'float' || field.type === 'number') {
-      formFields += `            <Form.Item name="${field.name}" label="${label}"${required}>\n`;
-      formFields += `              <InputNumber min={0} style={{ width: "100%" }} placeholder="请输入${label}" />\n`;
-      formFields += `            </Form.Item>\n`;
-    } else if (field.enum) {
-      formFields += `            <Form.Item name="${field.name}" label="${label}"${required} initialValue="${field.enum![0]}">\n`;
-      formFields += `              <Select placeholder="请选择${label}">\n`;
-      for (const val of field.enum) {
-        formFields += `                <Select.Option value="${val}">${val}</Select.Option>\n`;
+      // Determine if it's currency, percent, or plain number
+      const rules = field.required ? '' : '';
+      config += `  { key: '${field.name}', label: '${label}', type: 'number', min: ${field.type === 'float' || field.name === 'price' || field.name === 'amount' || field.name === 'cost' ? 0 : 0}`;
+      if (
+        field.type === 'float' ||
+        ['price', 'amount', 'cost', 'total', 'fee'].includes(field.name.toLowerCase())
+      ) {
+        config += `, precision: 2`;
+        config += `, formatter: (value: any) => \`¥ \${value}\`.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ','), parser: (value: any) => Number(value!.replace(/¥\\s?|(,*)/g, ''))`;
       }
-      formFields += `              </Select>\n`;
-      formFields += `            </Form.Item>\n`;
-    } else {
-      formFields += `            <Form.Item name="${field.name}" label="${label}"${required}>\n`;
-      formFields += `              <Input ${inferred?.uiProps || `placeholder="请输入${label}"`} />\n`;
-      formFields += `            </Form.Item>\n`;
+      if (['rate', 'percent', 'ratio', 'discount'].includes(field.name.toLowerCase())) {
+        config += `, max: 100`;
+      }
+      config += `, ${field.required ? '' : ''} },\n`;
+      continue;
     }
+
+    if (inferred?.uiComponent === 'DatePicker') {
+      const showTime = !['date', 'deadline', 'dueDate', 'startAt', 'endAt'].includes(
+        field.name.toLowerCase(),
+      );
+      config += `  { key: '${field.name}', label: '${label}', type: 'date', showTime: ${showTime} },\n`;
+      continue;
+    }
+
+    if (inferred?.uiComponent === 'OSSUpload') {
+      config += `  { key: '${field.name}', label: '${label}', type: 'upload', accept: 'image/jpeg,image/png,image/webp', maxFileSize: 5 * 1024 * 1024 },\n`;
+      continue;
+    }
+
+    if (field.type === 'boolean') {
+      config += `  { key: '${field.name}', label: '${label}', type: 'switch' },\n`;
+      continue;
+    }
+
+    if (field.type === 'text') {
+      config += `  { key: '${field.name}', label: '${label}', type: 'textarea' },\n`;
+      continue;
+    }
+
+    if (field.type === 'float' || field.type === 'number') {
+      config += `  { key: '${field.name}', label: '${label}', type: 'number', min: 0 },\n`;
+      continue;
+    }
+
+    if (field.enum && field.enum.length > 0) {
+      const options = field.enum.map((v) => `{ value: '${v}', label: '${toLabel(v)}' }`).join(', ');
+      config += `  { key: '${field.name}', label: '${label}', type: 'select',${field.required ? '' : ''} options: [${options}] },\n`;
+      continue;
+    }
+
+    // String fields with pattern validation
+    if (inferred?.uiComponent === 'Input') {
+      const lowerName = field.name.toLowerCase();
+      let extraProps = '';
+
+      if (['email', 'mail'].includes(lowerName)) {
+        extraProps = `, rules: [{ pattern: /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/, message: '邮箱格式不正确' }]`;
+      } else if (['phone', 'mobile', 'cellphone'].includes(lowerName)) {
+        extraProps = `, rules: [{ pattern: /^1[3-9]\\d{9}$/, message: '手机号格式不正确' }]`;
+      } else if (['url', 'website', 'homepage'].includes(lowerName)) {
+        extraProps = `, rules: [{ pattern: /^https?:\\/\\//, message: 'URL格式不正确' }]`;
+      } else if (['slug', 'alias'].includes(lowerName)) {
+        extraProps = `, rules: [{ pattern: /^[a-z0-9-]+$/, message: '只能包含小写字母、数字和连字符' }]`;
+      }
+
+      config += `  { key: '${field.name}', label: '${label}', type: 'input'${extraProps} },\n`;
+      continue;
+    }
+
+    // Default: plain text input
+    config += `  { key: '${field.name}', label: '${label}', type: 'input', required: ${field.required} },\n`;
   }
 
-  return formFields;
+  config += '];\n';
+  return config;
 }
 
-function generateRelationFormField(relation: RelationField, field: Field): string {
+function generateStandardFormRelationField(relation: RelationField, field: Field): string {
   const label = toLabel(relation.field.replace(/Id$/, ''));
-  const required = field.required ? ` rules={[{ required: true, message: "请选择${label}" }]}` : '';
 
   if (relation.uiComponent === 'TreeSelect') {
-    return `            <Form.Item name="${relation.field}" label="${label}">
-              <TreeSelect
-                placeholder="选择父级"
-                treeData={treeData}
-                allowClear
-                treeDefaultExpandAll
-              />
-            </Form.Item>\n`;
-  }
-
-  if (relation.uiComponent === 'UserSelect') {
-    return `            <Form.Item name="${relation.field}" label="${label}"${required}>
-              <Select
-                showSearch
-                placeholder="选择用户"
-                filterOption={(input, option) =>
-                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
-                }
-              >
-                {/* TODO: 从 API 加载用户列表 */}
-              </Select>
-            </Form.Item>\n`;
+    return `  { key: '${relation.field}', label: '${label}', type: 'custom', render: (field, form) => <TreeSelect placeholder="选择${label}" allowClear treeDefaultExpandAll /> },\n`;
   }
 
   // Default Select for belongsTo relations
-  return `            <Form.Item name="${relation.field}" label="${label}"${required}>
-              <Select
-                showSearch
-                placeholder="选择${toLabel(relation.model)}"
-                filterOption={(input, option) =>
-                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
-                }
-              >
-                {/* TODO: 从 API 加载${toLabel(relation.model)}列表 */}
-              </Select>
-            </Form.Item>\n`;
+  return `  { key: '${relation.field}', label: '${label}', type: 'select', options: [] /* TODO: 从 API 加载选项 */ },\n`;
 }
 
-function generateRelationDataFetching(relations: RelationField[]): string {
-  if (relations.length === 0) return '';
+function generateStandardFormComponent(
+  moduleName: string,
+  fields: Field[],
+  relations: RelationField[],
+): string {
+  const pascalName = toPascalCase(moduleName);
+  const fieldConfig = generateStandardFormFields(fields, relations, moduleName);
 
-  let code = '';
-  for (const relation of relations) {
-    if (relation.uiComponent === 'TreeSelect') {
-      code += `      // TODO: Load tree data for ${relation.model}\n`;
-      code += `      // const { data: treeData } = useList({ resource: "${relation.model.toLowerCase()}" });\n`;
-    }
-  }
-  return code;
+  return `import { StandardForm } from "../../../shared/components/StandardForm";
+import type { FieldDefinition } from "../../../shared/components/StandardForm/types";
+import type { FormInstance } from "antd/es/form";
+import { TreeSelect } from "antd";
+
+${fieldConfig}
+
+export function ${pascalName}Form({ form, isEdit }: { form: FormInstance; isEdit: boolean }) {
+  return <StandardForm form={form} isEdit={isEdit} fields={formFields} />;
 }
+`;
+}
+
+// Relation form fields are now handled by generateStandardFormFields
+// Relation data fetching is handled by StandardListPage internals
 
 // ============================================
 // Validation & Idempotency
@@ -1570,6 +1468,7 @@ function createModuleIndex(moduleName: string): void {
   const pascalName = toPascalCase(moduleName);
   const indexContent = `// apps/admin/src/modules/${moduleName}/index.ts
 export { ${pascalName}ListPage } from "./pages/${pascalName}ListPage";
+export { ${pascalName}Form } from "./components/${pascalName}Form";
 `;
 
   const indexPath = getFilePath(`apps/admin/src/modules/${moduleName}/index.ts`);
@@ -1825,6 +1724,14 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
     // Step 7.5: Create module index.ts
     console.log('\x1b[32m%s\x1b[0m', '✓ Creating module index.ts...');
     createModuleIndex(moduleName);
+
+    // Step 7.75: Generate Frontend Form Component (StandardForm)
+    console.log('\x1b[32m%s\x1b[0m', '✓ Generating frontend form component (StandardForm)...');
+    const formComponent = generateStandardFormComponent(moduleName, fields, relations);
+    const formPath = getFilePath(
+      `apps/admin/src/modules/${moduleName}/components/${pascalName}Form.tsx`,
+    );
+    createFile(formPath, formComponent);
 
     // Step 8: Update App.tsx
     console.log('\x1b[32m%s\x1b[0m', '✓ Updating App.tsx...');

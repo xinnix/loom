@@ -274,45 +274,95 @@ In `apps/admin/src/shared/layouts/AdminLayout.tsx`:
 },
 ```
 
-**Step 4.4 - Create List Page:**
+**Step 4.4 - Create List Page (Auto-generated):**
 
-Use Modal pattern for create/edit (NOT separate Create/Edit pages):
+When using `genModule`, the list page is auto-generated using `StandardListPage`:
 
 ```typescript
-import { useList, useCreate, useUpdate } from "@refinedev/core";
-import { List, DeleteButton } from "@refinedev/antd";
-import { Table, Button, Modal, Form, Input, Select, Space, message, Tag } from "antd";
-import { useState } from "react";
+// apps/admin/src/modules/product/pages/ProductListPage.tsx
+// Auto-generated — uses StandardListPage for config-driven CRUD
+import { useNavigate } from 'react-router-dom';
+import { Button, Space, Tag } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+import { StandardListPage } from '../../../shared/components/StandardListPage';
+import { ProductForm } from '../components';
 
 export const ProductListPage = () => {
-  const { result, query } = useList({ resource: "product", pagination: { pageSize: 10 } });
-  const { mutate: create } = useCreate();
-  const { mutate: update } = useUpdate();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<any>(null);
-  const [form] = Form.useForm();
+  const navigate = useNavigate();
 
-  // ... columns definition ...
-
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-    if (editingRecord) {
-      update({ resource: "product", id: editingRecord.id, values: values });
-    } else {
-      create({ resource: "product", values: values });
-    }
-  };
+  // columns defined by smart field inference
+  const allColumns = [
+    { title: '名称', dataIndex: 'name' },
+    { title: '价格', dataIndex: 'price', render: ... },
+    // ...
+  ];
 
   return (
-    <List>
-      <Table columns={columns} dataSource={result?.data} />
-      <Modal open={isModalVisible} onOk={handleSubmit}>
-        <Form form={form}>{/* form fields */}</Form>
-      </Modal>
-    </List>
+    <StandardListPage
+      resource="product"
+      title="产品管理"
+      columns={allColumns}
+      formComponent={ProductForm}
+      formWidth={520}
+      searchFields={[{ field: 'search', placeholder: '搜索名称' }]}
+      filterFields={[/* enum/boolean filter fields */]}
+      renderRowActions={(record: any) => (
+        <Space>
+          <Button type="link" icon={<EyeOutlined />}
+            onClick={() => navigate(`/products/${record.id}`)}>
+            详情
+          </Button>
+        </Space>
+      )}
+    />
   );
 };
 ```
+
+**Step 4.5 - Form Component (Auto-generated):**
+
+Form uses `StandardForm` with `FieldDefinition[]` configuration:
+
+```typescript
+// apps/admin/src/modules/product/components/ProductForm.tsx
+// Auto-generated — declares fields, StandardForm handles rendering
+import { StandardForm } from "../../../shared/components/StandardForm";
+import type { FieldDefinition } from "../../../shared/components/StandardForm/types";
+import type { FormInstance } from "antd/es/form";
+import { TreeSelect } from "antd";
+
+export const formFields: FieldDefinition[] = [
+  { key: 'name', label: '名称', type: 'input', required: true },
+  { key: 'description', label: '描述', type: 'textarea' },
+  { key: 'price', label: '价格', type: 'number', min: 0, precision: 2,
+    formatter: (value: any) => `¥ ${value}`.replace(...) },
+  { key: 'sku', label: 'SKU', type: 'input', required: true },
+  { key: 'status', label: '状态', type: 'select', options: [
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+  ]},
+  { key: 'images', label: '图片', type: 'upload',
+    accept: 'image/jpeg,image/png', maxFileSize: 5 * 1024 * 1024 },
+  { key: 'isActive', label: '启用', type: 'switch' },
+  { key: 'categoryId', label: '分类', type: 'select', options: [] },
+];
+
+export function ProductForm({ form, isEdit }: { form: FormInstance; isEdit: boolean }) {
+  return <StandardForm form={form} isEdit={isEdit} fields={formFields} />;
+}
+```
+
+**Module Index (Auto-generated):**
+
+The module `index.ts` exports both the page and form component:
+
+```typescript
+// apps/admin/src/modules/product/index.ts
+export { ProductListPage } from './pages/ProductListPage';
+export { ProductForm } from './components/ProductForm';
+```
+
+````
 
 ---
 
@@ -342,7 +392,7 @@ createCrudRouter('Product', {
   getMany: ProductSchema.getManyInput,
   getOne: ProductSchema.getOneInput,
 });
-```
+````
 
 ### dataProvider → tRPC Mapping
 
@@ -761,13 +811,14 @@ Make sure you're running the script from the correct project root directory. The
 
 ### Frontend Checklist
 
-- [ ] Frontend module `index.ts` created
-- [ ] Frontend list page created with Modal pattern
-- [ ] Form submission removes `id` field: `const { id, ...dataValues } = values`
-- [ ] Numeric fields converted to number before submitting
+- [ ] Frontend module `index.ts` created (auto-exported)
+- [ ] `{PascalName}Form.tsx` created with `FieldDefinition[]` configuration (auto-generated)
+- [ ] Frontend list page uses `StandardListPage` (auto-generated)
+- [ ] Form component uses `StandardForm` (auto-generated)
 - [ ] App.tsx updated with import, resource, and route (inside AdminLayout)
 - [ ] AdminLayout.tsx updated with sidebar menu item
 - [ ] Resource name matches between Refine and tRPC
+- [ ] For custom form fields: add to `FieldDefinition[]` instead of writing `Form.Item`
 
 ---
 

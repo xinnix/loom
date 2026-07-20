@@ -300,13 +300,13 @@ grep -l "StandardForm" apps/admin/src/modules/<name>/**/*.tsx || echo "NOT using
 
 When recommending refactoring, reference these abstractions:
 
-| Abstraction        | File                                                   | Use Case                        |
+| Abbreviation       | File                                                   | Used For                        |
 | ------------------ | ------------------------------------------------------ | ------------------------------- |
-| BaseService        | `scaffold/backend/base.service.ts`                     | Generic CRUD service with hooks |
-| createCrudRouter   | `scaffold/backend/router-generator.ts`                 | One-line CRUD router generation |
-| PermissionGuard    | `scaffold/backend/permission-guard.ts`                 | RBAC permission middleware      |
+| BaseService        | `apps/api/src/common/base.service.ts`                  | Generic CRUD service with hooks |
+| createCrudRouter   | `apps/api/src/trpc/trpc.helper.ts`                     | One-line CRUD router generation |
+| PermissionGuard    | `apps/admin/src/shared/components/PermissionGuard.tsx` | RBAC permission middleware      |
 | StandardListPage   | `apps/admin/src/shared/components/StandardListPage/`   | Config-driven list page         |
 | StandardForm       | `apps/admin/src/shared/components/StandardForm/`       | Auto-rendering form             |
 | StandardDetailPage | `apps/admin/src/shared/components/StandardDetailPage/` | Config-driven detail page       |
-| DataProvider       | `scaffold/frontend/data-provider.ts`                   | tRPC ↔ Refine adapter           |
-| OSSUpload          | `scaffold/frontend/oss-upload.tsx`                     | File upload component           |
+| DataProvider       | `apps/admin/src/shared/dataProvider.ts`                | tRPC ↔ Refine adapter           |
+| OSSUpload          | `apps/admin/src/shared/components/OSSUpload.tsx`       | File upload component           |

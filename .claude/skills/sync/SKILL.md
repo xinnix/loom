@@ -25,15 +25,15 @@ Run this command after:
 
 ## Instructions
 
-1. Generate Prisma client: `cd packages/database && npx prisma generate`
-2. Build shared package: `pnpm -C packages/shared build`
+1. Generate Prisma client: `cd infra/database && npx prisma generate`
+2. Build shared package: `pnpm -C infra/shared build`
 
 ## Example
 
 ```bash
-cd packages/database
+cd infra/database
 npx prisma generate
-pnpm -C packages/shared build
+pnpm -C infra/shared build
 ```
 
 ## What it does

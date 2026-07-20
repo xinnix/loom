@@ -41,8 +41,30 @@ jobs:
             echo 'APPS=["api","admin","web","landing"]' >> "$GITHUB_OUTPUT"
           fi
 
+  migration-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check migration consistency
+        run: |
+          if git diff --name-only origin/main HEAD -- infra/database/prisma/schema.prisma | grep -q .; then
+            CHANGED=$(git diff --name-only origin/main HEAD -- infra/database/prisma/migrations/ 2>/dev/null || true)
+            if [ -z "$CHANGED" ]; then
+              echo "❌ schema.prisma 已修改但未提交迁移文件！"
+              echo "   请运行: cd infra/database && npx prisma migrate dev"
+              exit 1
+            fi
+            echo "✅ Schema 变更已有对应迁移文件"
+          else
+            echo "⏭️  schema.prisma 未变更，跳过检查"
+          fi
+
   type-check:
     runs-on: ubuntu-latest
+    needs: migration-check
     steps:
       - uses: actions/checkout@v4
 
@@ -213,6 +235,8 @@ jobs:
           push: true
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
 
       - name: Build and push Admin image
         uses: docker/build-push-action@v5
@@ -225,6 +249,8 @@ jobs:
           target: production
           build-args: |
             VITE_API_URL=${{ env.VITE_API_URL }}
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin
 
       - name: Build and push Landing image
         uses: docker/build-push-action@v5
@@ -235,6 +261,8 @@ jobs:
           tags: ${{ steps.meta-landing.outputs.tags }}
           labels: ${{ steps.meta-landing.outputs.labels }}
           target: production
+          cache-from: type=gha,scope=landing
+          cache-to: type=gha,mode=max,scope=landing
 
       - name: Build and push Web image
         uses: docker/build-push-action@v5
@@ -244,6 +272,8 @@ jobs:
           push: true
           tags: ${{ steps.meta-web.outputs.tags }}
           labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
 
   deploy:
     runs-on: ubuntu-latest
@@ -302,6 +332,12 @@ jobs:
           echo "**VITE_API_URL:** \`${{ env.VITE_API_URL }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Enabled apps:** \`${{ needs.parse-config.outputs.apps }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Docker images pulled:**" >> $GITHUB_STEP_SUMMARY
+          for app in $(echo '${{ needs.parse-config.outputs.apps }}' | jq -r '.[]'); do
+            IMG=$(echo "${{ env.REGISTRY }}/${{ github.repository }}-${app}:${{ inputs.tag || 'latest' }}")
+            echo "- \`${IMG}\`" >> $GITHUB_STEP_SUMMARY
+          done
           echo "" >> $GITHUB_STEP_SUMMARY
 
       - name: Extra metadata for API image
