@@ -64,3 +64,8 @@ uploads/
 # Claude Code hooks
 .claude/logs/
 .claude/backups/
+
+# Test / Landing verification artifacts
+test-loom/
+landing-*.png
+landing-*.txt
