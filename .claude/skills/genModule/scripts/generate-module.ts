@@ -760,7 +760,7 @@ function generateTRPCRouter(moduleName: string): string {
   const camelName = toCamelCase(moduleName);
 
   return `import { createCrudRouter } from '../../../trpc/trpc.helper';
-import { ${pascalName}Schema } from '@loom/shared';
+import { ${pascalName}Schema, Permission } from '@loom/shared';
 
 export const ${camelName}Router = createCrudRouter(
   '${pascalName}',
@@ -769,6 +769,12 @@ export const ${camelName}Router = createCrudRouter(
     update: ${pascalName}Schema.updateInput,
     getMany: ${pascalName}Schema.getManyInput,
     getOne: ${pascalName}Schema.getOneInput,
+  },
+  {
+    permissionRead: Permission.${camelName}.read,
+    permissionCreate: Permission.${camelName}.create,
+    permissionUpdate: Permission.${camelName}.update,
+    permissionDelete: Permission.${camelName}.delete,
   }
 );
 `;
@@ -1438,7 +1444,7 @@ function updateAdminLayout(moduleName: string): void {
   const layoutPath = getFilePath('apps/admin/src/shared/layouts/AdminLayout.tsx');
 
   modifyFile(layoutPath, (content) => {
-    const menuItem = `    { key: "/${pluralName}", label: "${toLabel(moduleName)}管理", icon: "FolderOutlined" },`;
+    const menuItem = `    { key: "/${pluralName}", label: "${toLabel(moduleName)}管理", icon: "FolderOutlined", permission: Permission.${camelName}.read },`;
 
     if (!content.includes(`key: "/${pluralName}"`)) {
       // Find the menuConfig array and append to the last children group
@@ -1625,6 +1631,32 @@ function updateAppModule(moduleName: string): void {
 }
 
 // ============================================
+// Permission Registry Update
+// ============================================
+
+function updatePermissionRegistry(moduleName: string): void {
+  const camelName = toCamelCase(moduleName);
+  const registryPath = getFilePath('infra/shared/src/permissions/registry.ts');
+
+  modifyFile(registryPath, (content) => {
+    const resourceEntry = `  ${camelName}: {
+    create: '${camelName}:create',
+    read: '${camelName}:read',
+    update: '${camelName}:update',
+    delete: '${camelName}:delete',
+  },`;
+
+    // Insert before `menu:` entry
+    const menuMarker = '  menu: {';
+    if (!content.includes(`  ${camelName}: {`)) {
+      content = content.replace(menuMarker, resourceEntry + '\n' + menuMarker);
+    }
+
+    return content;
+  });
+}
+
+// ============================================
 // Main Generation Function
 // ============================================
 
@@ -1693,6 +1725,10 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
     const zodSchemas = generateZodSchemas(moduleName, fields);
     const sharedIndexPath = getFilePath('infra/shared/src/index.ts');
     appendToFile(sharedIndexPath, zodSchemas);
+
+    // Step 5.5: Update Permission Registry
+    console.log('\x1b[32m%s\x1b[0m', '✓ Updating Permission Registry...');
+    updatePermissionRegistry(moduleName);
 
     // Step 6: Generate tRPC Router
     console.log('\x1b[32m%s\x1b[0m', '✓ Generating tRPC router...');

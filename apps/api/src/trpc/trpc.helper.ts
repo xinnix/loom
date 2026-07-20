@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure } from './trpc';
+import { router, publicProcedure, protectedProcedure, permissionProcedure } from './trpc';
 import { SearchSchema, FilterSchema, FilterCondition } from './search-filter.types';
 import { buildWhereClause } from './search-filter.builder';
+import type { PermissionKey } from '@loom/shared';
 
 // Re-export protectedProcedure for use in routers
 export { protectedProcedure };
@@ -81,6 +82,14 @@ export interface CrudRouterOptions {
   searchFields?: string[];
   /** Fields that are allowed in filter conditions (whitelist for security) */
   filterableFields?: string[];
+  /** Permission key for getMany (read) — overrides protectedGetMany */
+  permissionRead?: PermissionKey;
+  /** Permission key for create — overrides protectedCreate */
+  permissionCreate?: PermissionKey;
+  /** Permission key for update — overrides protectedUpdate */
+  permissionUpdate?: PermissionKey;
+  /** Permission key for delete / deleteMany — overrides protectedDelete */
+  permissionDelete?: PermissionKey;
 }
 
 /**
@@ -185,6 +194,18 @@ export const createCrudRouter = <TModelName extends string>(
   const procedures: Record<string, any> = {};
 
   /**
+   * Select procedure with permission-aware fallback:
+   *   permission key → permissionProcedure (type-safe)
+   *   protected flag → protectedProcedure (auth only)
+   *   otherwise      → publicProcedure
+   */
+  const resolveProcedure = (permissionKey?: PermissionKey, protectedFlag = false) => {
+    if (permissionKey) return permissionProcedure(permissionKey);
+    if (protectedFlag) return protectedProcedure;
+    return publicProcedure;
+  };
+
+  /**
    * Convert foreign key fields to Prisma relation connect syntax
    * e.g., { parentId: "xxx" } -> { parent: { connect: { id: "xxx" } } }
    *
@@ -223,7 +244,7 @@ export const createCrudRouter = <TModelName extends string>(
 
   // getMany - List records with pagination, search, and filter
   if (includeGetMany) {
-    const procedure = protectedGetMany ? protectedProcedure : publicProcedure;
+    const procedure = resolveProcedure(options.permissionRead, protectedGetMany);
     const getManySchema = hasSearchFilter ? searchFilterGetManySchema : defaultGetManySchema;
 
     procedures.getMany = procedure
@@ -311,7 +332,7 @@ export const createCrudRouter = <TModelName extends string>(
 
   // getOne - Get a single record by ID
   if (includeGetOne) {
-    const procedure = protectedGetOne ? protectedProcedure : publicProcedure;
+    const procedure = resolveProcedure(options.permissionRead, protectedGetOne);
     procedures.getOne = procedure
       .input(schemas.getOne || defaultGetOneSchema)
       .query(async ({ ctx, input }) => {
@@ -339,7 +360,7 @@ export const createCrudRouter = <TModelName extends string>(
 
   // create - Create a new record
   if (includeCreate) {
-    const procedure = protectedCreate ? protectedProcedure : publicProcedure;
+    const procedure = resolveProcedure(options.permissionCreate, protectedCreate);
     const createInputSchema = z.object({
       data: schemas.create || z.any(),
       include: z.any().optional(),
@@ -381,7 +402,7 @@ export const createCrudRouter = <TModelName extends string>(
 
   // update - Update an existing record
   if (includeUpdate) {
-    const procedure = protectedUpdate ? protectedProcedure : publicProcedure;
+    const procedure = resolveProcedure(options.permissionUpdate, protectedUpdate);
     const updateInputSchema = z.object({
       id: z.string(),
       data: schemas.update || schemas.create || z.any(),
@@ -433,7 +454,7 @@ export const createCrudRouter = <TModelName extends string>(
 
   // delete - Delete a single record
   if (includeDelete) {
-    const procedure = protectedDelete ? protectedProcedure : publicProcedure;
+    const procedure = resolveProcedure(options.permissionDelete, protectedDelete);
     procedures.delete = procedure.input(defaultDeleteOneSchema).mutation(async ({ ctx, input }) => {
       if (service) {
         return service.remove(input.id);
@@ -447,7 +468,7 @@ export const createCrudRouter = <TModelName extends string>(
 
   // deleteMany - Delete multiple records
   if (includeDeleteMany) {
-    const procedure = protectedDeleteMany ? protectedProcedure : publicProcedure;
+    const procedure = resolveProcedure(options.permissionDelete, protectedDeleteMany);
     procedures.deleteMany = procedure
       .input(defaultDeleteManySchema)
       .mutation(async ({ ctx, input }) => {
