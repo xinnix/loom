@@ -147,6 +147,12 @@ export default function TodoDetailPage() {
         <button onClick={handleDelete} className="text-sm text-neutral-400 hover:text-red-500">
           删除
         </button>
+        <Link
+          href={`/todos/${todo.id}/edit`}
+          className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-600 shadow-sm hover:bg-neutral-50"
+        >
+          编辑
+        </Link>
       </div>
 
       {/* Tags */}
