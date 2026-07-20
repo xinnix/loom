@@ -50,6 +50,8 @@ export interface FieldDefinition {
   min?: number; // 数字最小值
   max?: number; // 数字最大值
   precision?: number; // 数字精度
+  formatter?: (value: number | string | undefined) => string; // 数字格式化函数
+  parser?: (value: string | undefined) => number; // 数字解析函数
   maxLength?: number; // 文本最大长度
   showTime?: boolean; // 日期选择器显示时间
   format?: string; // 日期格式

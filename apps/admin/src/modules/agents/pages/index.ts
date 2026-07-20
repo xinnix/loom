@@ -1,2 +1,2 @@
 export { AgentListPage } from './AgentListPage';
-export { AgentChatPage } from './AgentChatPage';
+export { AgentDetailPage } from './AgentDetailPage';

@@ -1,86 +1,148 @@
-import { Form, Input, Switch, InputNumber, Select, Slider } from 'antd';
+import { Slider, Input } from 'antd';
+import type { FieldDefinition } from '../../../shared/components/StandardForm/types';
+import { StandardForm } from '../../../shared/components/StandardForm';
+import type { FormInstance } from 'antd/es/form';
 
-interface AgentFormProps {
-  form: any;
-  isEdit?: boolean;
-}
+/**
+ * Agent 模型选项
+ */
+export const MODEL_OPTIONS = [
+  { value: 'gpt-4o', label: 'GPT-4o' },
+  { value: 'gpt-4o-mini', label: 'GPT-4o-mini' },
+  { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (20250514)' },
+  { value: 'claude-3-5-haiku-latest', label: 'Claude Haiku 3.5' },
+  { value: 'deepseek-chat', label: 'DeepSeek V3' },
+  { value: 'qwen-max', label: 'Qwen Max' },
+  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+];
 
-export const AgentForm = ({ form, isEdit = false }: AgentFormProps) => {
-  return (
-    <Form form={form} layout="vertical">
-      <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
-        <Input placeholder="例如：客服助手" />
-      </Form.Item>
+/**
+ * Agent 提供商选项
+ */
+export const PROVIDER_OPTIONS = [
+  { value: 'openai', label: 'OpenAI 兼容' },
+  { value: 'anthropic', label: 'Anthropic' },
+  { value: 'custom', label: '自定义' },
+];
 
-      <Form.Item name="slug" label="标识" rules={[{ required: true, message: '请输入标识' }]}>
-        <Input placeholder="例如：customer-service" disabled={isEdit} />
-      </Form.Item>
-
-      <Form.Item name="description" label="描述">
-        <Input.TextArea placeholder="Agent 功能描述" rows={2} />
-      </Form.Item>
-
-      <Form.Item name="icon" label="图标">
-        <Input placeholder="图标名称或 URL" />
-      </Form.Item>
-
-      <Form.Item name="model" label="模型" rules={[{ required: true, message: '请选择模型' }]}>
-        <Select
-          placeholder="选择 LLM 模型"
-          options={[
-            { label: 'GPT-4o', value: 'gpt-4o' },
-            { label: 'GPT-4o-mini', value: 'gpt-4o-mini' },
-            { label: 'Claude Sonnet 4 (20250514)', value: 'claude-sonnet-4-20250514' },
-            { label: 'Claude Haiku 3.5', value: 'claude-3-5-haiku-latest' },
-            { label: 'DeepSeek V3', value: 'deepseek-chat' },
-            { label: 'Qwen Max', value: 'qwen-max' },
-            { label: 'Gemini 2.0 Flash', value: 'gemini-2.0-flash' },
-          ]}
-        />
-      </Form.Item>
-
-      <Form.Item name="systemPrompt" label="系统提示词（System Prompt）">
-        <Input.TextArea placeholder="设置 AI 的角色和行为指令" rows={3} />
-      </Form.Item>
-
-      <Form.Item name="temperature" label="温度（Temperature: 0-2）">
-        <Slider min={0} max={2} step={0.1} marks={{ 0: '精确', 1: '平衡', 2: '创意' }} />
-      </Form.Item>
-
-      <Form.Item name="maxTokens" label="最大输出 Token">
-        <InputNumber min={1} max={128000} placeholder="4096" style={{ width: '100%' }} />
-      </Form.Item>
-
-      <Form.Item name="provider" label="提供商">
-        <Select
-          placeholder="选择 AI 提供商"
-          options={[
-            { label: 'OpenAI 兼容', value: 'openai' },
-            { label: 'Anthropic', value: 'anthropic' },
-            { label: '自定义', value: 'custom' },
-          ]}
-        />
-      </Form.Item>
-
-      <Form.Item name="apiUrl" label="API 地址（可选，覆盖全局配置）">
-        <Input placeholder="https://api.openai.com/v1" />
-      </Form.Item>
-
-      <Form.Item
-        name="apiKey"
-        label="API Key（可选，覆盖全局配置）"
-        rules={[{ required: !isEdit, message: '首次创建需输入 API Key' }]}
-      >
-        <Input.Password placeholder={isEdit ? '留空则不修改' : '请输入 API Key'} />
-      </Form.Item>
-
-      <Form.Item name="sort" label="排序">
-        <InputNumber min={0} placeholder="0" style={{ width: '100%' }} />
-      </Form.Item>
-
-      <Form.Item name="isActive" label="启用" valuePropName="checked">
-        <Switch />
-      </Form.Item>
-    </Form>
-  );
+/**
+ * 提供商标签颜色映射
+ */
+export const PROVIDER_COLORS: Record<string, string> = {
+  openai: 'green',
+  anthropic: 'purple',
+  custom: 'default',
 };
+
+/**
+ * Agent 表单字段定义
+ */
+export const agentFormFields: FieldDefinition[] = [
+  {
+    key: 'name',
+    label: '名称',
+    type: 'input',
+    required: true,
+    placeholder: '例如：客服助手',
+  },
+  {
+    key: 'slug',
+    label: '标识',
+    type: 'input',
+    required: true,
+    placeholder: '例如：customer-service',
+    showOnlyInCreate: true,
+  },
+  {
+    key: 'description',
+    label: '描述',
+    type: 'textarea',
+    placeholder: 'Agent 功能描述',
+  },
+  {
+    key: 'icon',
+    label: '图标',
+    type: 'input',
+    placeholder: '图标名称或 URL',
+  },
+  {
+    key: 'model',
+    label: '模型',
+    type: 'select',
+    required: true,
+    initialValue: 'gpt-4o',
+    options: MODEL_OPTIONS,
+  },
+  {
+    key: 'systemPrompt',
+    label: '系统提示词（System Prompt）',
+    type: 'textarea',
+    placeholder: '设置 AI 的角色和行为指令',
+  },
+  {
+    key: 'temperature',
+    label: '温度（Temperature）',
+    type: 'custom',
+    tooltip: '0=精确, 1=平衡, 2=创意',
+    render: () => <Slider min={0} max={2} step={0.1} marks={{ 0: '精确', 1: '平衡', 2: '创意' }} />,
+  },
+  {
+    key: 'maxTokens',
+    label: '最大输出 Token',
+    type: 'number',
+    min: 1,
+    max: 128000,
+    placeholder: '4096',
+  },
+  {
+    key: 'provider',
+    label: '提供商',
+    type: 'select',
+    initialValue: 'openai',
+    options: PROVIDER_OPTIONS,
+  },
+  {
+    key: 'apiUrl',
+    label: 'API 地址',
+    type: 'input',
+    placeholder: 'https://api.openai.com/v1（可选，覆盖全局配置）',
+  },
+  // 创建时：API Key 必填
+  {
+    key: 'apiKey',
+    label: 'API Key',
+    type: 'custom',
+    showOnlyInCreate: true,
+    required: true,
+    render: () => <Input.Password placeholder="请输入 API Key" />,
+  },
+  // 编辑时：API Key 可选（留空不修改）
+  {
+    key: 'apiKey',
+    label: 'API Key',
+    type: 'custom',
+    showOnlyInEdit: true,
+    render: () => <Input.Password placeholder="留空则不修改" />,
+  },
+  {
+    key: 'sort',
+    label: '排序',
+    type: 'number',
+    initialValue: 0,
+    min: 0,
+  },
+  {
+    key: 'isActive',
+    label: '启用',
+    type: 'switch',
+    valuePropName: 'checked',
+    initialValue: true,
+  },
+];
+
+/**
+ * StandardForm 模式：声明式表单组件
+ */
+export function AgentForm({ form, isEdit }: { form: FormInstance; isEdit: boolean }) {
+  return <StandardForm form={form} isEdit={isEdit} fields={agentFormFields} />;
+}

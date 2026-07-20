@@ -1,65 +1,24 @@
-// apps/admin/src/modules/user/pages/UserListPage.tsx
-import { useState, useEffect } from 'react';
-import { useTable } from '@refinedev/core';
-import { List } from '@refinedev/antd';
-import { Table, Input, Tag, Card, Row, Col } from 'antd';
-import { SearchOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { Tag, Space, Button } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+import { StandardListPage } from '../../../shared/components/StandardListPage';
+import type { StandardListPageProps } from '../../../shared/components/StandardListPage/types';
+import { IS_ACTIVE_LABELS, IS_ACTIVE_COLORS } from '../components/UserDetail';
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  phone?: string;
-  firstName?: string;
-  lastName?: string;
-  isActive: boolean;
-  lastLoginAt?: Date;
-  createdAt: Date;
-}
+/**
+ * User 列表页
+ *
+ * 使用 StandardListPage 配置驱动模式（只读列表）。
+ * 用户通过微信登录自动创建，Admin 端只支持查看和状态管理。
+ */
+export function UserListPage() {
+  const navigate = useNavigate();
 
-export const UserListPage = () => {
-  const [searchText, setSearchText] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-
-  // 防抖：延迟 500ms 更新搜索词
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchText);
-    }, 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [searchText]);
-
-  const { tableQuery, currentPage, setCurrentPage, pageSize, setPageSize } = useTable<User>({
-    resource: 'user',
-    pagination: {
-      currentPage: 1,
-      pageSize: 10,
-      mode: 'server',
-    },
-    filters: {
-      initial: debouncedSearch
-        ? ([
-            {
-              field: 'search',
-              operator: 'eq',
-              value: debouncedSearch,
-            },
-          ] as any)
-        : [],
-    },
-  });
-
-  const result = tableQuery.data;
-  const query = tableQuery;
-
-  const columns = [
+  const columns: StandardListPageProps['columns'] = [
     {
       title: 'ID',
       dataIndex: 'id',
-      width: 80,
+      width: 100,
       render: (id: string) => (
         <span style={{ fontSize: 12, color: '#999' }}>{id.slice(0, 8)}...</span>
       ),
@@ -81,25 +40,20 @@ export const UserListPage = () => {
       width: 200,
     },
     {
-      title: '姓名',
-      dataIndex: 'firstName',
-      width: 100,
-      render: (firstName: string, record: User) => {
-        const fullName = [firstName, record.lastName].filter(Boolean).join(' ');
-        return fullName || '-';
-      },
+      title: '昵称',
+      dataIndex: 'nickname',
+      width: 120,
+      render: (nickname: string) => nickname || '-',
     },
     {
       title: '状态',
       dataIndex: 'isActive',
-      width: 90,
+      key: 'isActive',
+      width: 80,
       align: 'center' as const,
       render: (isActive: boolean) => (
-        <Tag
-          icon={isActive ? <CheckCircleOutlined /> : <StopOutlined />}
-          color={isActive ? 'success' : 'error'}
-        >
-          {isActive ? '激活' : '停用'}
+        <Tag color={IS_ACTIVE_COLORS[isActive] || 'default'}>
+          {IS_ACTIVE_LABELS[isActive] || '未知'}
         </Tag>
       ),
     },
@@ -107,59 +61,35 @@ export const UserListPage = () => {
       title: '最后登录',
       dataIndex: 'lastLoginAt',
       width: 160,
-      render: (date: Date) => (date ? new Date(date).toLocaleString('zh-CN') : '从未登录'),
+      render: (date: string | null) => (date ? new Date(date).toLocaleString('zh-CN') : '从未登录'),
     },
     {
       title: '注册时间',
       dataIndex: 'createdAt',
       width: 160,
-      render: (date: Date) => new Date(date).toLocaleString('zh-CN'),
+      render: (date: string) => new Date(date).toLocaleString('zh-CN'),
     },
   ];
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px' }}>
-      <List>
-        <Card>
-          <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-            <Col>
-              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 'bold' }}>用户管理</h1>
-            </Col>
-          </Row>
-
-          <div style={{ marginBottom: 16 }}>
-            <Input
-              placeholder="搜索用户名、邮箱或手机号"
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
-              allowClear
-            />
-          </div>
-
-          <Table
-            columns={columns}
-            rowKey="id"
-            dataSource={(result as any)?.data || []}
-            loading={query.isLoading}
-            pagination={{
-              current: currentPage,
-              pageSize: pageSize,
-              total: (result as any)?.total || 0,
-              showSizeChanger: true,
-              showTotal: (total) => `共 ${total} 条`,
-              onChange: (page, newPageSize) => {
-                setCurrentPage(page);
-                if (newPageSize !== pageSize) {
-                  setPageSize(newPageSize);
-                  setCurrentPage(1);
-                }
-              },
-            }}
-          />
-        </Card>
-      </List>
-    </div>
+    <StandardListPage
+      resource="user"
+      title="用户管理"
+      columns={columns}
+      searchFields={[{ field: 'search', placeholder: '搜索用户名、邮箱或手机号', width: 300 }]}
+      hideCreateButton
+      renderRowActions={(record: any) => (
+        <Space>
+          <Button
+            type="link"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/users/${record.id}`)}
+          >
+            详情
+          </Button>
+        </Space>
+      )}
+    />
   );
-};
+}

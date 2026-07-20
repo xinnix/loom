@@ -1,88 +1,65 @@
-import { Tag, Typography } from 'antd';
+import { Tag } from 'antd';
 import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS } from './TodoForm';
-import dayjs from 'dayjs';
-
-const { Text } = Typography;
+import type { DetailFieldConfig } from '../../../shared/components/StandardDetailPage/types';
 
 /**
- * Todo 详情字段配置，配合 StandardDetailPage 使用
+ * Todo 详情字段配置
  *
- * 这里作为参考展示两种模式：
- *   1. 直接返回定义数组，供 StandardDetailPage 消费
- *   2. 也提供渲染函数供手写详情页使用
+ * 使用 StandardDetailPage 的配置驱动模式，
+ * 支持 tags、boolean、datetime 等内置字段类型。
  */
-export const todoDetailFields = (entity: any) => {
-  const fields: Array<{ key: string; label: string; render: () => React.ReactNode }> = [];
-
-  fields.push({
-    key: 'title',
-    label: '标题',
-    render: () => <Text strong>{entity.title}</Text>,
-  });
-
-  if (entity.description) {
-    fields.push({
-      key: 'description',
-      label: '描述',
-      render: () => <Text>{entity.description}</Text>,
-    });
-  }
-
-  fields.push(
-    {
-      key: 'status',
-      label: '状态',
-      render: () => (
-        <Tag color={STATUS_COLORS[entity.status] || 'default'}>
-          {STATUS_LABELS[entity.status] || entity.status}
-        </Tag>
-      ),
-    },
-    {
-      key: 'priority',
-      label: '优先级',
-      render: () => (
-        <Tag color={PRIORITY_COLORS[entity.priority] || 'default'}>
-          {PRIORITY_LABELS[entity.priority] || entity.priority}
-        </Tag>
-      ),
-    },
-  );
-
-  if (entity.dueDate) {
-    fields.push({
-      key: 'dueDate',
-      label: '截止日期',
-      render: () => <Text>{dayjs(entity.dueDate).format('YYYY-MM-DD')}</Text>,
-    });
-  }
-
-  fields.push({
+export const todoDetailFields: DetailFieldConfig[] = [
+  { key: 'title', label: '标题', type: 'text' },
+  {
+    key: 'description',
+    label: '描述',
+    type: 'text',
+    showCondition: (entity: any) => !!entity.description,
+  },
+  {
+    key: 'status',
+    label: '状态',
+    type: 'tag',
+    tagColors: STATUS_COLORS,
+    tagLabels: STATUS_LABELS,
+  },
+  {
+    key: 'priority',
+    label: '优先级',
+    type: 'custom',
+    render: (_val: any, entity: any) => (
+      <Tag color={PRIORITY_COLORS[entity.priority] || 'default'}>
+        {PRIORITY_LABELS[entity.priority] ?? entity.priority}
+      </Tag>
+    ),
+  },
+  {
+    key: 'dueDate',
+    label: '截止日期',
+    type: 'date',
+    showCondition: (entity: any) => !!entity.dueDate,
+  },
+  {
     key: 'isCompleted',
     label: '完成状态',
-    render: () => (entity.isCompleted ? <Tag color="success">已完成</Tag> : <Tag>未完成</Tag>),
-  });
-
-  fields.push(
-    {
-      key: 'createdAt',
-      label: '创建时间',
-      render: () => <Text>{dayjs(entity.createdAt).format('YYYY-MM-DD HH:mm')}</Text>,
-    },
-    {
-      key: 'updatedAt',
-      label: '更新时间',
-      render: () => <Text>{dayjs(entity.updatedAt).format('YYYY-MM-DD HH:mm')}</Text>,
-    },
-  );
-
-  if (entity.completedAt) {
-    fields.push({
-      key: 'completedAt',
-      label: '完成时间',
-      render: () => <Text>{dayjs(entity.completedAt).format('YYYY-MM-DD HH:mm')}</Text>,
-    });
-  }
-
-  return fields;
-};
+    type: 'boolean',
+    booleanLabels: ['未完成', '已完成'],
+    booleanColors: ['default', 'success'],
+  },
+  {
+    key: 'createdAt',
+    label: '创建时间',
+    type: 'datetime',
+  },
+  {
+    key: 'updatedAt',
+    label: '更新时间',
+    type: 'datetime',
+  },
+  {
+    key: 'completedAt',
+    label: '完成时间',
+    type: 'datetime',
+    showCondition: (entity: any) => !!entity.completedAt,
+  },
+];

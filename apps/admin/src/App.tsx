@@ -11,7 +11,7 @@ import { AdminLayout } from './shared/layouts';
 import { AdminListPage, AdminDetailPage } from './modules/admin';
 import { UserListPage, UserDetailPage } from './modules/user';
 import { RoleListPage, RoleDetailPage } from './modules/role';
-import { AgentListPage } from './modules/agents';
+import { AgentListPage, AgentDetailPage } from './modules/agents';
 import { WecomConfigListPage, WecomMessageListPage, WecomEventListPage } from './modules/wecom';
 import { TodoListPage, TodoDetailPage } from './modules/todo';
 import { useMessageInitializer } from './shared/hooks/useMessageInitializer';
@@ -95,6 +95,7 @@ function AppContent() {
             <Route path="admins" element={<AdminListPage />} />
             <Route path="admins/:id" element={<AdminDetailPage />} />
             <Route path="agents" element={<AgentListPage />} />
+            <Route path="agents/:id" element={<AgentDetailPage />} />
             <Route path="wecom" element={<WecomConfigListPage />} />
             <Route path="wecom/messages" element={<WecomMessageListPage />} />
             <Route path="wecom/events" element={<WecomEventListPage />} />

@@ -151,6 +151,8 @@ function renderField(field: FieldDefinition, form: FormInstance) {
           min={field.min}
           max={field.max}
           precision={field.precision}
+          formatter={field.formatter}
+          parser={field.parser}
           style={{ width: '100%' }}
         />
       );
