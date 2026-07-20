@@ -41,3 +41,21 @@ src/
 - 表单提交后调用 `invalidateQueries` 刷新列表
 - 日期字段需要 dayjs 转换
 - 图片字段使用 Upload 组件 + FileStorageService
+
+## Admin 端治理规则
+
+### 页面创建
+
+参考根目录 CLAUDE.md 的【模块健康检查清单】Admin 端部分。关键要点：
+
+- 所有 CRUD 页面 **必须** 使用 StandardListPage / StandardForm / StandardDetailPage，禁止手写重复模式
+- 仅在标准组件不满足需求时使用 `render*` 插槽（`renderRowActions`/`renderHeader`/`renderModalContent`）
+- 字段定义（`FieldDefinition[]` / `DetailFieldConfig[]`）写在 `components/` 目录，`pages/` 保持薄层
+- 页面注册四步走：`resources` → `Route` → 菜单 → barrel export
+
+### Admin 端依赖治理
+
+- UI 组件：优先使用 Ant Design 现有组件，不引入额外 UI 库
+- 数据获取：优先使用 Refine `useTable`/`useOne`/`useCreate` 等 Hook，不直接调用 tRPC Client
+- tRPC Client：仅在 Refine Hook 不足以表达时才直接调用（如自定义查询、权限管理）
+- 本包依赖：优先使用 Monorepo 工作区互引的 `@loom/shared` 类型

@@ -178,17 +178,17 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 
 ## Module Registry
 
-| Module     | Prisma Model | tRPC Router      | REST Controller   | Admin Page        | Web Page          | Miniapp API    |
-| ---------- | ------------ | ---------------- | ----------------- | ----------------- | ----------------- | -------------- |
-| admin      | Admin        | adminRouter      | -                 | AdminListPage     | -                 | -              |
-| user       | User         | userRouter       | UserController    | UserListPage      | -                 | authApi        |
-| role       | Role         | roleRouter       | -                 | RoleListPage      | -                 | -              |
-| agents     | Agent        | agentsRouter     | AgentsController  | AgentListPage     | -                 | agentsApi      |
-| auth       | -            | authRouter       | AuthController    | LoginPage         | Login/Register    | authApi        |
-| upload     | -            | uploadRouter     | UploadController  | -                 | -                 | uploadApi      |
-| payment    | -            | paymentRouter    | PaymentController | -                 | -                 | -              |
-| permission | Permission   | permissionRouter | -                 | -                 | -                 | -              |
-| **_todo_** | **_Todo_**   | **_todoRouter_** | **_TodoController_** | **_TodoListPage_** | **_todos/list/detail_** | **_todosApi_** |
+| Module     | Prisma Model | tRPC Router      | REST Controller   | Admin Page                      | Web Page          | Miniapp API |
+| ---------- | ------------ | ---------------- | ----------------- | ------------------------------- | ----------------- | ----------- |
+| admin      | Admin        | adminRouter      | -                 | AdminListPage                   | -                 | -           |
+| user       | User         | userRouter       | UserController    | UserListPage + UserDetailPage   | -                 | authApi     |
+| role       | Role         | roleRouter       | -                 | RoleListPage + RoleDetailPage   | -                 | -           |
+| agents     | Agent        | agentsRouter     | AgentsController  | AgentListPage + AgentDetailPage | -                 | agentsApi   |
+| auth       | -            | authRouter       | AuthController    | LoginPage                       | Login/Register    | authApi     |
+| upload     | -            | uploadRouter     | UploadController  | -                               | -                 | uploadApi   |
+| payment    | -            | paymentRouter    | PaymentController | -                               | -                 | -           |
+| permission | Permission   | permissionRouter | -                 | -                               | -                 | -           |
+| todo       | Todo         | todoRouter       | TodoController    | TodoListPage + TodoDetailPage   | todos/list/detail | todosApi    |
 
 ### Web 端架构说明
 
@@ -197,6 +197,100 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 - **认证**：httpOnly Cookie + Next.js Middleware 路由保护
 - **路由结构**：`(auth)/` 无需认证（login/register），`(protected)/` 需要认证（dashboard/profile）
 - **端口**：3002
+
+## 架构治理
+
+### 架构决策记录（ADR）
+
+关键架构决策记录在 `docs/adr/` 目录。在做出重大架构变更前，先查阅现有 ADR 避免重复决策：
+
+| ADR                                                   | 标题                                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------------ |
+| [ADR-001](docs/adr/001-dual-protocol-architecture.md) | 双协议架构（Admin 端 tRPC，外部端 REST）                           |
+| [ADR-002](docs/adr/002-refine-antd-frontend.md)       | Admin 前端选择 Refine + Ant Design                                 |
+| [ADR-003](docs/adr/003-standardized-ui-pattern.md)    | 声明式 UI 模式（StandardForm/StandardListPage/StandardDetailPage） |
+
+新增 ADR 时使用模板：
+
+```markdown
+# ADR-{编号}: 标题
+
+- **日期**：{YYYY-MM-DD}
+- **状态**：✅ 已采纳 | 🔄 提议中 | ⏸️ 搁置 | ❌ 已废弃
+
+## 背景
+
+## 决策
+
+## 权衡
+
+### 优点
+
+### 缺点
+
+## 实施要点
+
+## 后续考虑
+```
+
+### 模块健康检查清单
+
+新模块（通过 genModule 或其他方式创建）应满足以下最低标准：
+
+**API 端（`apps/api/src/modules/{name}/`）：**
+
+- [ ] Prisma Model 定义在 `schema.prisma` 中
+- [ ] Zod Schema（Create/Update）定义在 `@loom/shared`
+- [ ] Service 继承 `BaseService<T>`（`*.service.ts`）
+- [ ] CRUD Router — `createCrudRouter` 或 `createCrudRouterWithCustom`（`*.router.ts`）
+- [ ] Module 注册到 feature 模块（`*.module.ts`）
+- [ ] tRPC 路由注册到 `app.router.ts`
+- [ ] REST Controller（如需要对外暴露）
+- [ ] 迁移文件生成（`prisma migrate dev`）
+
+**Admin 端（`apps/admin/src/modules/{name}/`）：**
+
+- [ ] `StandardListPage` 列表页（`pages/{Name}ListPage.tsx`）
+- [ ] `StandardForm` 创建/编辑表单（`components/{Name}Form.tsx`）
+- [ ] `StandardDetailPage` 详情页（`pages/{Name}DetailPage.tsx`）
+- [ ] 组件 barrel 导出（`index.ts` 和 `components/index.ts`）
+- [ ] App.tsx 路由注册（`resources` + `Route`）
+- [ ] `AdminLayout.tsx` 菜单配置
+
+**质量清单：**
+
+- [ ] tRPC Router spec（`*.router.spec.ts`）
+- [ ] 权限配置（`Permission` 资源中注册操作）
+- [ ] `enum-sync` 已执行（如果新增枚举字段）
+
+> 健康检查由 `/analyze` 技能自动执行。
+
+### 依赖治理规则
+
+- 新增依赖前，先搜索 workspace 内是否已有相同功能的可用代码
+- Admin 前端：优先使用 Ant Design / Refine / 现有 Shared 组件的已有能力
+- API 后端：优先使用 NestJS / Prisma 的已有能力
+- 仅用于单一函数的小依赖（如 `lodash.get`），建议手写 5 行代码替代
+- 新增的 npm 依赖必须：
+  - 确认有活跃维护（GitHub 最后更新 ≤ 1 年，NPM 周下载量 ≥ 1k）
+  - 确认许可证兼容（MIT/Apache-2.0/BSD，避免 GPL/AGPL）
+  - 在 commit message 中注明引入原因
+
+### 废弃模块清理规则
+
+满足以下所有条件的模块可安全清理：
+
+1. **无活跃开发**：Git 历史中无结构性变更 ≥ 3 个月（不含依赖更新和 CI 配置）
+2. **无运行时引用**：对应 Admin 菜单已隐藏或页面无访问
+3. **无外部依赖**：没有其他模块或外部系统依赖其 API
+
+清理流程：
+
+1. 使用 `/deleteModule <name>` 技能 → 删除 Schema/Service/Router/前端页面/菜单
+2. 生成数据库迁移（如有表需要删除）
+3. 移除 App.tsx 中的路由和 resource 注册
+4. 移出 AdminLayout.tsx 菜单配置
+5. 确认 `find . --name "*{name}*"` 无遗留引用
 
 ## 编码行为准则
 

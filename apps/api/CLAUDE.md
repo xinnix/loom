@@ -62,3 +62,21 @@ src/
 - REST Controller 需要 `@Controller()` 装饰器
 - userId 注入：BaseService 自动处理 `createdById`/`updatedById`
 - 数据隔离：User 端查询必须加 `where: { userId }`
+
+## API 端治理规则
+
+### 模块创建
+
+参考根目录 CLAUDE.md 的【模块健康检查清单】API 端部分。关键要点：
+
+- 新模块 Service **必须** 继承 `BaseService<T>`，除非有充分理由不要
+- tRPC Router 优先使用 `createCrudRouter`，需要自定义时用 `createCrudRouterWithCustom`
+- REST Controller 仅在有外部端（Web/小程序/第三方）需要时才创建
+- 所有 Procedure 必须有 `zod` input schema 验证
+
+### API 端依赖治理
+
+- 新增 NestJS 模块前确认是否可以用现有 Provider 组合实现
+- Prisma middleware 优于自定义数据访问层
+- 避免在 Service 中直接使用 `ctx.prisma` — 通过 BaseService 方法操作数据库
+- 本包依赖优先使用 Monorepo 工作区互引，避免外部 npm 依赖
