@@ -14,103 +14,94 @@ import {
   ErrorCodes,
 } from '../../../core/exceptions';
 
-const roleGetManySchema = z
-  .object({
-    page: z.number().int().positive().optional(),
-    limit: z.number().int().positive().optional(),
-    pageSize: z.number().int().positive().optional(),
-    search: z.string().optional(),
-    where: z.any().optional(),
-    orderBy: z.any().optional(),
-  })
-  .optional();
-
+/**
+ * Role tRPC Router
+ *
+ * 角色管理包含复杂业务规则（系统角色保护、slug 唯一性、已分配用户检查），
+ * 所有 CRUD 操作为自定义实现。getPermissions/getUsers/updatePermissions 为额外自定义方法。
+ *
+ * RoleService 已建立但未接入 tRPC（待 NestJS DI 集成），
+ * 其生命周期钩子（beforeCreate/beforeDelete/beforeDeleteMany）文档化了业务约束。
+ */
 export const roleRouter = createCrudRouterWithCustom(
   'Role',
-  {
-    create: CreateRoleSchema,
-    update: UpdateRoleSchema,
-  },
+  {},
   () => ({
-    getMany: publicProcedure.input(roleGetManySchema).query(async ({ ctx, input }) => {
-      const page = input?.page ?? 1;
-      const pageSize = input?.limit ?? input?.pageSize ?? 10;
-      const skip = (page - 1) * pageSize;
+    getMany: publicProcedure
+      .input(
+        z
+          .object({
+            page: z.number().int().positive().optional().default(1),
+            limit: z.number().int().positive().optional().default(10),
+            search: z.string().optional(),
+            where: z.any().optional(),
+            orderBy: z.any().optional(),
+          })
+          .optional(),
+      )
+      .query(async ({ ctx, input }) => {
+        const page = input?.page ?? 1;
+        const pageSize = input?.limit ?? 10;
+        const skip = (page - 1) * pageSize;
 
-      const where: any = input?.where && typeof input.where === 'object' ? { ...input.where } : {};
+        const where: any =
+          input?.where && typeof input.where === 'object' ? { ...input.where } : {};
 
-      let searchTerm = input?.search;
-      const whereSearch = where.search;
-      if (!searchTerm && whereSearch) {
-        if (typeof whereSearch === 'string') {
-          searchTerm = whereSearch;
-        } else if (typeof whereSearch?.contains === 'string') {
-          searchTerm = whereSearch.contains;
+        const searchTerm = input?.search || where.search?.contains;
+        delete where.search;
+
+        if (searchTerm) {
+          where.OR = [
+            { name: { contains: searchTerm, mode: 'insensitive' } },
+            { slug: { contains: searchTerm, mode: 'insensitive' } },
+            { description: { contains: searchTerm, mode: 'insensitive' } },
+          ];
         }
-      }
-      delete where.search;
 
-      if (searchTerm) {
-        where.OR = [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { slug: { contains: searchTerm, mode: 'insensitive' } },
-          { description: { contains: searchTerm, mode: 'insensitive' } },
-        ];
-      }
-
-      const [roles, total] = await Promise.all([
-        ctx.prisma.role.findMany({
-          where,
-          skip,
-          take: pageSize,
-          orderBy: input?.orderBy || { level: 'asc' },
-          include: {
-            _count: {
-              select: {
-                admins: true,
-                permissions: true,
+        const [roles, total] = await Promise.all([
+          ctx.prisma.role.findMany({
+            where,
+            skip,
+            take: pageSize,
+            orderBy: input?.orderBy || { level: 'asc' },
+            include: {
+              _count: {
+                select: {
+                  admins: true,
+                  permissions: true,
+                },
               },
             },
-          },
-        }),
-        ctx.prisma.role.count({ where }),
-      ]);
+          }),
+          ctx.prisma.role.count({ where }),
+        ]);
 
-      return {
-        items: roles.map((role) => ({
-          ...role,
-          _count: {
-            users: role._count.admins,
-            permissions: role._count.permissions,
-          },
-        })),
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
-      };
-    }),
+        return {
+          items: roles.map((role: any) => ({
+            ...role,
+            _count: {
+              users: role._count.admins,
+              permissions: role._count.permissions,
+            },
+          })),
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        };
+      }),
 
     getOne: permissionProcedure(Permission.role.read)
-      .input(
-        z.object({
-          id: z.string(),
-        }),
-      )
+      .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
         const role = await ctx.prisma.role.findUnique({
           where: { id: input.id },
           include: {
             permissions: {
-              include: {
-                permission: true,
-              },
+              include: { permission: true },
             },
             _count: {
-              select: {
-                admins: true,
-                permissions: true,
-              },
+              select: { admins: true, permissions: true },
             },
           },
         });
@@ -121,7 +112,7 @@ export const roleRouter = createCrudRouterWithCustom(
 
         return {
           ...role,
-          permissions: role.permissions.map((item) => item.permission),
+          permissions: role.permissions.map((item: any) => item.permission),
           _count: {
             users: role._count.admins,
             permissions: role._count.permissions,
@@ -130,13 +121,7 @@ export const roleRouter = createCrudRouterWithCustom(
       }),
 
     create: permissionProcedure(Permission.role.create)
-      .input(
-        z.object({
-          data: CreateRoleSchema,
-          include: z.any().optional(),
-          select: z.any().optional(),
-        }),
-      )
+      .input(z.object({ data: CreateRoleSchema }))
       .mutation(async ({ ctx, input }) => {
         const { data } = input;
 
@@ -147,33 +132,15 @@ export const roleRouter = createCrudRouterWithCustom(
           throw new ConflictException('Role slug already exists', ErrorCodes.ROLE_SLUG_EXISTS);
         }
 
-        return ctx.prisma.role.create({
-          data: {
-            name: data.name,
-            slug: data.slug,
-            description: data.description,
-            level: data.level,
-          },
-          include: input.include,
-          select: input.select,
-        });
+        return ctx.prisma.role.create({ data });
       }),
 
     update: permissionProcedure(Permission.role.update)
-      .input(
-        z.object({
-          id: z.string(),
-          data: UpdateRoleSchema,
-          include: z.any().optional(),
-          select: z.any().optional(),
-        }),
-      )
+      .input(z.object({ id: z.string(), data: UpdateRoleSchema }))
       .mutation(async ({ ctx, input }) => {
         const { id, data } = input;
 
-        const existing = await ctx.prisma.role.findUnique({
-          where: { id },
-        });
+        const existing = await ctx.prisma.role.findUnique({ where: { id } });
         if (!existing) {
           throw new NotFoundBusinessException('Role', id, ErrorCodes.ROLE_NOT_FOUND);
         }
@@ -185,12 +152,7 @@ export const roleRouter = createCrudRouterWithCustom(
           );
         }
 
-        return ctx.prisma.role.update({
-          where: { id },
-          data,
-          include: input.include,
-          select: input.select,
-        });
+        return ctx.prisma.role.update({ where: { id }, data });
       }),
 
     delete: permissionProcedure(Permission.role.delete)
@@ -198,12 +160,7 @@ export const roleRouter = createCrudRouterWithCustom(
       .mutation(async ({ ctx, input }) => {
         const role = await ctx.prisma.role.findUnique({
           where: { id: input.id },
-          include: {
-            admins: {
-              select: { id: true },
-              take: 1,
-            },
-          },
+          include: { admins: { select: { id: true }, take: 1 } },
         });
 
         if (!role) {
@@ -222,10 +179,7 @@ export const roleRouter = createCrudRouterWithCustom(
           );
         }
 
-        await ctx.prisma.role.delete({
-          where: { id: input.id },
-        });
-
+        await ctx.prisma.role.delete({ where: { id: input.id } });
         return { success: true };
       }),
 
@@ -234,30 +188,23 @@ export const roleRouter = createCrudRouterWithCustom(
       .mutation(async ({ ctx, input }) => {
         const roles = await ctx.prisma.role.findMany({
           where: { id: { in: input.ids } },
-          include: {
-            admins: {
-              select: { id: true },
-              take: 1,
-            },
-          },
+          include: { admins: { select: { id: true }, take: 1 } },
         });
 
-        if (roles.some((role) => role.isSystem)) {
+        if (roles.some((r: any) => r.isSystem)) {
           throw new ForbiddenBusinessException(
             'Cannot delete system role',
             ErrorCodes.ROLE_IS_SYSTEM,
           );
         }
-        if (roles.some((role) => role.admins.length > 0)) {
+        if (roles.some((r: any) => r.admins.length > 0)) {
           throw new ForbiddenBusinessException(
             'Cannot delete role that is assigned to users',
             ErrorCodes.ROLE_HAS_ADMINS,
           );
         }
 
-        return ctx.prisma.role.deleteMany({
-          where: { id: { in: input.ids } },
-        });
+        return ctx.prisma.role.deleteMany({ where: { id: { in: input.ids } } });
       }),
 
     getPermissions: permissionProcedure(Permission.role.read)
@@ -265,24 +212,18 @@ export const roleRouter = createCrudRouterWithCustom(
       .query(async ({ ctx, input }) => {
         const rolePermissions = await ctx.prisma.rolePermission.findMany({
           where: { roleId: input.id },
-          include: {
-            permission: true,
-          },
-          orderBy: {
-            permission: {
-              resource: 'asc',
-            },
-          },
+          include: { permission: true },
+          orderBy: { permission: { resource: 'asc' } },
         });
-        return rolePermissions.map((item) => item.permission);
+        return rolePermissions.map((item: any) => item.permission);
       }),
 
     getUsers: permissionProcedure(Permission.role.read)
       .input(
         z.object({
           id: z.string(),
-          page: z.number().int().positive().optional(),
-          pageSize: z.number().int().positive().optional(),
+          page: z.number().int().positive().optional().default(1),
+          pageSize: z.number().int().positive().optional().default(10),
         }),
       )
       .query(async ({ ctx, input }) => {
@@ -313,10 +254,7 @@ export const roleRouter = createCrudRouterWithCustom(
         ]);
 
         return {
-          items: adminRoles.map((item) => ({
-            ...item.admin,
-            assignedAt: item.assignedAt,
-          })),
+          items: adminRoles.map((ar: any) => ({ ...ar.admin, assignedAt: ar.assignedAt })),
           total,
           page,
           pageSize,
@@ -329,9 +267,7 @@ export const roleRouter = createCrudRouterWithCustom(
       .mutation(async ({ ctx, input }) => {
         const { roleId, permissionIds } = input;
 
-        const role = await ctx.prisma.role.findUnique({
-          where: { id: roleId },
-        });
+        const role = await ctx.prisma.role.findUnique({ where: { id: roleId } });
         if (!role) {
           throw new NotFoundBusinessException('Role', roleId, ErrorCodes.ROLE_NOT_FOUND);
         }
@@ -347,16 +283,10 @@ export const roleRouter = createCrudRouterWithCustom(
           );
         }
 
-        await ctx.prisma.rolePermission.deleteMany({
-          where: { roleId },
-        });
-
+        await ctx.prisma.rolePermission.deleteMany({ where: { roleId } });
         if (permissionIds.length > 0) {
           await ctx.prisma.rolePermission.createMany({
-            data: permissionIds.map((permissionId) => ({
-              roleId,
-              permissionId,
-            })),
+            data: permissionIds.map((permissionId) => ({ roleId, permissionId })),
           });
         }
 

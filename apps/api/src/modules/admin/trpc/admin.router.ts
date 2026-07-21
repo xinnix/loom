@@ -13,31 +13,29 @@ import {
  * Admin tRPC Router
  *
  * Manages Admin users (backend management users).
- * Separate from User router (miniapp users).
+ * CRUD 操作为自定义实现，包含密码哈希、角色管理、自我删除保护等业务逻辑。
+ * AdminService 文档化了生命周期约束（beforeCreate/beforeDelete 等），
+ * 但当前通过手动调用 ctx.prisma 执行数据库操作。
  */
 export const adminRouter = router({
-  // Custom getMany with search and role filter
+  // ==========================================
+  // 标准 CRUD
+  // ==========================================
+
   getMany: publicProcedure
     .input(
       z.object({
         page: z.number().optional().default(1),
         limit: z.number().optional().default(10),
-        skip: z.number().optional(),
-        take: z.number().optional(),
         where: z.any().optional(),
         orderBy: z.any().optional(),
-        include: z.any().optional(),
-        select: z.any().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const { page = 1, limit = 10, where = {}, orderBy } = input;
       const skip = (page - 1) * limit;
 
-      // Extract custom filters from where object
       const { search, isActive, roleSlug, ...restWhere } = where;
-
-      // Build Prisma where clause
       const prismaWhere: any = { ...restWhere };
 
       if (search) {
@@ -82,12 +80,7 @@ export const adminRouter = router({
             roles: {
               select: {
                 role: {
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    level: true,
-                  },
+                  select: { id: true, name: true, slug: true, level: true },
                 },
               },
             },
@@ -99,7 +92,7 @@ export const adminRouter = router({
       return {
         items: admins.map((admin) => ({
           ...admin,
-          roles: admin.roles.map((r) => r.role),
+          roles: admin.roles.map((r: any) => r.role),
         })),
         total,
         page,
@@ -108,7 +101,6 @@ export const adminRouter = router({
       };
     }),
 
-  // Custom getOne with roles
   getOne: permissionProcedure(Permission.admin.read)
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -151,14 +143,10 @@ export const adminRouter = router({
 
       return {
         ...admin,
-        roles: admin.roles.map((r) => ({
-          ...r.role,
-          assignedAt: r.assignedAt,
-        })),
+        roles: admin.roles.map((r: any) => ({ ...r.role, assignedAt: r.assignedAt })),
       };
     }),
 
-  // Custom create with password hashing and default role
   create: permissionProcedure(Permission.admin.create)
     .input(
       z.object({
@@ -171,20 +159,15 @@ export const adminRouter = router({
           avatar: z.string().optional(),
           isActive: z.boolean().optional(),
         }),
-        include: z.any().optional(),
-        select: z.any().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { data } = input;
 
-      // Check if username or email already exists
+      // Check uniqueness
       const existing = await ctx.prisma.admin.findFirst({
-        where: {
-          OR: [{ username: data.username }, { email: data.email }],
-        },
+        where: { OR: [{ username: data.username }, { email: data.email }] },
       });
-
       if (existing) {
         throw new ConflictException(
           'Username or email already exists',
@@ -195,12 +178,10 @@ export const adminRouter = router({
       // Hash password
       const passwordHash = await bcrypt.hash(data.password, 10);
 
-      // Create admin with default viewer role
-      const viewerRole = await ctx.prisma.role.findUnique({
-        where: { slug: 'viewer' },
-      });
+      // Assign default viewer role
+      const viewerRole = await ctx.prisma.role.findUnique({ where: { slug: 'viewer' } });
 
-      const admin = await ctx.prisma.admin.create({
+      return ctx.prisma.admin.create({
         data: {
           username: data.username,
           email: data.email,
@@ -209,16 +190,9 @@ export const adminRouter = router({
           lastName: data.lastName,
           avatar: data.avatar,
           isActive: data.isActive ?? true,
-          roles: viewerRole
-            ? {
-                create: {
-                  roleId: viewerRole.id,
-                  assignedBy: null,
-                },
-              }
-            : undefined,
+          roles: viewerRole ? { create: { roleId: viewerRole.id, assignedBy: null } } : undefined,
         },
-        select: input.select || {
+        select: {
           id: true,
           username: true,
           email: true,
@@ -228,13 +202,9 @@ export const adminRouter = router({
           isActive: true,
           createdAt: true,
         },
-        include: input.include,
       });
-
-      return admin;
     }),
 
-  // Custom update with validation
   update: permissionProcedure(Permission.admin.update)
     .input(
       z.object({
@@ -247,34 +217,25 @@ export const adminRouter = router({
           avatar: z.string().optional(),
           isActive: z.boolean().optional(),
         }),
-        include: z.any().optional(),
-        select: z.any().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, data } = input;
 
-      // Check if admin exists
-      const existing = await ctx.prisma.admin.findUnique({
-        where: { id },
-      });
-
+      const existing = await ctx.prisma.admin.findUnique({ where: { id } });
       if (!existing) {
         throw new NotFoundBusinessException('Admin', id, ErrorCodes.ADMIN_NOT_FOUND);
       }
 
-      // Check if username/email is taken by another admin
+      // Check uniqueness of username/email
       if (data.username || data.email) {
         const orConditions: any[] = [];
         if (data.username) orConditions.push({ username: data.username });
         if (data.email) orConditions.push({ email: data.email });
 
         const duplicate = await ctx.prisma.admin.findFirst({
-          where: {
-            AND: [{ id: { not: id } }, { OR: orConditions }],
-          },
+          where: { AND: [{ id: { not: id } }, { OR: orConditions }] },
         });
-
         if (duplicate) {
           throw new ConflictException(
             'Username or email already exists',
@@ -283,10 +244,10 @@ export const adminRouter = router({
         }
       }
 
-      const admin = await ctx.prisma.admin.update({
+      return ctx.prisma.admin.update({
         where: { id },
         data,
-        select: input.select || {
+        select: {
           id: true,
           username: true,
           email: true,
@@ -295,13 +256,9 @@ export const adminRouter = router({
           avatar: true,
           updatedAt: true,
         },
-        include: input.include,
       });
-
-      return admin;
     }),
 
-  // Custom delete with protection for last super admin
   delete: permissionProcedure(Permission.admin.delete)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -316,32 +273,18 @@ export const adminRouter = router({
       // Check if admin exists
       const admin = await ctx.prisma.admin.findUnique({
         where: { id: input.id },
-        include: {
-          roles: {
-            include: {
-              role: true,
-            },
-          },
-        },
+        include: { roles: { include: { role: true } } },
       });
-
       if (!admin) {
         throw new NotFoundBusinessException('Admin', input.id, ErrorCodes.ADMIN_NOT_FOUND);
       }
 
-      // Check if admin is the last super admin
-      const hasSuperAdmin = admin.roles.some((ar) => ar.role.slug === 'super_admin');
+      // Protect last super admin
+      const hasSuperAdmin = admin.roles.some((ar: any) => ar.role.slug === 'super_admin');
       if (hasSuperAdmin) {
         const superAdminCount = await ctx.prisma.admin.count({
-          where: {
-            roles: {
-              some: {
-                role: { slug: 'super_admin' },
-              },
-            },
-          },
+          where: { roles: { some: { role: { slug: 'super_admin' } } } },
         });
-
         if (superAdminCount <= 1) {
           throw new ForbiddenBusinessException(
             'Cannot delete the last super admin',
@@ -350,35 +293,20 @@ export const adminRouter = router({
         }
       }
 
-      // Delete admin using a transaction to handle foreign key constraints
-      await ctx.prisma.$transaction(async (tx) => {
-        // 1. Remove admin from all roles
-        await tx.adminRole.deleteMany({
-          where: { adminId: input.id },
-        });
-
-        // 2. Handle refresh tokens
-        await tx.adminRefreshToken.deleteMany({
-          where: { adminId: input.id },
-        });
-
-        // 3. Finally delete the admin
-        await tx.admin.delete({
-          where: { id: input.id },
-        });
+      // Cascade delete
+      await ctx.prisma.$transaction(async (tx: any) => {
+        await tx.adminRole.deleteMany({ where: { adminId: input.id } });
+        await tx.adminRefreshToken.deleteMany({ where: { adminId: input.id } });
+        await tx.admin.delete({ where: { id: input.id } });
       });
 
       return { success: true };
     }),
 
-  // Custom deleteMany with protection
   deleteMany: permissionProcedure(Permission.admin.delete)
     .input(z.object({ ids: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
-      const { ids } = input;
-
-      // Filter out self
-      const filteredIds = ids.filter((id) => id !== (ctx as any).user?.id);
+      const filteredIds = input.ids.filter((id) => id !== (ctx as any).user?.id);
 
       if (filteredIds.length === 0) {
         throw new ForbiddenBusinessException(
@@ -387,29 +315,18 @@ export const adminRouter = router({
         );
       }
 
-      // Check for last super admin
+      // Check last super admin
       const superAdminAdmins = await ctx.prisma.admin.findMany({
         where: {
           id: { in: filteredIds },
-          roles: {
-            some: {
-              role: { slug: 'super_admin' },
-            },
-          },
+          roles: { some: { role: { slug: 'super_admin' } } },
         },
       });
 
       if (superAdminAdmins.length > 0) {
         const totalSuperAdmins = await ctx.prisma.admin.count({
-          where: {
-            roles: {
-              some: {
-                role: { slug: 'super_admin' },
-              },
-            },
-          },
+          where: { roles: { some: { role: { slug: 'super_admin' } } } },
         });
-
         if (totalSuperAdmins <= superAdminAdmins.length) {
           throw new ForbiddenBusinessException(
             'Cannot delete all super admins',
@@ -418,24 +335,13 @@ export const adminRouter = router({
         }
       }
 
-      // Delete admins using a transaction to handle foreign key constraints
+      // Cascade delete for each admin
       let deletedCount = 0;
       for (const adminId of filteredIds) {
-        await ctx.prisma.$transaction(async (tx) => {
-          // 1. Remove admin from all roles
-          await tx.adminRole.deleteMany({
-            where: { adminId },
-          });
-
-          // 2. Handle refresh tokens
-          await tx.adminRefreshToken.deleteMany({
-            where: { adminId },
-          });
-
-          // 3. Delete the admin
-          await tx.admin.delete({
-            where: { id: adminId },
-          });
+        await ctx.prisma.$transaction(async (tx: any) => {
+          await tx.adminRole.deleteMany({ where: { adminId } });
+          await tx.adminRefreshToken.deleteMany({ where: { adminId } });
+          await tx.admin.delete({ where: { id: adminId } });
         });
         deletedCount++;
       }
@@ -443,11 +349,13 @@ export const adminRouter = router({
       return { success: true, count: deletedCount };
     }),
 
-  // Toggle admin active status
+  // ==========================================
+  // 自定义方法
+  // ==========================================
+
   toggleActive: permissionProcedure(Permission.admin.update)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Prevent self-deactivation
       if (input.id === (ctx as any).user?.id) {
         throw new ForbiddenBusinessException(
           'Cannot deactivate yourself',
@@ -459,38 +367,27 @@ export const adminRouter = router({
         where: { id: input.id },
         select: { isActive: true },
       });
-
       if (!admin) {
         throw new NotFoundBusinessException('Admin', input.id, ErrorCodes.ADMIN_NOT_FOUND);
       }
 
-      const updatedAdmin = await ctx.prisma.admin.update({
+      return ctx.prisma.admin.update({
         where: { id: input.id },
         data: { isActive: !admin.isActive },
-        select: {
-          id: true,
-          isActive: true,
-        },
+        select: { id: true, isActive: true },
       });
-
-      return updatedAdmin;
     }),
 
-  // Get admin roles
   getRoles: permissionProcedure(Permission.admin.read)
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const adminRoles = await ctx.prisma.adminRole.findMany({
         where: { adminId: input.id },
-        include: {
-          role: true,
-        },
-        orderBy: {
-          role: { level: 'asc' },
-        },
+        include: { role: true },
+        orderBy: { role: { level: 'asc' } },
       });
 
-      return adminRoles.map((ar) => ({
+      return adminRoles.map((ar: any) => ({
         id: ar.role.id,
         name: ar.role.name,
         slug: ar.role.slug,
@@ -501,32 +398,16 @@ export const adminRouter = router({
       }));
     }),
 
-  // Assign role to admin
   assignRole: permissionProcedure(Permission.admin.manage_roles)
-    .input(
-      z.object({
-        adminId: z.string(),
-        roleId: z.string(),
-      }),
-    )
+    .input(z.object({ adminId: z.string(), roleId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Check if role exists
-      const role = await ctx.prisma.role.findUnique({
-        where: { id: input.roleId },
-      });
-
+      const role = await ctx.prisma.role.findUnique({ where: { id: input.roleId } });
       if (!role) {
         throw new NotFoundBusinessException('Role', input.roleId, ErrorCodes.ROLE_NOT_FOUND);
       }
 
-      // Check if admin already has this role
       const existing = await ctx.prisma.adminRole.findUnique({
-        where: {
-          adminId_roleId: {
-            adminId: input.adminId,
-            roleId: input.roleId,
-          },
-        },
+        where: { adminId_roleId: { adminId: input.adminId, roleId: input.roleId } },
       });
 
       if (existing) {
@@ -534,41 +415,25 @@ export const adminRouter = router({
       }
 
       await ctx.prisma.adminRole.create({
-        data: {
-          adminId: input.adminId,
-          roleId: input.roleId,
-          assignedBy: null,
-        },
+        data: { adminId: input.adminId, roleId: input.roleId, assignedBy: null },
       });
 
       return { success: true };
     }),
 
-  // Remove role from admin
   removeRole: permissionProcedure(Permission.admin.manage_roles)
-    .input(
-      z.object({
-        adminId: z.string(),
-        roleId: z.string(),
-      }),
-    )
+    .input(z.object({ adminId: z.string(), roleId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Prevent removing own admin roles
+      // Prevent removing own admin role
       if (input.adminId === (ctx as any).user?.id) {
-        const role = await ctx.prisma.role.findUnique({
-          where: { id: input.roleId },
-        });
-
+        const role = await ctx.prisma.role.findUnique({ where: { id: input.roleId } });
         if (role && role.level <= 10) {
           throw new ForbiddenBusinessException(
             'Cannot remove your own admin role',
             ErrorCodes.ADMIN_CANNOT_DEACTIVATE_SELF,
           );
         }
-      }
 
-      // Check if removing last admin role
-      if (input.adminId === (ctx as any).user?.id) {
         const remainingRoles = await ctx.prisma.adminRole.count({
           where: {
             adminId: input.adminId,
@@ -576,7 +441,6 @@ export const adminRouter = router({
             role: { level: { lte: 10 } },
           },
         });
-
         if (remainingRoles === 0) {
           throw new ForbiddenBusinessException(
             'Cannot remove your last admin role',
@@ -586,33 +450,20 @@ export const adminRouter = router({
       }
 
       await ctx.prisma.adminRole.delete({
-        where: {
-          adminId_roleId: {
-            adminId: input.adminId,
-            roleId: input.roleId,
-          },
-        },
+        where: { adminId_roleId: { adminId: input.adminId, roleId: input.roleId } },
       });
 
       return { success: true };
     }),
 
-  // Reset admin password
   resetPassword: permissionProcedure(Permission.admin.update)
-    .input(
-      z.object({
-        adminId: z.string(),
-        newPassword: z.string().min(8),
-      }),
-    )
+    .input(z.object({ adminId: z.string(), newPassword: z.string().min(8) }))
     .mutation(async ({ ctx, input }) => {
       const passwordHash = await bcrypt.hash(input.newPassword, 10);
-
       await ctx.prisma.admin.update({
         where: { id: input.adminId },
         data: { passwordHash },
       });
-
       return { success: true };
     }),
 });
