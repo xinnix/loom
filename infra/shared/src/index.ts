@@ -234,6 +234,56 @@ export type RoleListQueryInput = z.infer<typeof RoleListQuerySchema>;
 export type UpdateRolePermissionsInput = z.infer<typeof UpdateRolePermissionsSchema>;
 
 // ============================================
+// Admin Management Schemas
+// ============================================
+
+export const AdminSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  email: z.string().email(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  avatar: z.string().optional(),
+  isActive: z.boolean(),
+  emailVerified: z.date().optional().nullable(),
+  lastLoginAt: z.date().optional().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export const CreateAdminSchema = z.object({
+  username: z.string().min(3, '用户名至少3个字符'),
+  email: z.string().email('邮箱格式无效'),
+  password: z.string().min(8, '密码至少8个字符'),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  avatar: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const UpdateAdminSchema = z.object({
+  username: z.string().min(3).optional(),
+  email: z.string().email().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  avatar: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const AdminListQuerySchema = z.object({
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().optional(),
+  search: z.string().optional(),
+  isActive: z.boolean().optional(),
+  roleSlug: z.string().optional(),
+});
+
+export type AdminInput = z.infer<typeof AdminSchema>;
+export type CreateAdminInput = z.infer<typeof CreateAdminSchema>;
+export type UpdateAdminInput = z.infer<typeof UpdateAdminSchema>;
+export type AdminListQueryInput = z.infer<typeof AdminListQuerySchema>;
+
+// ============================================
 // Agent CRUD Schemas（LLM 配置）
 // ============================================
 
