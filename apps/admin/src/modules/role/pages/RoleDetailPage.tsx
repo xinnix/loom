@@ -1,15 +1,13 @@
-// apps/admin/src/modules/role/pages/RoleDetailPage.tsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useOne, useList, useDelete } from '@refinedev/core';
-import { Card, Descriptions, Button, Space, Tag, Modal, List, Avatar, Tabs, Spin, App } from 'antd';
-import {
-  ArrowLeftOutlined,
-  EditOutlined,
-  KeyOutlined,
-  TeamOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { useOne, useList } from '@refinedev/core';
+import { Button, Space, Tag, Modal, List, Avatar, Spin, App } from 'antd';
+import { KeyOutlined, TeamOutlined, SettingOutlined, EditOutlined } from '@ant-design/icons';
+import { StandardDetailPage } from '../../../shared/components/StandardDetailPage';
+import type {
+  DetailFieldConfig,
+  DetailTabConfig,
+} from '../../../shared/components/StandardDetailPage/types';
 import { PermissionCheckboxGroup } from '../components/PermissionCheckboxGroup';
 import { getTrpcClient } from '../../../shared/trpc/trpcClient';
 
@@ -22,7 +20,7 @@ interface Permission {
   description?: string;
 }
 
-interface User {
+interface RoleUser {
   id: string;
   username: string;
   email: string;
@@ -32,7 +30,7 @@ interface User {
   assignedAt: Date;
 }
 
-interface RoleDetail {
+interface RoleData {
   id: string;
   name: string;
   slug: string;
@@ -48,65 +46,106 @@ interface RoleDetail {
   };
 }
 
-export const RoleDetailPage = () => {
+/**
+ * 角色详情字段配置
+ */
+const roleDetailFields: DetailFieldConfig[] = [
+  {
+    key: 'name',
+    label: '角色名称',
+    type: 'custom',
+    render: (value: any, entity: any) => (
+      <Space>
+        <SettingOutlined />
+        <span>{value}</span>
+        {entity?.isSystem && <Tag color="blue">系统角色</Tag>}
+      </Space>
+    ),
+  },
+  { key: 'slug', label: '标识', type: 'tag' },
+  {
+    key: 'level',
+    label: '层级',
+    type: 'custom',
+    render: (value: number) => (
+      <Tag color={value < 50 ? 'red' : value < 100 ? 'orange' : 'default'}>{value}</Tag>
+    ),
+  },
+  {
+    key: '_count',
+    label: '用户数',
+    type: 'custom',
+    render: (value: any, entity: any) => (
+      <Tag icon={<TeamOutlined />} color="blue">
+        {entity?._count?.users || 0}
+      </Tag>
+    ),
+  },
+  {
+    key: '_count',
+    label: '权限数',
+    type: 'custom',
+    render: (value: any, entity: any) => (
+      <Tag icon={<KeyOutlined />} color="green">
+        {entity?._count?.permissions || 0}
+      </Tag>
+    ),
+  },
+  { key: 'description', label: '描述', type: 'text', showCondition: (e: any) => !!e.description },
+  { key: 'createdAt', label: '创建时间', type: 'datetime' },
+  { key: 'updatedAt', label: '更新时间', type: 'datetime' },
+];
+
+// 渲染用户列表
+const isActiveLabels: Record<boolean, string> = { true: '激活', false: '停用' };
+const isActiveColors: Record<boolean, string> = { true: 'success', false: 'error' };
+
+/**
+ * 角色详情页
+ *
+ * 使用 StandardDetailPage 配置驱动模式。
+ * 基础信息 Tab 通过 fields 配置，权限和用户 Tab 通过 render 插槽保留自定义渲染。
+ */
+export function RoleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('info');
   const [isPermissionModalVisible, setIsPermissionModalVisible] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
 
-  const {
-    result,
-    isLoading,
-    query: roleQuery,
-  } = useOne<RoleDetail>({
+  const { data: roleData, query: roleQuery } = useOne<RoleData>({
     resource: 'role',
     id: id || '',
-    queryOptions: {
-      enabled: !!id,
-    },
+    queryOptions: { enabled: !!id },
   }) as any;
 
-  const { result: usersResult, query: usersQuery } = useList<User>({
+  const role: RoleData | undefined = roleData;
+  const isLoading = roleQuery?.isLoading;
+
+  const { data: usersData } = useList<RoleUser>({
     resource: 'role',
     id: id || '',
     action: 'getUsers',
     pagination: { pageSize: 10 },
-    queryOptions: {
-      enabled: !!id && activeTab === 'users',
-    },
+    queryOptions: { enabled: !!id },
   }) as any;
 
-  const { mutate: deleteOne } = useDelete();
-  void deleteOne; // available for future delete operations
+  const users: RoleUser[] = usersData || [];
 
-  const role = result;
-  const users = usersResult || [];
-
-  useEffect(() => {
-    if (role?.permissions) {
-      setSelectedPermissions(role.permissions.map((p: Permission) => p.id));
-    }
-  }, [role]);
-
-  useEffect(() => {
-    if (activeTab === 'users' && id) {
-      usersQuery.refetch();
-    }
-  }, [activeTab, id, usersQuery]);
+  // 初始化权限选择
+  if (role?.permissions && selectedPermissions.length === 0) {
+    setSelectedPermissions(role.permissions.map((p) => p.id));
+  }
 
   const handleUpdatePermissions = async () => {
     if (!role) return;
-
     setLoading(true);
     try {
       await (trpcClient as any).role.updatePermissions.mutate({
         roleId: role.id,
         permissionIds: selectedPermissions,
       });
-
       message.success('权限更新成功');
       setIsPermissionModalVisible(false);
       roleQuery.refetch();
@@ -118,72 +157,26 @@ export const RoleDetailPage = () => {
     }
   };
 
-  if (isLoading) {
-    return <div style={{ padding: 24, textAlign: 'center' }}>加载中...</div>;
-  }
-
-  if (!role) {
-    return <div style={{ padding: 24 }}>角色不存在</div>;
-  }
-
-  const tabItems = [
-    {
-      key: 'info',
-      label: '基本信息',
-      children: (
-        <Descriptions column={2} bordered>
-          <Descriptions.Item label="角色名称" labelStyle={{ width: 120 }}>
-            <Space>
-              <SettingOutlined />
-              {role.name}
-              {role.isSystem && <Tag color="blue">系统角色</Tag>}
-            </Space>
-          </Descriptions.Item>
-          <Descriptions.Item label="标识">{role.slug}</Descriptions.Item>
-          <Descriptions.Item label="层级">
-            <Tag color={role.level < 50 ? 'red' : role.level < 100 ? 'orange' : 'default'}>
-              {role.level}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="用户数">
-            <Tag icon={<TeamOutlined />} color="blue">
-              {role._count.users}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="权限数">
-            <Tag icon={<KeyOutlined />} color="green">
-              {role._count.permissions}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="描述" span={2}>
-            {role.description || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="创建时间">
-            {new Date(role.createdAt).toLocaleString('zh-CN')}
-          </Descriptions.Item>
-          <Descriptions.Item label="更新时间">
-            {new Date(role.updatedAt).toLocaleString('zh-CN')}
-          </Descriptions.Item>
-        </Descriptions>
-      ),
-    },
+  const tabs: DetailTabConfig[] = [
     {
       key: 'permissions',
       label: '权限管理',
-      children: (
+      render: (entity: any) => (
         <Space direction="vertical" style={{ width: '100%' }} size="large">
           <div style={{ textAlign: 'right' }}>
             <Button
               type="primary"
               icon={<KeyOutlined />}
-              onClick={() => setIsPermissionModalVisible(true)}
+              onClick={() => {
+                setSelectedPermissions(entity?.permissions?.map((p: Permission) => p.id) || []);
+                setIsPermissionModalVisible(true);
+              }}
             >
               编辑权限
             </Button>
           </div>
-
           <List
-            dataSource={role.permissions}
+            dataSource={entity?.permissions || []}
             renderItem={(permission: Permission) => (
               <List.Item>
                 <List.Item.Meta
@@ -208,10 +201,10 @@ export const RoleDetailPage = () => {
     {
       key: 'users',
       label: '拥有该角色的用户',
-      children: (
+      render: () => (
         <List
           dataSource={users}
-          renderItem={(user: User) => (
+          renderItem={(user: RoleUser) => (
             <List.Item
               actions={[
                 <Button
@@ -233,9 +226,7 @@ export const RoleDetailPage = () => {
                     <span>|</span>
                     <span>{[user.firstName, user.lastName].filter(Boolean).join(' ') || '-'}</span>
                     <span>|</span>
-                    <Tag color={user.isActive ? 'success' : 'error'}>
-                      {user.isActive ? '激活' : '停用'}
-                    </Tag>
+                    <Tag color={isActiveColors[user.isActive]}>{isActiveLabels[user.isActive]}</Tag>
                     <span>|</span>
                     <span>分配于: {new Date(user.assignedAt).toLocaleDateString('zh-CN')}</span>
                   </Space>
@@ -249,27 +240,46 @@ export const RoleDetailPage = () => {
     },
   ];
 
+  // 用 renderTabContent 处理用户的懒加载
+  const handleRenderTabContent = (tabKey: string, entity: any) => {
+    if (tabKey === 'permissions') {
+      const tab = tabs.find((t) => t.key === 'permissions');
+      return tab?.render?.(entity || role);
+    }
+    if (tabKey === 'users') {
+      const tab = tabs.find((t) => t.key === 'users');
+      return tab?.render?.(entity || role);
+    }
+    return null;
+  };
+
+  if (isLoading) {
+    return <div style={{ padding: 24, textAlign: 'center' }}>加载中...</div>;
+  }
+
+  if (!role && !isLoading) {
+    return <div style={{ padding: 24 }}>角色不存在</div>;
+  }
+
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px' }}>
-      <Card
-        title={
-          <Space>
-            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/roles')}>
-              返回
-            </Button>
-            <span>角色详情</span>
-          </Space>
+    <>
+      <StandardDetailPage
+        resource="role"
+        title="角色详情"
+        backPath="/roles"
+        backLabel="返回列表"
+        headerType="none"
+        fields={roleDetailFields}
+        column={2}
+        maxWidth={1000}
+        tabs={[{ key: 'info', label: '基本信息' }, ...tabs]}
+        renderTabContent={handleRenderTabContent}
+        cardExtra={
+          <Button icon={<EditOutlined />} onClick={() => navigate('/roles')}>
+            编辑
+          </Button>
         }
-        extra={
-          <Space>
-            <Button icon={<EditOutlined />} onClick={() => message.info('请在列表页编辑角色信息')}>
-              编辑
-            </Button>
-          </Space>
-        }
-      >
-        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
-      </Card>
+      />
 
       <Modal
         title="编辑权限"
@@ -287,6 +297,6 @@ export const RoleDetailPage = () => {
           />
         </Spin>
       </Modal>
-    </div>
+    </>
   );
-};
+}

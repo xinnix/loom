@@ -1,48 +1,28 @@
-import { useTable } from '@refinedev/core';
-import { List } from '@refinedev/antd';
-import { Table, Card, Row, Col, Tag, Input, Modal } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
 import { useState } from 'react';
+import { Tag, Button, Modal, Space } from 'antd';
+import { StandardListPage } from '../../../shared/components/StandardListPage';
+import type { StandardListPageProps } from '../../../shared/components/StandardListPage/types';
 
-interface WecomEvent {
-  id: string;
-  configId: string;
-  eventType: string;
-  eventKey?: string;
-  fromUser?: string;
-  content?: string;
-  createdAt: Date;
-  config?: { name: string };
-}
+const eventTypeColorMap: Record<string, string> = {
+  subscribe: 'green',
+  unsubscribe: 'red',
+  enter_agent: 'blue',
+  external_contact: 'purple',
+  location: 'cyan',
+};
 
-export const WecomEventListPage = () => {
-  const [searchText, setSearchText] = useState('');
+/**
+ * 企业微信事件记录列表页
+ *
+ * 只读列表，通过 Modal 查看事件详情。
+ */
+export function WecomEventListPage() {
   const [contentModal, setContentModal] = useState<{ open: boolean; content: string }>({
     open: false,
     content: '',
   });
 
-  const { tableQuery, currentPage, setCurrentPage, pageSize, setPageSize } = useTable<WecomEvent>({
-    resource: 'wecom.event',
-    pagination: { currentPage: 1, pageSize: 20, mode: 'server' },
-    filters: {
-      initial: searchText
-        ? [{ field: 'search', operator: 'contains', value: searchText } as any]
-        : [],
-    },
-  });
-
-  const result = tableQuery.data;
-
-  const eventTypeColorMap: Record<string, string> = {
-    subscribe: 'green',
-    unsubscribe: 'red',
-    enter_agent: 'blue',
-    external_contact: 'purple',
-    location: 'cyan',
-  };
-
-  const columns: any[] = [
+  const columns: StandardListPageProps['columns'] = [
     {
       title: '时间',
       dataIndex: 'createdAt',
@@ -51,9 +31,9 @@ export const WecomEventListPage = () => {
     },
     {
       title: '配置',
-      dataIndex: ['config', 'name'],
+      key: 'configName',
       width: 120,
-      render: (name: string) => name || '-',
+      render: (_: any, record: any) => record.config?.name || '-',
     },
     {
       title: '事件类型',
@@ -79,75 +59,40 @@ export const WecomEventListPage = () => {
       ellipsis: true,
       render: (content: string) => content?.slice(0, 50) || '-',
     },
-    {
-      title: '操作',
-      width: 80,
-      render: (_: any, record: WecomEvent) => (
-        <a onClick={() => setContentModal({ open: true, content: record.content || '' })}>
-          查看详情
-        </a>
-      ),
-    },
   ];
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
-      <List>
-        <Card>
-          <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-            <Col>
-              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 'bold' }}>事件记录</h1>
-              <div style={{ fontSize: 14, color: '#999', marginTop: 8 }}>企业微信事件回调日志</div>
-            </Col>
-          </Row>
-
-          <Input
-            placeholder="搜索事件类型或用户"
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300, marginBottom: 16 }}
-            allowClear
-          />
-
-          <Table
-            columns={columns}
-            rowKey="id"
-            dataSource={result?.data || []}
-            loading={tableQuery.isLoading}
-            pagination={{
-              current: currentPage,
-              pageSize,
-              total: result?.total || 0,
-              onChange: (page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
-              },
-              showSizeChanger: true,
-              showTotal: (total) => `共 ${total} 条`,
-            }}
-          />
-
-          <Modal
-            title="事件详情"
-            open={contentModal.open}
-            onCancel={() => setContentModal({ open: false, content: '' })}
-            footer={null}
-            width={600}
-          >
-            <pre
-              style={{
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-all',
-                maxHeight: 400,
-                overflow: 'auto',
-              }}
+    <>
+      <StandardListPage
+        resource="wecom.event"
+        title="事件记录"
+        columns={columns}
+        hideCreateButton
+        searchFields={[{ field: 'search', placeholder: '搜索事件类型或用户' }]}
+        renderRowActions={(record: any) => (
+          <Space>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => setContentModal({ open: true, content: record.content || '' })}
             >
-              {contentModal.content}
-            </pre>
-          </Modal>
-        </Card>
-      </List>
-    </div>
+              查看详情
+            </Button>
+          </Space>
+        )}
+      />
+
+      <Modal
+        title="事件详情"
+        open={contentModal.open}
+        onCancel={() => setContentModal({ open: false, content: '' })}
+        footer={<Button onClick={() => setContentModal({ open: false, content: '' })}>关闭</Button>}
+        width={600}
+      >
+        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 13 }}>
+          {contentModal.content || '(无内容)'}
+        </pre>
+      </Modal>
+    </>
   );
-};
+}
