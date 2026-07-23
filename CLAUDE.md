@@ -204,11 +204,12 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 
 关键架构决策记录在 `docs/adr/` 目录。在做出重大架构变更前，先查阅现有 ADR 避免重复决策：
 
-| ADR                                                   | 标题                                                               |
-| ----------------------------------------------------- | ------------------------------------------------------------------ |
-| [ADR-001](docs/adr/001-dual-protocol-architecture.md) | 双协议架构（Admin 端 tRPC，外部端 REST）                           |
-| [ADR-002](docs/adr/002-refine-antd-frontend.md)       | Admin 前端选择 Refine + Ant Design                                 |
-| [ADR-003](docs/adr/003-standardized-ui-pattern.md)    | 声明式 UI 模式（StandardForm/StandardListPage/StandardDetailPage） |
+| ADR                                                    | 标题                                                               |
+| ------------------------------------------------------ | ------------------------------------------------------------------ |
+| [ADR-001](docs/adr/001-dual-protocol-architecture.md)  | 双协议架构（Admin 端 tRPC，外部端 REST）                           |
+| [ADR-002](docs/adr/002-refine-antd-frontend.md)        | Admin 前端选择 Refine + Ant Design                                 |
+| [ADR-003](docs/adr/003-standardized-ui-pattern.md)     | 声明式 UI 模式（StandardForm/StandardListPage/StandardDetailPage） |
+| [ADR-004](docs/adr/004-module-standardization-push.md) | 模块标准化推广至全部业务模块                                       |
 
 新增 ADR 时使用模板：
 
@@ -235,7 +236,9 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 
 ### 模块健康检查清单
 
-新模块（通过 genModule 或其他方式创建）应满足以下最低标准：
+新模块（通过 genModule 或其他方式创建）应满足以下最低标准。
+
+> 完整参考：`docs/module-health-checklist.md`
 
 **API 端（`apps/api/src/modules/{name}/`）：**
 
