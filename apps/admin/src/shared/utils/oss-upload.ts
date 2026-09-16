@@ -1,15 +1,16 @@
 /**
- * OSS 直传上传工具
+ * 文件上传工具
  *
- * 使用阿里云 OSS Post Policy 签名方式实现前端直传
- * 文档：https://help.aliyun.com/document_detail/31989.html
+ * 根据服务端存储配置（FILE_STORAGE_PROVIDER）自动选择上传方式：
+ * - aliyun-oss: 前端直传 OSS（Post Policy 签名）
+ *   文档：https://help.aliyun.com/document_detail/31989.html
+ * - local: 走服务端中转（REST /api/upload/image）
  */
 
 import { trpcClient } from '../dataProvider/dataProvider';
 
 export interface UploadCredentials {
   accessKeyId: string;
-  accessKeySecret: string;
   securityToken: string;
   expiration: string;
   bucket: string;
@@ -17,8 +18,6 @@ export interface UploadCredentials {
   endpoint: string;
   policy: string;
   signature: string;
-  xOssSignatureVersion: string;
-  xOssCredential: string;
 }
 
 export interface UploadResult {
@@ -31,17 +30,23 @@ export type UploadType =
   'merchant_logo' | 'news_banner' | 'merchant_gallery' | 'news_content' | 'avatar';
 
 /**
- * OSS 直传上传类
+ * 上传类（自动适配存储模式）
  */
 export class OSSUploader {
   /**
-   * 上传文件到 OSS
+   * 上传文件
    *
    * @param file 要上传的文件
    * @param type 上传类型（用于确定存储路径）
    * @returns 上传结果
    */
   static async upload(file: File, type: UploadType): Promise<UploadResult> {
+    // 0. 获取存储配置，按 provider 选择上传方式
+    const config = await (trpcClient as any).upload.getUploadConfig.query();
+    if (config.provider !== 'aliyun-oss') {
+      return this.uploadViaServer(file, type);
+    }
+
     // 1. 获取上传凭证
     const credentials = await (trpcClient as any).upload.getUploadCredentials.query({ type });
 
@@ -82,6 +87,37 @@ export class OSSUploader {
       url,
       fileName: file.name,
       fileSize: file.size,
+    };
+  }
+
+  /**
+   * 服务端中转上传（FILE_STORAGE_PROVIDER=local 时的回退路径）
+   */
+  private static async uploadViaServer(file: File, type: UploadType): Promise<UploadResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+
+    const token = localStorage.getItem('accessToken');
+    const response = await fetch('/api/upload/image', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`上传失败: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    if (!result?.success || !result?.data?.url) {
+      throw new Error(result?.message || '上传失败');
+    }
+
+    return {
+      url: result.data.url,
+      fileName: result.data.fileName,
+      fileSize: result.data.fileSize,
     };
   }
 
