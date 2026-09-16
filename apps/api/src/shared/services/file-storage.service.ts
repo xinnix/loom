@@ -27,7 +27,6 @@ export interface UploadResult {
 
 export interface UploadCredentials {
   accessKeyId: string;
-  accessKeySecret: string;
   securityToken: string;
   expiration: string;
   bucket: string;
@@ -35,8 +34,6 @@ export interface UploadCredentials {
   endpoint: string;
   policy: string;
   signature: string;
-  xOssSignatureVersion: string;
-  xOssCredential: string;
 }
 
 export interface IFileStorage {
@@ -55,10 +52,12 @@ export class FileStorageService implements IFileStorage {
   private readonly logger = new Logger(FileStorageService.name);
   private strategy: IFileStorage;
   private uploadPath: string;
+  private readonly providerName: string;
 
   constructor(private config: ConfigService) {
     const provider = config.get<string>('FILE_STORAGE_PROVIDER', 'local');
     this.uploadPath = config.get<string>('UPLOAD_PATH', './uploads') || './uploads';
+    this.providerName = provider === 'aliyun-oss' ? 'aliyun-oss' : 'local';
 
     // 根据配置选择存储策略
     switch (provider) {
@@ -70,6 +69,16 @@ export class FileStorageService implements IFileStorage {
         this.logger.log(`Using local storage provider: ${provider}`);
         this.strategy = new LocalStorageStrategy(this.uploadPath, config);
     }
+  }
+
+  /** 当前存储 provider（local | aliyun-oss），供前端选择上传方式 */
+  get provider(): string {
+    return this.providerName;
+  }
+
+  /** 允许的最大文件大小（字节） */
+  get maxFileSize(): number {
+    return this.config.get<number>('MAX_FILE_SIZE', 10 * 1024 * 1024);
   }
 
   async upload(file: UploadedFile, dirPath: string): Promise<UploadResult> {
@@ -121,7 +130,7 @@ export class FileStorageService implements IFileStorage {
    * @throws Error if file is invalid
    */
   validateFile(file: UploadedFile, category: string = 'all'): void {
-    const maxFileSize = this.config.get<number>('MAX_FILE_SIZE', 10 * 1024 * 1024);
+    const maxFileSize = this.maxFileSize;
 
     const allowedMimeTypes: Record<string, string[]> = {
       image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
@@ -244,6 +253,8 @@ class LocalStorageStrategy implements IFileStorage {
 class AliyunOssStrategy implements IFileStorage {
   private client: any;
   private bucket: string;
+  private endpoint: string;
+  private maxFileSize: number;
   private logger = console; // 添加 logger
 
   constructor(config: ConfigService) {
@@ -271,6 +282,8 @@ class AliyunOssStrategy implements IFileStorage {
     });
 
     this.bucket = bucket;
+    this.endpoint = endpoint;
+    this.maxFileSize = config.get<number>('MAX_FILE_SIZE', 10 * 1024 * 1024);
   }
 
   async upload(file: UploadedFile, dirPath: string): Promise<UploadResult> {
@@ -281,18 +294,15 @@ class AliyunOssStrategy implements IFileStorage {
     const fileName = `${timestamp}-${randomStr}${ext}`;
     const objectName = pathModule.posix.join(dirPath, fileName);
 
-    // 上传到 OSS
-    await this.client.put(objectName, file.buffer, {
+    // 上传到 OSS（url 由 SDK 根据 endpoint/cname 生成，兼容自定义域名）
+    const result = await this.client.put(objectName, file.buffer, {
       headers: {
         'Content-Type': file.mimetype,
       },
     });
 
-    // 返回 OSS URL
-    const url = `https://${this.bucket}.${this.client.options.region}.aliyuncs.com/${objectName}`;
-
     return {
-      url,
+      url: result.url,
       fileName: file.originalname,
       fileSize: file.size,
       mimeType: file.mimetype,
@@ -340,8 +350,8 @@ class AliyunOssStrategy implements IFileStorage {
         conditions: [
           // 限制上传路径
           ['starts-with', '$key', `${dirPath}/`],
-          // 限制文件大小 (最大 10MB)
-          ['content-length-range', 0, 10485760],
+          // 限制文件大小
+          ['content-length-range', 0, this.maxFileSize],
         ],
       };
 
@@ -357,16 +367,13 @@ class AliyunOssStrategy implements IFileStorage {
 
       return {
         accessKeyId,
-        accessKeySecret: '', // Post Policy 不需要暴露 secret
-        securityToken: '', // 不使用 STS
+        securityToken: '', // 暂不使用 STS，预留字段
         expiration,
         bucket: this.bucket,
         region: this.client.options.region,
-        endpoint: `https://${this.bucket}.${this.client.options.region}.aliyuncs.com`,
+        endpoint: this.endpoint,
         policy: policyBase64,
         signature,
-        xOssSignatureVersion: 'OSS_POST_POLICY', // 标记使用 Post Policy
-        xOssCredential: `${accessKeyId}/${expiration}`, // Post Policy 方式
       };
     } catch (error) {
       this.logger.error('生成上传凭证失败:', error);

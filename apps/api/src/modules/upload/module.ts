@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
 import { UploadService } from './services/upload.service';
 import { UploadController } from './rest/upload.controller';
-import { FileStorageService } from '../../shared/services/file-storage.service';
 
+/**
+ * 文件上传模块
+ *
+ * FileStorageService 由全局 SharedModule 提供。
+ */
 @Module({
-  providers: [UploadService, FileStorageService],
+  providers: [UploadService],
   controllers: [UploadController],
   exports: [UploadService],
 })

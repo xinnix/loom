@@ -19,7 +19,7 @@ import { WecomModule } from './modules/wecom/module';
 import { TodoModule } from './modules/todo/module';
 // 全局拦截器
 import { TransformInterceptor } from './core/interceptors/transform.interceptor';
-import { FileStorageService } from './shared/services/file-storage.service';
+import { SharedModule } from './shared/shared.module';
 import { LlmModule } from './llm/llm.module';
 
 @Module({
@@ -36,6 +36,8 @@ import { LlmModule } from './llm/llm.module';
     ]),
     // 数据库模块（全局，必须在最前）
     PrismaModule,
+    // 共享服务（全局：FileStorageService 等）
+    SharedModule,
     // 基础设施模块
     LlmModule.forRoot(),
     AuthModule,
@@ -51,7 +53,6 @@ import { LlmModule } from './llm/llm.module';
   ],
   providers: [
     Reflector,
-    FileStorageService,
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,
