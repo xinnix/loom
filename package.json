@@ -63,7 +63,7 @@
       "allowedVersions": {
         "antd": "6",
         "yargs": "18",
-        "typescript": "7",
+        "typescript": "~5.9.3",
         "vite": "8",
         "vue": "3.5",
         "@vitejs/plugin-vue": "5",

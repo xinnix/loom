@@ -21,6 +21,9 @@ export default defineConfig([
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
+      // 脚手架标准模式：FieldDefinition[] 等配置常量与 Form 组件同文件导出
+      // （StandardForm 约定，genModule 同样生成此结构），与该规则冲突，故关闭。
+      'react-refresh/only-export-components': 'off',
     },
   },
 ]);

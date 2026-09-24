@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { todoApi, type Todo } from '@/api/todos'
+import type { Todo } from '@/api/todos'
 import { onLoad } from '@dcloudio/uni-app'
+import { ref } from 'vue'
+import { todoApi } from '@/api/todos'
 
 definePage({
   navigationBarTitleText: 'Todo 详情',
@@ -43,18 +44,22 @@ async function fetchTodo(id: string) {
     const res = await todoApi.getById(id)
     if (res.success) {
       todo.value = res.data
-    } else {
+    }
+    else {
       uni.showToast({ title: res.message || '加载失败', icon: 'none' })
     }
-  } catch (err) {
+  }
+  catch {
     uni.showToast({ title: '网络错误', icon: 'none' })
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 async function handleToggleComplete() {
-  if (!todo.value) return
+  if (!todo.value)
+    return
   const res = await todoApi.toggleComplete(todo.value.id, !todo.value.isCompleted)
   if (res.success) {
     todo.value = res.data
@@ -62,7 +67,8 @@ async function handleToggleComplete() {
 }
 
 async function handleDelete() {
-  if (!todo.value) return
+  if (!todo.value)
+    return
   uni.showModal({
     title: '确认删除',
     content: '删除后无法恢复，确认删除？',
@@ -79,7 +85,8 @@ async function handleDelete() {
 }
 
 function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return '-'
+  if (!dateStr)
+    return '-'
   const d = new Date(dateStr)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
@@ -96,17 +103,23 @@ function formatDate(dateStr: string | null | undefined): string {
     <view v-if="!loading && todo" class="detail-card">
       <!-- 标题行 -->
       <view class="title-row">
-        <view :class="['checkbox', todo.isCompleted && 'checkbox-checked']" @click="handleToggleComplete">
+        <view
+          class="checkbox" :class="[todo.isCompleted && 'checkbox-checked']"
+          @click="handleToggleComplete"
+        >
           <text v-if="todo.isCompleted" class="checkbox-icon">✓</text>
         </view>
-        <text :class="['title-text', todo.isCompleted && 'title-completed']">
+        <text class="title-text" :class="[todo.isCompleted && 'title-completed']">
           {{ todo.title }}
         </text>
       </view>
 
       <!-- 标签 -->
       <view class="tag-row">
-        <text class="status-tag" :style="{ color: statusColorMap[todo.status], borderColor: statusColorMap[todo.status] }">
+        <text
+          class="status-tag"
+          :style="{ color: statusColorMap[todo.status], borderColor: statusColorMap[todo.status] }"
+        >
           {{ statusMap[todo.status] || todo.status }}
         </text>
         <text v-if="todo.priority > 0" class="priority-tag">

@@ -39,6 +39,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []); // Empty deps - function is stable
 
   useEffect(() => {
+    // checkAuth 内 setState 均在 await 之后，属合法的挂载期异步初始化；
+    // react-hooks 新规则不跨 async 边界分析，此处为误报。
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkAuth();
   }, []); // Run once on mount
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { todoApi, type Todo } from '@/api/todos'
+import type { Todo } from '@/api/todos'
 import { onShow } from '@dcloudio/uni-app'
+import { onMounted, ref } from 'vue'
+import { todoApi } from '@/api/todos'
 
 definePage({
   navigationBarTitleText: '待办事项',
@@ -40,17 +41,21 @@ async function fetchTodos() {
   loading.value = true
   try {
     const params: Record<string, any> = {}
-    if (statusFilter.value) params.status = statusFilter.value
+    if (statusFilter.value)
+      params.status = statusFilter.value
 
     const res = await todoApi.getList(params)
     if (res.success) {
       todoList.value = res.data || []
-    } else {
+    }
+    else {
       uni.showToast({ title: res.message || '加载失败', icon: 'none' })
     }
-  } catch (err) {
+  }
+  catch {
     uni.showToast({ title: '网络错误', icon: 'none' })
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -98,17 +103,27 @@ onMounted(() => {
       <!-- 状态筛选 -->
       <view class="filter-row">
         <view
-          :class="['filter-tag', !statusFilter && 'filter-tag-active']"
-          @click="statusFilter = ''; fetchTodos()"
+          class="filter-tag" :class="[!statusFilter && 'filter-tag-active']"
+          @click="
+            statusFilter = '';
+            fetchTodos();
+          "
         >
           全部
         </view>
         <view
           v-for="(label, key) in statusMap"
           :key="key"
-          :class="['filter-tag', statusFilter === key && 'filter-tag-active']"
-          :style="statusFilter === key ? `border-color: ${statusColorMap[key]}; color: ${statusColorMap[key]}` : ''"
-          @click="statusFilter = key; fetchTodos()"
+          class="filter-tag" :class="[statusFilter === key && 'filter-tag-active']"
+          :style="
+            statusFilter === key
+              ? `border-color: ${statusColorMap[key]}; color: ${statusColorMap[key]}`
+              : ''
+          "
+          @click="
+            statusFilter = key;
+            fetchTodos();
+          "
         >
           {{ label }}
         </view>
@@ -144,7 +159,7 @@ onMounted(() => {
       >
         <!-- 勾选框 -->
         <view
-          :class="['checkbox', todo.isCompleted && 'checkbox-checked']"
+          class="checkbox" :class="[todo.isCompleted && 'checkbox-checked']"
           @click.stop="toggleComplete(todo)"
         >
           <text v-if="todo.isCompleted" class="checkbox-icon">✓</text>
@@ -153,16 +168,13 @@ onMounted(() => {
         <!-- 内容 -->
         <view class="todo-content">
           <view class="todo-header">
-            <text :class="['todo-title', todo.isCompleted && 'todo-title-completed']">
+            <text class="todo-title" :class="[todo.isCompleted && 'todo-title-completed']">
               {{ todo.title }}
             </text>
           </view>
 
           <view class="todo-meta">
-            <text
-              class="status-tag"
-              :style="{ color: statusColorMap[todo.status] || '#999' }"
-            >
+            <text class="status-tag" :style="{ color: statusColorMap[todo.status] || '#999' }">
               {{ statusMap[todo.status] || todo.status }}
             </text>
             <text v-if="todo.priority > 0" class="priority-tag">

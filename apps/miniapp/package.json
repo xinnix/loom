@@ -71,7 +71,7 @@
     "miniprogram-api-typings": "^5.2.1",
     "sass": "^1.101.0",
     "simple-git-hooks": "^2.13.1",
-    "typescript": "~7.0.2",
+    "typescript": "~5.9.3",
     "unocss": "66.7.5",
     "unplugin-auto-import": "^21.0.0",
     "vite": "^8.1.5",

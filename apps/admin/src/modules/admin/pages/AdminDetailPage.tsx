@@ -1,25 +1,10 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useOne, useList } from '@refinedev/core';
-import {
-  Tag,
-  Button,
-  Space,
-  App,
-  Spin,
-  Empty,
-  Avatar,
-  Modal,
-  Select,
-  Popconfirm,
-  Table,
-} from 'antd';
-import { UserOutlined, PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Tag, Button, Space, App, Spin, Empty, Modal, Select, Popconfirm, Table } from 'antd';
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { StandardDetailPage } from '../../../shared/components/StandardDetailPage';
-import type {
-  DetailFieldConfig,
-  DetailTabConfig,
-} from '../../../shared/components/StandardDetailPage/types';
+import type { DetailFieldConfig } from '../../../shared/components/StandardDetailPage/types';
 import { trpcClient } from '../../../shared/dataProvider/dataProvider';
 
 interface AdminRole {
@@ -76,7 +61,6 @@ const adminDetailFields: DetailFieldConfig[] = [
  */
 export function AdminDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [isAssignModalVisible, setIsAssignModalVisible] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(undefined);
   const { message } = App.useApp();

@@ -33,13 +33,6 @@ interface AdminRecord {
   roles: AdminRole[];
 }
 
-interface RoleOption {
-  id: string;
-  name: string;
-  slug: string;
-  level: number;
-}
-
 /**
  * 管理员管理页面
  *

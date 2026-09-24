@@ -8,6 +8,7 @@
 
 | 任务                                                       | 分支   | 完成时间   |
 | ---------------------------------------------------------- | ------ | ---------- |
+| [CI 全绿修复](completed/ci-greenfix.md)                    | `main` | 2026-09-24 |
 | [Landing 介绍更新](completed/landing-copy-refresh.md)      | `main` | 2026-09-24 |
 | [多 Agent 工具支持](completed/multi-agent-support.md)      | `main` | 2026-09-24 |
 | [文档体系重设计](completed/docs-system-redesign.md)        | `main` | 2026-09-24 |

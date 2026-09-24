@@ -1,4 +1,3 @@
-import { Tag } from 'antd';
 import type { DetailFieldConfig } from '../../../shared/components/StandardDetailPage/types';
 
 /**

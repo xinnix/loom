@@ -180,9 +180,7 @@ export const merchantRouter = createCrudRouter('Merchant', {
 ```typescript
 import { createCrudRouter, mergeRouters } from '../../../trpc/trpc.helper';
 
-const crudRouter = createCrudRouter('Merchant', {
-  /* schemas */
-});
+const crudRouter = createCrudRouter('Merchant', {/* schemas */});
 
 export const merchantRouter = mergeRouters(
   crudRouter,

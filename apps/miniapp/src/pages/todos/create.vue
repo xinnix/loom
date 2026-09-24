@@ -31,9 +31,11 @@ async function handleCreate() {
 
   try {
     const payload: any = { title: title.value.trim() }
-    if (description.value.trim()) payload.description = description.value.trim()
+    if (description.value.trim())
+      payload.description = description.value.trim()
     payload.priority = priority.value
-    if (dueDate.value) payload.dueDate = dueDate.value
+    if (dueDate.value)
+      payload.dueDate = dueDate.value
 
     const res = await todoApi.create(payload)
 
@@ -41,12 +43,15 @@ async function handleCreate() {
       uni.showToast({ title: '创建成功', icon: 'success' })
       // 返回列表页
       uni.navigateBack()
-    } else {
+    }
+    else {
       uni.showToast({ title: res.message || '创建失败', icon: 'none' })
     }
-  } catch (err) {
+  }
+  catch {
     uni.showToast({ title: '网络错误', icon: 'none' })
-  } finally {
+  }
+  finally {
     saving.value = false
   }
 }
@@ -58,12 +63,7 @@ async function handleCreate() {
       <!-- 标题 -->
       <view class="form-item">
         <text class="form-label">标题 <text class="required">*</text></text>
-        <input
-          v-model="title"
-          class="form-input"
-          placeholder="输入待办事项标题"
-          maxlength="200"
-        />
+        <input v-model="title" class="form-input" placeholder="输入待办事项标题" maxlength="200">
       </view>
 
       <!-- 描述 -->
@@ -84,8 +84,12 @@ async function handleCreate() {
           <view
             v-for="opt in priorityOptions"
             :key="opt.value"
-            :class="['priority-tag', priority === opt.value && 'priority-tag-active']"
-            :style="priority === opt.value ? `border-color: ${opt.color}; color: ${opt.color}; background: ${opt.color}15` : ''"
+            class="priority-tag" :class="[priority === opt.value && 'priority-tag-active']"
+            :style="
+              priority === opt.value
+                ? `border-color: ${opt.color}; color: ${opt.color}; background: ${opt.color}15`
+                : ''
+            "
             @click="priority = opt.value"
           >
             {{ opt.label }}
@@ -96,8 +100,8 @@ async function handleCreate() {
       <!-- 截止日期 -->
       <view class="form-item">
         <text class="form-label">截止日期</text>
-        <picker mode="date" :value="dueDate" @change="(e: any) => dueDate = e.detail.value">
-          <view :class="['date-picker', !dueDate && 'date-picker-empty']">
+        <picker mode="date" :value="dueDate" @change="(e: any) => (dueDate = e.detail.value)">
+          <view class="date-picker" :class="[!dueDate && 'date-picker-empty']">
             {{ dueDate || '请选择日期' }}
           </view>
         </picker>

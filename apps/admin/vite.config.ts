@@ -28,7 +28,8 @@ export default defineConfig({
         manualChunks(id: string) {
           if (id.includes('quill')) return 'quill';
           if (id.includes('antd')) return 'antd';
-          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router'))
+            return 'react-vendor';
         },
       },
     },

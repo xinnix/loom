@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { StandardDetailPage } from '../../../shared/components/StandardDetailPage';
 import { userDetailFields } from '../components/UserDetail';
 
