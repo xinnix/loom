@@ -54,7 +54,9 @@ export default function LandingPage() {
           <div className="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-gutter text-center">
             <div className="inline-flex items-center gap-3 mb-10">
               <div className="h-px w-8 bg-slate-300" />
-              <span className="mono-label !text-sm !text-primary">专为 Claude Code 架构优化</span>
+              <span className="mono-label !text-sm !text-primary">
+                Claude Code · Codex · OpenCode · ZCode 开箱即用
+              </span>
               <div className="h-px w-8 bg-slate-300" />
             </div>
 
@@ -68,7 +70,7 @@ export default function LandingPage() {
 
             <p className="font-body-lg text-secondary max-w-2xl mx-auto mb-0">
               <span className="text-on-surface font-medium">
-                19 种模块化技能 • 10 种核心指令 • 精准编织
+                18 种模块化技能 • 9 个自动化钩子 • 四大 Agent 编织
               </span>
             </p>
           </div>
@@ -79,9 +81,9 @@ export default function LandingPage() {
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 divide-x-0 md:divide-x divide-slate-100">
               {[
-                { label: '系统能力', value: '19', desc: '集成化智能体技能' },
-                { label: '接口标准', value: '10', desc: '斜杠协议指令集' },
-                { label: '自动化深度', value: '07', desc: '确定性生命周期钩子' },
+                { label: '系统能力', value: '18', desc: '集成化智能体技能' },
+                { label: '接口标准', value: '11', desc: '斜杠协议指令集' },
+                { label: '自动化深度', value: '09', desc: '确定性生命周期钩子' },
                 { label: '类型覆盖', value: '100%', desc: '类型安全同步率' },
               ].map((s) => (
                 <div key={s.label} className="px-8 text-center md:text-left">
@@ -114,26 +116,27 @@ export default function LandingPage() {
               <div className="col-span-12 lg:col-span-8 tech-border p-10 bg-slate-50 flex flex-col justify-between min-h-[400px]">
                 <div>
                   <div className="mono-label text-primary mb-6">模块 // 01</div>
-                  <h3 className="font-headline-md text-3xl mb-4">精准指令协议</h3>
+                  <h3 className="font-headline-md text-3xl mb-4">多 Agent 指令协议</h3>
                   <p className="text-secondary max-w-lg mb-8">
-                    为 Claude Code
-                    提供标准化的入口点。每条指令都是确定性的，产生的输出可供智能体解析、验证和迭代，不存在歧义。
+                    技能以标准 SKILL.md
+                    格式分发至四大工具的发现目录，每个入口都是确定性的，产生的输出可供智能体解析、验证和迭代，不存在歧义。
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-4 font-label-mono text-[11px]">
-                  <div className="px-4 py-2 border border-slate-200 bg-white">/START-API</div>
-                  <div className="px-4 py-2 border border-slate-200 bg-white">/GEN-MODULE</div>
-                  <div className="px-4 py-2 border border-slate-200 bg-white">/SYNC-SCHEMA</div>
+                  <div className="px-4 py-2 border border-slate-200 bg-white">Claude Code</div>
+                  <div className="px-4 py-2 border border-slate-200 bg-white">Codex</div>
+                  <div className="px-4 py-2 border border-slate-200 bg-white">OpenCode</div>
+                  <div className="px-4 py-2 border border-slate-200 bg-white">ZCode</div>
                 </div>
               </div>
 
               {/* Vertical block */}
               <div className="col-span-12 lg:col-span-4 tech-border p-10 flex flex-col justify-center border-l-4 border-l-primary/20">
                 <div className="mono-label text-primary mb-6">技能 // 矩阵</div>
-                <h3 className="font-headline-md text-2xl mb-4">19 种预编译技能</h3>
+                <h3 className="font-headline-md text-2xl mb-4">18 种预编译技能</h3>
                 <p className="text-secondary text-sm leading-relaxed mb-6">
                   从自动化 CRUD 生成到复杂的数据库迁移，Loom
-                  提供了一系列原始技能库，在项目范围内扩展了 Claude 的核心能力。
+                  提供了一系列原始技能库，在项目范围内扩展智能体的核心能力——克隆即用，无需安装。
                 </p>
                 <svg className="w-full h-24 opacity-30" viewBox="0 0 200 60">
                   <path
@@ -150,12 +153,12 @@ export default function LandingPage() {
                 {
                   mono: '钩子 // 核心',
                   title: '自动化同步机制',
-                  desc: 'Post-commit 触发器与 pre-push 验证，确保整个 Monorepo 的结构一致性。',
+                  desc: 'Schema 变更自动同步 Prisma Client 与共享包，编辑后自动格式化与类型检查；迁移文件与 .env 受保护。',
                 },
                 {
                   mono: '认证 // 向量',
                   title: '双通道身份认证',
-                  desc: '统一认证层，同时支持管理端 JWT 与面向 Web 的 REST 协议。',
+                  desc: '统一认证层，同时支持管理端 JWT 与面向 Web/小程序的 REST 协议，微信登录开箱即用。',
                 },
                 {
                   mono: '数据 // 编织',
@@ -241,7 +244,7 @@ export default function LandingPage() {
                     {
                       dim: '维护循环',
                       legacy: '需手动编写重复的 CRUD 逻辑层。',
-                      loom: '通过 /GEN-MODULE 协议进行算法级自动生成。',
+                      loom: '通过 genModule 技能进行算法级自动生成。',
                     },
                     {
                       dim: '类型安全性',
@@ -252,6 +255,11 @@ export default function LandingPage() {
                       dim: '认证体系',
                       legacy: '需自行集成 passport、session 等。',
                       loom: '双通道认证：Admin JWT + Web REST 开箱即用。',
+                    },
+                    {
+                      dim: 'Agent 生态',
+                      legacy: '绑定特定工具，更换工具即失效。',
+                      loom: 'SKILL.md 标准分发：Claude Code / Codex / OpenCode / ZCode。',
                     },
                   ].map((row) => (
                     <tr key={row.dim}>
@@ -292,6 +300,10 @@ export default function LandingPage() {
                       desc: '项目骨架、数据库连接、认证系统全部预配置，克隆即开工。',
                     },
                     { title: '类型安全同步', desc: '跨整个系统表面积的自动化类型生成与校验。' },
+                    {
+                      title: '四大 Agent 技能就绪',
+                      desc: 'Claude Code / Codex / OpenCode / ZCode 技能目录随仓库分发。',
+                    },
                   ].map((item) => (
                     <div key={item.title} className="flex gap-4 items-start">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2" />
@@ -317,11 +329,11 @@ export default function LandingPage() {
                 <div className="p-10 font-label-mono text-sm space-y-6 text-slate-300">
                   <div className="flex gap-4">
                     <span className="text-primary opacity-60">01</span>
-                    <span>npx create-loom@latest my-app</span>
+                    <span>npx @xinnix/create-loom my-app</span>
                   </div>
                   <div className="flex gap-4">
                     <span className="text-primary opacity-60">02</span>
-                    <span>cd my-app &amp;&amp; pnpm install</span>
+                    <span>cd my-app</span>
                   </div>
                   <div className="flex gap-4">
                     <span className="text-primary opacity-60">03</span>
@@ -330,7 +342,7 @@ export default function LandingPage() {
                   <div className="pt-6 border-t border-slate-800 text-slate-500 italic text-xs">
                     [系统] 项目脚手架生成完成。
                     <br />
-                    [系统] API:3000 Admin:5173 Web:3002 Landing:3001
+                    [系统] API:3000 Admin:5173 Web:3002 Landing:3001 Miniapp:8080
                   </div>
                 </div>
               </div>

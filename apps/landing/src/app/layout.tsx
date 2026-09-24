@@ -4,11 +4,12 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Loom — Agent-Centric 全栈开发框架',
   description:
-    'Loom 将 AI Agent、后端、前端与数据库精密编织为完整的全栈开发体验。NestJS + React + tRPC + Prisma，克隆即开工。',
+    'Loom 将 AI Agent、后端、前端与数据库精密编织为完整的全栈开发体验。Claude Code / Codex / OpenCode / ZCode 开箱即用，克隆即开工。',
   icons: { icon: '/favicon.svg' },
   openGraph: {
     title: 'Loom — Agent-Centric 全栈开发框架',
-    description: 'Loom 将 AI Agent、后端、前端与数据库精密编织为完整的全栈开发框架。',
+    description:
+      'Loom 将 AI Agent、后端、前端与数据库精密编织为完整的全栈开发框架，四大 Agent 开箱即用。',
     type: 'website',
   },
 };
