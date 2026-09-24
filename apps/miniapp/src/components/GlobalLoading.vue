@@ -1,27 +1,3 @@
-<template>
-  <view v-if="isVisible" class="loading-container">
-    <view class="loading-mask"></view>
-    <view class="loading-content">
-      <!-- 装饰背景 -->
-      <view class="loading-bg"></view>
-
-      <!-- Logo + 动画 -->
-      <view class="loading-logo-wrapper">
-        <image class="loading-logo" src="/static/logo.png" mode="aspectFit" />
-        <view class="loading-pulse"></view>
-      </view>
-
-      <!-- 加载文案 -->
-      <text class="loading-text">{{ text }}</text>
-
-      <!-- 进度条动画 -->
-      <view class="loading-progress">
-        <view class="loading-progress-bar"></view>
-      </view>
-    </view>
-  </view>
-</template>
-
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
@@ -52,6 +28,30 @@ watch(
   },
 );
 </script>
+
+<template>
+  <view v-if="isVisible" class="loading-container">
+    <view class="loading-mask"></view>
+    <view class="loading-content">
+      <!-- 装饰背景 -->
+      <view class="loading-bg"></view>
+
+      <!-- Logo + 动画 -->
+      <view class="loading-logo-wrapper">
+        <image class="loading-logo" src="/static/logo.png" mode="aspectFit" />
+        <view class="loading-pulse"></view>
+      </view>
+
+      <!-- 加载文案 -->
+      <text class="loading-text">{{ text }}</text>
+
+      <!-- 进度条动画 -->
+      <view class="loading-progress">
+        <view class="loading-progress-bar"></view>
+      </view>
+    </view>
+  </view>
+</template>
 
 <style lang="scss" scoped>
 .loading-container {

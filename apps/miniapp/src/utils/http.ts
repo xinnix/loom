@@ -5,7 +5,7 @@
 
 import type { ApiConfig } from '@/config/api';
 import { API_CONFIG } from '@/config/api';
-import { showLoading, hideLoading } from '@/stores/loading';
+import { hideLoading, showLoading } from '@/stores/loading';
 
 interface RequestConfig {
   url: string;
@@ -65,7 +65,7 @@ class HttpClient {
     this.refreshPromise = (async () => {
       try {
         const refreshToken = this.getRefreshToken();
-        console.log('[HTTP] 开始刷新 token, refreshToken:', refreshToken?.substring(0, 10) + '...');
+        console.log('[HTTP] 开始刷新 token, refreshToken:', `${refreshToken?.substring(0, 10)}...`);
 
         if (!refreshToken) {
           console.log('[HTTP] 没有 refreshToken，无法刷新');
@@ -74,7 +74,7 @@ class HttpClient {
 
         // 调用后端刷新接口（REST API）
         const response = await uni.request({
-          url: this.config.baseURL + '/auth/refresh',
+          url: `${this.config.baseURL}/auth/refresh`,
           method: 'POST',
           data: { refreshToken },
           header: { 'Content-Type': 'application/json' },

@@ -54,9 +54,6 @@ export function hideLoading() {
   if (state.count <= 0) {
     state.count = 0;
 
-    // 如果已经显示了很短时间，延迟隐藏
-    const startTime = Date.now();
-
     if (state.minTimer) {
       clearTimeout(state.minTimer);
     }

@@ -23,6 +23,8 @@
 - [x] miniapp 为第三个 TS7 崩点（其 package.json 有独立 lint-staged 跑 `eslint --fix`）：TS 回退后暴露 152 个历史违规——149 个 `--fix` 自动修复（分号等风格），3 处 `catch (err)` 未用参数改无绑定 catch
 - [x] 二轮修复：miniapp lint-staged 的 `eslint --fix`（stylistic 规则）与 prettier 互相改写导致 CI Format check 失败——lint-staged 对齐 root 约定仅跑 prettier；uni-helper config 以 @stylistic 插件抢注 style/ 命名空间致 eslint-config-prettier 失效，显式关闭实际生效的风格规则；顺带修正 eslint.config.js 的 Promise 加载形态
 - [x] 验证：eslint（改动文件）/ format-check / CI 同款 lint / type-check 全部 exit 0；**CI run 35965359089 全绿**（含 Docker build-and-push 与 deploy，2026-07-23 以来首次全绿）
+- [x] 三轮收尾（遗留事项清零）：**TS 全仓统一 ~5.9.3**（api 从 ^6.0.0 回退、infra/shared 从 ^7.0.2 补改，此前 sed 漏匹配 `^` 前缀）；api tsconfig `moduleResolution: bundler → node`（bundler 要求 ESM 系 module，CommonJS 项目系 TS 6 放宽检查掩盖的错配）；@uni-helper/eslint-config 升 0.7.5（eslint 10 peer 支持）；miniapp 全目录 lint 首次跑通——忽略 yaml（eslint-plugin-yml 用了 eslint 10 移除的 API）与 iconfont 生成物、no-console 降 warn（小程序真机调试惯例）、vite.config 关 process 规则、手修 3 处死代码（startTime/goBack/catch 绑定）
+- [x] 终验：miniapp lint / format / CI lint / type-check / test / api build / shared build 七项 exit 0
 
 ## 当前状态
 

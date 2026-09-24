@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Props {
   news: {
@@ -47,7 +47,7 @@ const contentSummary = computed(() => {
   if (!props.news.content) return '';
   // 移除 HTML 标签，提取纯文本
   const text = props.news.content.replace(/<[^>]*>/g, '');
-  return text.length > 100 ? text.substring(0, 100) + '...' : text;
+  return text.length > 100 ? `${text.substring(0, 100)}...` : text;
 });
 </script>
 

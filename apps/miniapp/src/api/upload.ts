@@ -14,7 +14,7 @@ export async function uploadAvatar(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     uni.uploadFile({
       url: `${API_CONFIG.baseURL}/upload/avatar`,
-      filePath: filePath,
+      filePath,
       name: 'file',
       header: {
         Authorization: `Bearer ${token}`,
@@ -55,10 +55,10 @@ export async function uploadImage(filePath: string, type: string = 'general'): P
   return new Promise((resolve, reject) => {
     uni.uploadFile({
       url: `${API_CONFIG.baseURL}/upload/image`,
-      filePath: filePath,
+      filePath,
       name: 'file',
       formData: {
-        type: type,
+        type,
       },
       header: {
         Authorization: `Bearer ${token}`,

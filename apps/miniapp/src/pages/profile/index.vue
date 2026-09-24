@@ -58,10 +58,6 @@ onShow(async () => {
   }
 });
 
-function goBack() {
-  uni.navigateBack();
-}
-
 async function onChooseAvatar(event: any) {
   const avatarUrl = event.detail.avatarUrl;
   if (avatarUrl) {

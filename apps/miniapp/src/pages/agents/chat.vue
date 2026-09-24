@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { nextTick, ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 
 definePage({
@@ -31,15 +31,15 @@ onLoad((options) => {
   uni.setNavigationBarTitle({ title: agentName.value });
 });
 
-const getAuthHeaders = () => {
+function getAuthHeaders() {
   const token = uni.getStorageSync('token');
   return {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
-};
+}
 
-const handleSend = async () => {
+async function handleSend() {
   if (!query.value.trim() || !agentId.value || isStreaming.value) return;
 
   const userMsg: ChatMessage = {
@@ -113,12 +113,12 @@ const handleSend = async () => {
         }
       }
     }
-  } catch (error: any) {
+  } catch {
     uni.showToast({ title: '对话失败', icon: 'none' });
   } finally {
     isStreaming.value = false;
   }
-};
+}
 </script>
 
 <template>
@@ -130,7 +130,7 @@ const handleSend = async () => {
         <text class="empty-text">发送消息开始对话</text>
       </view>
 
-      <view v-for="msg in messages" :key="msg.id" :id="msg.id" class="message-row">
+      <view v-for="msg in messages" :id="msg.id" :key="msg.id" class="message-row">
         <!-- User message -->
         <view v-if="msg.role === 'user'" class="msg msg-user">
           <view class="msg-bubble msg-bubble-user">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { agentsApi, type Agent } from '@/api/agents';
+import { agentsApi } from '@/api/agents';
+import type { Agent } from '@/api/agents';
 
 definePage({
   type: 'page',
@@ -24,11 +25,11 @@ onMounted(async () => {
   }
 });
 
-const openChat = (agent: Agent) => {
+function openChat(agent: Agent) {
   uni.navigateTo({
     url: `/pages/agents/chat?id=${agent.id}&name=${encodeURIComponent(agent.name)}`,
   });
-};
+}
 </script>
 
 <template>
