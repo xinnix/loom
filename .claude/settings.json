@@ -101,6 +101,10 @@
           {
             "type": "command",
             "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/run-tests.sh\""
+          },
+          {
+            "type": "command",
+            "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/sync-agents.sh\""
           }
         ]
       }

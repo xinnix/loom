@@ -1,3 +1,8 @@
+---
+name: deleteModule
+description: 删除由 genModule 生成的完整模块 — 清理 Prisma Schema、Zod、Service、Router、Controller、Admin 页面、菜单与路由注册。用户要求删除/移除某个业务模块时使用。
+---
+
 # deleteModule Skill
 
 删除由 genModule 生成的完整模块。

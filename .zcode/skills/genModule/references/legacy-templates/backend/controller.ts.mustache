@@ -1,0 +1,50 @@
+import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { {{pascalModule}}Service } from './{{camelModule}}.service';
+import { Create{{pascalModule}}Dto, Update{{pascalModule}}Dto } from './{{camelModule}}.dto';
+
+@ApiTags('{{module}}')
+@Controller('{{module}}')
+export class {{pascalModule}}Controller {
+  constructor(private readonly {{camelModule}}Service: {{pascalModule}}Service) {}
+
+  @Post()
+  @ApiOperation({ summary: '创建{{module}}' })
+  @ApiResponse({ status: 201, description: '创建成功' })
+  create(@Body() create{{pascalModule}}Dto: Create{{pascalModule}}Dto) {
+    return this.{{camelModule}}Service.create(create{{pascalModule}}Dto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: '获取{{module}}列表' })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  findAll(@Query() query: any) {
+    return this.{{camelModule}}Service.findAll({
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+      where: query.filter,
+      orderBy: { id: 'desc' },
+    });
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '获取单个{{module}}' })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  findOne(@Param('id') id: string) {
+    return this.{{camelModule}}Service.findOne(+id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: '更新{{module}}' })
+  @ApiResponse({ status: 200, description: '更新成功' })
+  update(@Param('id') id: string, @Body() update{{pascalModule}}Dto: Update{{pascalModule}}Dto) {
+    return this.{{camelModule}}Service.update(+id, update{{pascalModule}}Dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: '删除{{module}}' })
+  @ApiResponse({ status: 200, description: '删除成功' })
+  remove(@Param('id') id: string) {
+    return this.{{camelModule}}Service.remove(+id);
+  }
+}

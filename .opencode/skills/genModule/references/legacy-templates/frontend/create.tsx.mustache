@@ -1,0 +1,78 @@
+import { Create, useForm, useFormProps } from "@refinedev/antd";
+import { Form, Input, Select, InputNumber, DatePicker, Switch } from "antd";
+import type { {{pascalModule}} } from "@/types";
+
+// Import FileUploadComponent if needed
+{{#hasFileFields}}
+import { FileUploadComponent } from "../../components/FileUpload";
+{{/hasFileFields}}
+
+export default function {{pascalModule}}CreatePage() {
+  const { formProps, saveButtonProps } = useForm<{{pascalModule}}>();
+
+  return (
+    <Create saveButtonProps={saveButtonProps}>
+      <Form {...formProps} layout="vertical">
+{{#fields}}
+{{#unlessIsId}}
+{{#unlessIsCreatedAt}}
+{{#unlessIsUpdatedAt}}
+        <Form.Item
+          name="{{name}}"
+          label="{{title}}"
+          rules={[{ {{#ifRequired}}required: true,{{/ifRequired}} message: "请输入{{title}}" }]}
+        >
+{{#ifIsString}}
+          <Input placeholder="请输入{{title}}" />
+{{/ifIsString}}
+{{#ifIsText}}
+          <Input.TextArea rows={4} placeholder="请输入{{title}}" />
+{{/ifIsText}}
+{{#ifIsNumber}}
+          <InputNumber style={{ width: "100%" }} placeholder="请输入{{title}}" />
+{{/ifIsNumber}}
+{{#ifIsEnum}}
+          <Select
+            options={[
+              {{#enumValues}}
+              { label: "{{this}}", value: "{{this}}" },
+              {{/enumValues}}
+            ]}
+            placeholder="请选择{{title}}"
+          />
+{{/ifIsEnum}}
+{{#ifIsBoolean}}
+          <Switch />
+{{/ifIsBoolean}}
+{{#ifIsDate}}
+          <DatePicker style={{ width: "100%" }} placeholder="请选择{{title}}" />
+{{/ifIsDate}}
+{{#ifIsImage}}
+          <FileUploadComponent
+            name="{{name}}"
+            accept="image/*"
+            multiple={false}
+          />
+{{/ifIsImage}}
+{{#ifIsFile}}
+          <FileUploadComponent
+            name="{{name}}"
+            multiple={false}
+          />
+{{/ifIsFile}}
+{{#ifIsFiles}}
+          <FileUploadComponent
+            name="{{name}}"
+            multiple={true}
+            maxCount={10}
+          />
+{{/ifIsFiles}}
+        </Form.Item>
+{{/unlessIsUpdatedAt}}
+{{/unlessIsCreatedAt}}
+{{/unlessIsId}}
+{{/fields}}
+      </Form>
+    </Create>
+  );
+}

@@ -26,8 +26,8 @@ You are an elite full-stack engineer with deep expertise in the Loom monorepo ar
    - Keep Refine resource names exactly matching tRPC router keys
 
 2. **Code Generation Workflow:**
-   - Before writing code from scratch, check if `generate-module` skill can automate 95% of the work
-   - Use the skill for: `node .claude/skills/generate-module/generate-module.ts <resource-name>`
+   - Before writing code from scratch, check if `genModule` skill can automate 95% of the work
+   - Use the skill for: `node .claude/skills/genModule/scripts/generate-module.ts <resource-name>`
    - Only implement custom logic manually after using the skill
 
 3. **Type Safety Protocol:**

@@ -1,0 +1,34 @@
+import { Show, useShow } from "@refinedev/antd";
+import { Typography, Space, Descriptions } from "antd";
+import type { {{pascalModule}} } from "@/types";
+
+const { Title } = Typography;
+
+export default function {{pascalModule}}ShowPage() {
+  const { queryResult } = useShow<{{pascalModule}}>();
+  const { data, isLoading } = queryResult;
+  const record = data?.data;
+
+  return (
+    <Show isLoading={isLoading}>
+      <Title level={5}>ID</Title>
+      <Space direction="vertical">
+        <span>{record?.id}</span>
+      </Space>
+
+{{#fields}}
+{{#unlessIsId}}
+{{#unlessIsCreatedAt}}
+{{#unlessIsUpdatedAt}}
+      <Title level={5} style={{ marginTop: 24 }}>{{title}}</Title>
+      <Space direction="vertical">
+        <span>{record?.{{name}}}</span>
+      </Space>
+
+{{/unlessIsUpdatedAt}}
+{{/unlessIsCreatedAt}}
+{{/unlessIsId}}
+{{/fields}}
+    </Show>
+  );
+}

@@ -1,0 +1,45 @@
+import { List, useTable, EditButton, ShowButton } from "@refinedev/antd";
+import { Table, Space, Tag } from "antd";
+import type { {{pascalModule}} } from "@/types";
+
+export default function {{pascalModule}}ListPage() {
+  const { tableProps } = useTable<{{pascalModule}}>();
+
+  const columns = [
+{{#fields}}
+{{#unlessIsId}}
+{{#unlessIsCreatedAt}}
+{{#unlessIsUpdatedAt}}
+    {
+      title: "{{title}}",
+      dataIndex: "{{name}}",
+      key: "{{name}}",
+{{#ifIsEnum}}
+      render: (value) => <Tag>{{`{value}`}}</Tag>,
+{{/ifIsEnum}}
+{{#ifIsRelation}}
+      render: (value) => value?.name || "-",
+{{/ifIsRelation}}
+    },
+{{/unlessIsUpdatedAt}}
+{{/unlessIsCreatedAt}}
+{{/unlessIsId}}
+{{/fields}}
+    {
+      title: "操作",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <ShowButton hideText size="small" recordItemId={record.id} />
+          <EditButton hideText size="small" recordItemId={record.id} />
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <List>
+      <Table {...tableProps} columns={columns} rowKey="id" />
+    </List>
+  );
+}

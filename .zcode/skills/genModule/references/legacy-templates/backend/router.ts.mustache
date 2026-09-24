@@ -1,0 +1,83 @@
+import { router, publicProcedure } from "./trpc";
+import { z } from "zod";
+import { {{pascalModule}}Schema } from "@loom/shared";
+import { TRPCError } from "@trpc/server";
+
+export const {{camelModule}}Router = router({
+  getMany: publicProcedure
+    .input({{pascalModule}}Schema.getManyInput.optional())
+    .query(async ({ ctx, input }) => {
+      const params = input || {};
+      const { page = 1, limit = 10, ...filter } = params;
+      const skip = (page - 1) * limit;
+
+      const where = buildWhereClause(filter);
+
+      const [items, total] = await Promise.all([
+        ctx.prisma.{{camelModule}}.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { id: 'desc' },
+        }),
+        ctx.prisma.{{camelModule}}.count({ where }),
+      ]);
+
+      return { items, total, page, limit };
+    }),
+
+  getOne: publicProcedure
+    .input({{pascalModule}}Schema.getOneInput)
+    .query(async ({ ctx, input }) => {
+      const item = await ctx.prisma.{{camelModule}}.findUnique({
+        where: { id: input.id },
+      });
+      if (!item) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: '{{pascalModule}} not found' });
+      }
+      return item;
+    }),
+
+  create: publicProcedure
+    .input({{pascalModule}}Schema.createInput)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.{{camelModule}}.create({
+        data: {
+          ...input,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }),
+
+  update: publicProcedure
+    .input({{pascalModule}}Schema.updateInput)
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      return ctx.prisma.{{camelModule}}.update({
+        where: { id },
+        data: { ...data, updatedAt: new Date() },
+      });
+    }),
+
+  deleteOne: publicProcedure
+    .input({{pascalModule}}Schema.deleteInput)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.{{camelModule}}.delete({
+        where: { id: input.id },
+      });
+    }),
+});
+
+function buildWhereClause(filter: any): any {
+  if (!filter) return {};
+
+  const where: any = {};
+  Object.keys(filter).forEach(key => {
+    if (filter[key] !== undefined && filter[key] !== null) {
+      where[key] = { contains: filter[key], mode: 'insensitive' };
+    }
+  });
+
+  return where;
+}

@@ -145,13 +145,13 @@ schema.prisma ──► Prisma Client ──► AppRouter ──► @loom/shared
 | Admin | tRPC     | RBAC（全部数据） | 内存                       |
 | User  | REST     | 仅自己的数据     | httpOnly Cookie / 本地存储 |
 
-JWT `type` 字段在网关层自动隔离跨身份访问。更多详见 [Auth 模块文档](docs/auth.md)。
+JWT `type` 字段在网关层自动隔离跨身份访问。规格详见 [PRD F1 双用户认证](docs/product/prd.md)。
 
 ---
 
-## Claude Code 技能清单
+## Agent 技能清单
 
-本项目深度集成 [Claude Code](https://claude.ai/code) 作为主要开发工具。所有技能通过斜杠命令在 Claude Code 中调用。
+本项目深度集成 [Claude Code](https://claude.ai/code) 作为主要开发工具，同时开箱支持 Codex、OpenCode、ZCode——技能以标准 SKILL.md 格式分发至各工具的发现目录（`.agents/skills/`、`.opencode/skills/`、`.zcode/skills/`），斜杠命令在 Claude Code 中调用，其他工具通过技能描述自动匹配。
 
 ### 核心开发技能
 

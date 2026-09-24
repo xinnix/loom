@@ -1,0 +1,30 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, IsBoolean, IsDate, IsOptional, IsEnum } from 'class-validator';
+
+export class Create{{pascalModule}}Dto {
+{{#fields}}
+{{#unlessIsId}}
+  @ApiProperty({ {{#ifRequired}}required: true,{{/ifRequired}}{{#ifOptional}}required: false,{{/ifOptional}}{{#ifDefault}}default: {{defaultValue}},{{/ifDefault}} description: '{{description}}' })
+  {{#ifRequired}}@IsString(){{/ifRequired}}{{#ifOptional}}@IsOptional()@IsString(){{/ifOptional}}
+  {{name}}{{#ifOptional}}?{{/ifOptional}}: {{type}};
+{{/unlessIsId}}
+{{/fields}}
+}
+
+export class Update{{pascalModule}}Dto {
+  @ApiProperty()
+  @IsNumber()
+  id: number;
+
+{{#fields}}
+{{#unlessIsId}}
+{{#unlessIsCreatedAt}}
+{{#unlessIsUpdatedAt}}
+  @ApiProperty({ {{#ifRequired}}required: true,{{/ifRequired}}{{#ifOptional}}required: false,{{/ifOptional}}{{#ifDefault}}default: {{defaultValue}},{{/ifDefault}} description: '{{description}}' })
+  {{#ifOptional}}@IsOptional(){{/ifOptional}}
+  {{name}}{{#ifOptional}}?{{/ifOptional}}: {{type}};
+{{/unlessIsUpdatedAt}}
+{{/unlessIsCreatedAt}}
+{{/unlessIsId}}
+{{/fields}}
+}

@@ -1,0 +1,55 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma.service';
+import { Create{{pascalModule}}Dto, Update{{pascalModule}}Dto } from './{{camelModule}}.dto';
+import { Prisma } from '@prisma/client';
+
+@Injectable()
+export class {{pascalModule}}Service {
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: Create{{pascalModule}}Dto) {
+    return this.prisma.{{camelModule}}.create({
+      data: {
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async findAll(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.{{pascalModule}}WhereUniqueInput;
+    where?: Prisma.{{pascalModule}}WhereInput;
+    orderBy?: Prisma.{{pascalModule}}OrderByWithRelationInput;
+  }) {
+    const { skip, take, cursor, where, orderBy } = params;
+    return this.prisma.{{camelModule}}.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+    });
+  }
+
+  async findOne(id: number) {
+    return this.prisma.{{camelModule}}.findUnique({
+      where: { id },
+    });
+  }
+
+  async update(id: number, data: Update{{pascalModule}}Dto) {
+    return this.prisma.{{camelModule}}.update({
+      where: { id },
+      data: { ...data, updatedAt: new Date() },
+    });
+  }
+
+  async remove(id: number) {
+    return this.prisma.{{camelModule}}.delete({
+      where: { id },
+    });
+  }
+}

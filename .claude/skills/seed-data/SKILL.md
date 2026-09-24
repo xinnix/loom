@@ -1,3 +1,8 @@
+---
+name: seed-data
+description: 快速创建数据库假数据用于开发和测试 — 基于 Prisma schema 自动生成并执行 INSERT SQL（绕过 Prisma seed 兼容性问题）。用户要求造测试数据/假数据时使用。
+---
+
 # Seed Data Skill
 
 快速创建数据库假数据用于开发和测试。

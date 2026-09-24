@@ -1,0 +1,131 @@
+import React, { useState } from 'react';
+import { Upload, message, Button, Image, Space, Card } from 'antd';
+import { PlusOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
+
+interface FileUploadProps {
+  name?: string;
+  multiple?: boolean;
+  maxCount?: number;
+  accept?: string;
+  value?: string | string[];
+  onChange?: (value: string | string[]) => void;
+  disabled?: boolean;
+}
+
+export const FileUploadComponent: React.FC<FileUploadProps> = ({
+  name = 'file',
+  multiple = false,
+  maxCount = 1,
+  accept,
+  value,
+  onChange,
+  disabled = false,
+}) => {
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
+
+  const handlePreview = async (file: UploadFile) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj as File);
+    }
+
+    setPreviewImage(file.url || (file.preview as string));
+    setPreviewVisible(true);
+    setPreviewTitle(file.name || file.url!.substring(file.url!.lastIndexOf('/') + 1));
+  };
+
+  const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+
+    // Extract URLs from fileList
+    const urls = newFileList
+      .filter(file => file.status === 'done' && file.response)
+      .map(file => file.response.url || file.url)
+      .filter(Boolean);
+
+    if (onChange) {
+      onChange(multiple ? urls : urls[0] || '');
+    }
+  };
+
+  const uploadButton = (
+    <div>
+      <PlusOutlined />
+      <div style={{ marginTop: 8 }}>Upload</div>
+    </div>
+  );
+
+  const isImage = accept?.includes('image') || !accept;
+
+  return (
+    <>
+      <Upload
+        name={name}
+        listType={isImage ? 'picture-card' : 'text'}
+        className={isImage ? 'image-upload-wrapper' : 'file-upload-wrapper'}
+        fileList={fileList}
+        action="/api/file-upload/upload"
+        accept={accept}
+        multiple={multiple}
+        maxCount={maxCount}
+        disabled={disabled}
+        onChange={handleChange}
+        onPreview={isImage ? handlePreview : undefined}
+        beforeUpload={() => false} // Prevent automatic upload
+      >
+        {fileList.length >= maxCount ? null : uploadButton}
+      </Upload>
+
+      {isImage && (
+        <Image
+          wrapperStyle={{ display: 'none' }}
+          preview={{
+            visible: previewVisible,
+            src: previewImage,
+            onVisibleChange: (visible) => setPreviewVisible(visible),
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+const getBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
+// Usage example in forms:
+/*
+<Form.Item
+  name="image"
+  label="Image"
+  valuePropName="fileList"
+  getValueFromEvent={(e) => e.fileList}
+>
+  <FileUploadComponent
+    name="image"
+    accept="image/*"
+    multiple={false}
+  />
+</Form.Item>
+
+<Form.Item
+  name="attachments"
+  label="Attachments"
+  valuePropName="fileList"
+  getValueFromEvent={(e) => e.fileList}
+>
+  <FileUploadComponent
+    name="attachments"
+    multiple={true}
+    maxCount={10}
+  />
+</Form.Item>
+*/
