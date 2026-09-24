@@ -54,6 +54,7 @@
     "@types/node": "^26.1.1",
     "@uni-helper/eslint-config": "^0.7.4",
     "@uni-helper/plugin-uni": "^0.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "@uni-helper/unh": "^0.3.1",
     "@uni-helper/uni-env": "^0.3.1",
     "@uni-helper/uni-types": "1.1.0",
@@ -84,7 +85,6 @@
     "pre-commit": "pnpm lint-staged"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,vue}": "eslint --fix",
-    "*.{json,md,yml,yaml,css,scss}": "prettier --write"
+    "*.{ts,tsx,js,jsx,vue,json,md,yml,yaml,css,scss}": "prettier --write"
   }
 }

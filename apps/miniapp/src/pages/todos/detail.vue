@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { Todo } from '@/api/todos'
-import { onLoad } from '@dcloudio/uni-app'
-import { ref } from 'vue'
-import { todoApi } from '@/api/todos'
+import type { Todo } from '@/api/todos';
+import { onLoad } from '@dcloudio/uni-app';
+import { ref } from 'vue';
+import { todoApi } from '@/api/todos';
 
 definePage({
   navigationBarTitleText: 'Todo 详情',
   backgroundColor: '#F5FAFF',
-})
+});
 
-const todo = ref<Todo | null>(null)
-const loading = ref(true)
+const todo = ref<Todo | null>(null);
+const loading = ref(true);
 
 // 状态映射
 const statusMap: Record<string, string> = {
@@ -18,77 +18,71 @@ const statusMap: Record<string, string> = {
   in_progress: '进行中',
   completed: '已完成',
   cancelled: '已取消',
-}
+};
 
 const statusColorMap: Record<string, string> = {
   pending: '#999',
   in_progress: '#1677ff',
   completed: '#52c41a',
   cancelled: '#ff4d4f',
-}
+};
 
 onLoad(async (options) => {
-  const id = options?.id
+  const id = options?.id;
   if (!id) {
-    uni.showToast({ title: '参数错误', icon: 'none' })
-    uni.navigateBack()
-    return
+    uni.showToast({ title: '参数错误', icon: 'none' });
+    uni.navigateBack();
+    return;
   }
 
-  await fetchTodo(id as string)
-})
+  await fetchTodo(id as string);
+});
 
 async function fetchTodo(id: string) {
-  loading.value = true
+  loading.value = true;
   try {
-    const res = await todoApi.getById(id)
+    const res = await todoApi.getById(id);
     if (res.success) {
-      todo.value = res.data
+      todo.value = res.data;
+    } else {
+      uni.showToast({ title: res.message || '加载失败', icon: 'none' });
     }
-    else {
-      uni.showToast({ title: res.message || '加载失败', icon: 'none' })
-    }
-  }
-  catch {
-    uni.showToast({ title: '网络错误', icon: 'none' })
-  }
-  finally {
-    loading.value = false
+  } catch {
+    uni.showToast({ title: '网络错误', icon: 'none' });
+  } finally {
+    loading.value = false;
   }
 }
 
 async function handleToggleComplete() {
-  if (!todo.value)
-    return
-  const res = await todoApi.toggleComplete(todo.value.id, !todo.value.isCompleted)
+  if (!todo.value) return;
+  const res = await todoApi.toggleComplete(todo.value.id, !todo.value.isCompleted);
   if (res.success) {
-    todo.value = res.data
+    todo.value = res.data;
   }
 }
 
 async function handleDelete() {
-  if (!todo.value)
-    return
+  if (!todo.value) return;
   uni.showModal({
     title: '确认删除',
     content: '删除后无法恢复，确认删除？',
     success: async (res) => {
       if (res.confirm) {
-        const result = await todoApi.delete(todo.value!.id)
+        const result = await todoApi.delete(todo.value!.id);
         if (result.success) {
-          uni.showToast({ title: '删除成功', icon: 'success' })
-          uni.navigateBack()
+          uni.showToast({ title: '删除成功', icon: 'success' });
+          uni.navigateBack();
         }
       }
     },
-  })
+  });
 }
 
 function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr)
-    return '-'
-  const d = new Date(dateStr)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 </script>
 
@@ -104,7 +98,8 @@ function formatDate(dateStr: string | null | undefined): string {
       <!-- 标题行 -->
       <view class="title-row">
         <view
-          class="checkbox" :class="[todo.isCompleted && 'checkbox-checked']"
+          class="checkbox"
+          :class="[todo.isCompleted && 'checkbox-checked']"
           @click="handleToggleComplete"
         >
           <text v-if="todo.isCompleted" class="checkbox-icon">✓</text>

@@ -1,58 +1,53 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { todoApi } from '@/api/todos'
+import { ref } from 'vue';
+import { todoApi } from '@/api/todos';
 
 definePage({
   navigationBarTitleText: '新建待办',
   backgroundColor: '#F5FAFF',
-})
+});
 
 // 表单
-const title = ref('')
-const description = ref('')
-const priority = ref(0)
-const dueDate = ref('')
-const saving = ref(false)
+const title = ref('');
+const description = ref('');
+const priority = ref(0);
+const dueDate = ref('');
+const saving = ref(false);
 
 // 优先级选项
 const priorityOptions = [
   { value: 0, label: '低', color: '#999' },
   { value: 1, label: '中', color: '#fa8c16' },
   { value: 2, label: '高', color: '#ff4d4f' },
-]
+];
 
 async function handleCreate() {
   if (!title.value.trim()) {
-    uni.showToast({ title: '请输入标题', icon: 'none' })
-    return
+    uni.showToast({ title: '请输入标题', icon: 'none' });
+    return;
   }
 
-  saving.value = true
+  saving.value = true;
 
   try {
-    const payload: any = { title: title.value.trim() }
-    if (description.value.trim())
-      payload.description = description.value.trim()
-    payload.priority = priority.value
-    if (dueDate.value)
-      payload.dueDate = dueDate.value
+    const payload: any = { title: title.value.trim() };
+    if (description.value.trim()) payload.description = description.value.trim();
+    payload.priority = priority.value;
+    if (dueDate.value) payload.dueDate = dueDate.value;
 
-    const res = await todoApi.create(payload)
+    const res = await todoApi.create(payload);
 
     if (res.success) {
-      uni.showToast({ title: '创建成功', icon: 'success' })
+      uni.showToast({ title: '创建成功', icon: 'success' });
       // 返回列表页
-      uni.navigateBack()
+      uni.navigateBack();
+    } else {
+      uni.showToast({ title: res.message || '创建失败', icon: 'none' });
     }
-    else {
-      uni.showToast({ title: res.message || '创建失败', icon: 'none' })
-    }
-  }
-  catch {
-    uni.showToast({ title: '网络错误', icon: 'none' })
-  }
-  finally {
-    saving.value = false
+  } catch {
+    uni.showToast({ title: '网络错误', icon: 'none' });
+  } finally {
+    saving.value = false;
   }
 }
 </script>
@@ -63,7 +58,7 @@ async function handleCreate() {
       <!-- 标题 -->
       <view class="form-item">
         <text class="form-label">标题 <text class="required">*</text></text>
-        <input v-model="title" class="form-input" placeholder="输入待办事项标题" maxlength="200">
+        <input v-model="title" class="form-input" placeholder="输入待办事项标题" maxlength="200" />
       </view>
 
       <!-- 描述 -->
@@ -84,7 +79,8 @@ async function handleCreate() {
           <view
             v-for="opt in priorityOptions"
             :key="opt.value"
-            class="priority-tag" :class="[priority === opt.value && 'priority-tag-active']"
+            class="priority-tag"
+            :class="[priority === opt.value && 'priority-tag-active']"
             :style="
               priority === opt.value
                 ? `border-color: ${opt.color}; color: ${opt.color}; background: ${opt.color}15`

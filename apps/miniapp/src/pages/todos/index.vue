@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import type { Todo } from '@/api/todos'
-import { onShow } from '@dcloudio/uni-app'
-import { onMounted, ref } from 'vue'
-import { todoApi } from '@/api/todos'
+import type { Todo } from '@/api/todos';
+import { onShow } from '@dcloudio/uni-app';
+import { onMounted, ref } from 'vue';
+import { todoApi } from '@/api/todos';
 
 definePage({
   navigationBarTitleText: '待办事项',
   enablePullDownRefresh: true,
   backgroundColor: '#F5FAFF',
-})
+});
 
 // 状态
-const todoList = ref<Todo[]>([])
-const loading = ref(false)
-const statusFilter = ref('')
+const todoList = ref<Todo[]>([]);
+const loading = ref(false);
+const statusFilter = ref('');
 
 // 状态映射
 const statusMap: Record<string, string> = {
@@ -21,50 +21,46 @@ const statusMap: Record<string, string> = {
   in_progress: '进行中',
   completed: '已完成',
   cancelled: '已取消',
-}
+};
 
 const statusColorMap: Record<string, string> = {
   pending: '#999',
   in_progress: '#1677ff',
   completed: '#52c41a',
   cancelled: '#ff4d4f',
-}
+};
 
 const priorityLabel: Record<number, string> = {
   0: '低',
   1: '中',
   2: '高',
-}
+};
 
 // 加载数据
 async function fetchTodos() {
-  loading.value = true
+  loading.value = true;
   try {
-    const params: Record<string, any> = {}
-    if (statusFilter.value)
-      params.status = statusFilter.value
+    const params: Record<string, any> = {};
+    if (statusFilter.value) params.status = statusFilter.value;
 
-    const res = await todoApi.getList(params)
+    const res = await todoApi.getList(params);
     if (res.success) {
-      todoList.value = res.data || []
+      todoList.value = res.data || [];
+    } else {
+      uni.showToast({ title: res.message || '加载失败', icon: 'none' });
     }
-    else {
-      uni.showToast({ title: res.message || '加载失败', icon: 'none' })
-    }
-  }
-  catch {
-    uni.showToast({ title: '网络错误', icon: 'none' })
-  }
-  finally {
-    loading.value = false
+  } catch {
+    uni.showToast({ title: '网络错误', icon: 'none' });
+  } finally {
+    loading.value = false;
   }
 }
 
 // 切换完成状态
 async function toggleComplete(todo: Todo) {
-  const res = await todoApi.toggleComplete(todo.id, !todo.isCompleted)
+  const res = await todoApi.toggleComplete(todo.id, !todo.isCompleted);
   if (res.success) {
-    fetchTodos()
+    fetchTodos();
   }
 }
 
@@ -75,25 +71,25 @@ async function handleDelete(id: string) {
     content: '确认删除这条待办事项？',
     success: async (res) => {
       if (res.confirm) {
-        const result = await todoApi.delete(id)
+        const result = await todoApi.delete(id);
         if (result.success) {
-          uni.showToast({ title: '删除成功', icon: 'success' })
-          fetchTodos()
+          uni.showToast({ title: '删除成功', icon: 'success' });
+          fetchTodos();
         }
       }
     },
-  })
+  });
 }
 
 // 页面显示时刷新（支持从创建页返回）
 onShow(() => {
-  fetchTodos()
-})
+  fetchTodos();
+});
 
 // 下拉刷新
 onMounted(() => {
   // uni-app 下拉刷新回调
-})
+});
 </script>
 
 <template>
@@ -103,7 +99,8 @@ onMounted(() => {
       <!-- 状态筛选 -->
       <view class="filter-row">
         <view
-          class="filter-tag" :class="[!statusFilter && 'filter-tag-active']"
+          class="filter-tag"
+          :class="[!statusFilter && 'filter-tag-active']"
           @click="
             statusFilter = '';
             fetchTodos();
@@ -114,7 +111,8 @@ onMounted(() => {
         <view
           v-for="(label, key) in statusMap"
           :key="key"
-          class="filter-tag" :class="[statusFilter === key && 'filter-tag-active']"
+          class="filter-tag"
+          :class="[statusFilter === key && 'filter-tag-active']"
           :style="
             statusFilter === key
               ? `border-color: ${statusColorMap[key]}; color: ${statusColorMap[key]}`
@@ -159,7 +157,8 @@ onMounted(() => {
       >
         <!-- 勾选框 -->
         <view
-          class="checkbox" :class="[todo.isCompleted && 'checkbox-checked']"
+          class="checkbox"
+          :class="[todo.isCompleted && 'checkbox-checked']"
           @click.stop="toggleComplete(todo)"
         >
           <text v-if="todo.isCompleted" class="checkbox-icon">✓</text>
