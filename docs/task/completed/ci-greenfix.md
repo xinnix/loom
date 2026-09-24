@@ -21,7 +21,8 @@
 - [x] AuthContext set-state-in-effect 行级 disable（setState 均在 await 后，规则不跨 async 边界的误报）
 - [x] format check 欠账：格式化 10 个历史文件；next-env.d.ts 与 miniapp 生成物（manifest/pages.json）加入 .prettierignore
 - [x] miniapp 为第三个 TS7 崩点（其 package.json 有独立 lint-staged 跑 `eslint --fix`）：TS 回退后暴露 152 个历史违规——149 个 `--fix` 自动修复（分号等风格），3 处 `catch (err)` 未用参数改无绑定 catch
-- [x] 验证：全仓 lint 0 errors、format check 全绿、type-check 全绿、admin/landing build 通过
+- [x] 二轮修复：miniapp lint-staged 的 `eslint --fix`（stylistic 规则）与 prettier 互相改写导致 CI Format check 失败——lint-staged 对齐 root 约定仅跑 prettier；uni-helper config 以 @stylistic 插件抢注 style/ 命名空间致 eslint-config-prettier 失效，显式关闭实际生效的风格规则；顺带修正 eslint.config.js 的 Promise 加载形态
+- [x] 验证：eslint（改动文件）/ format-check / CI 同款 lint / type-check 全部 exit 0；**CI run 35965359089 全绿**（含 Docker build-and-push 与 deploy，2026-07-23 以来首次全绿）
 
 ## 当前状态
 
