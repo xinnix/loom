@@ -6,7 +6,7 @@
 - **分支**：`main`
 - **创建**：2026-07-20
 - **标签**：`refactor`
-- **关联**：[未来方向文档](../../future-directions.md)
+- **关联**：[未来方向文档](../../archive/future-directions.md)
 
 ## 目标
 

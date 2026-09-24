@@ -1,5 +1,7 @@
 # Loom 脚手架 — 下一步改造方向
 
+> **[已归档]** 本文档（2026-07）已被取代：仍然成立的方向整理进 [product/backlog.md](../product/backlog.md)，阶段状态由根级 [ROADMAP.md](../ROADMAP.md) 接管。文中「模块标准化推广」等条目已完成（见 [ADR-004](../adr/004-module-standardization-push.md)），以 backlog 现状为准。
+
 > 本文档整理本次改造周期未覆盖的优化方向，作为后续迭代的参考。
 
 ---

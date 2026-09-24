@@ -1,5 +1,7 @@
 # Loom 脚手架优化改造总结
 
+> **[已归档]** 本文档是一次性改造总结（2026-07-20 完成后不再维护）。其中仍然成立的方向已迁移至 [product/backlog.md](../product/backlog.md)；已完成的改造事实收敛进 [ROADMAP.md](../ROADMAP.md)；设计决策见 [adr/](../adr/README.md)。请勿引用本文档。
+
 > 完成日期：2026-07-20
 > 覆盖：6 个 Sprint + Quick Wins
 

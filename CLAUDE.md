@@ -238,7 +238,7 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 
 新模块（通过 genModule 或其他方式创建）应满足以下最低标准。
 
-> 完整参考：`docs/module-health-checklist.md`
+> 完整参考：`docs/dev/module-health-checklist.md`
 
 **API 端（`apps/api/src/modules/{name}/`）：**
 
@@ -344,6 +344,28 @@ Agent 必须在开发全生命周期使用 `docs/task/` 持久化任务追踪系
 ### Command
 
 - `/task` — 查看/管理当前任务
+
+## 文档体系
+
+`docs/` 采用分层文档体系，配合规则详见 `docs/README.md`。Agent 工作流：
+
+| 时机         | 行为                                                                               |
+| ------------ | ---------------------------------------------------------------------------------- |
+| **开工前**   | 读 `docs/ROADMAP.md` 当前阶段 + `docs/product/prd.md` 对应功能规格，确认任务归属   |
+| **新需求**   | 先过 `docs/product/vision.md` 红线检查，再进 `docs/product/backlog.md`，不直接实现 |
+| **完成后**   | 回写 ROADMAP（产物 + 日期）；PRD 事实有变则同步；epic 从 backlog 移除              |
+| **决策拍板** | 产品决策入 prd.md 决策表；架构决策新开 `docs/adr/` 条目；改主意新增条目不改历史    |
+
+红线（SSOT、双协议边界、三大标准组件强制等）定义在 `docs/product/vision.md`，冲突时删功能不破红线。
+
+## 多 Agent 技能分发
+
+`.claude/skills/` 是技能唯一真理源，`scripts/sync-agents.sh` 将其镜像分发到 Codex（`.agents/skills/`）、OpenCode（`.opencode/skills/`）、ZCode（`.zcode/skills/`）的发现目录。
+
+- **修改 `.claude/skills/` 下任何文件后**，PostToolUse hook 会自动分发；若 hook 未生效（如批量脚本改动），手动跑 `scripts/sync-agents.sh`
+- 新增技能必须带 YAML frontmatter（`name` + `description`），否则分发脚本校验失败
+- 提交前可用 `scripts/sync-agents.sh --check` 确认无漂移
+- 直接编辑分发目录（`.agents/`、`.opencode/`、`.zcode/`）是禁止的——下次分发会被覆盖
 
 ## Known Issues
 

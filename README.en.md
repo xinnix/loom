@@ -348,7 +348,7 @@ Edit schema.prisma → /db-migrate → /sync → git commit & push → CI auto m
 
 See `.env.prod.example` for production environment configuration.
 
-For detailed deployment guides, see `docs/deployment-guide.md` and `docs/deployment-checklist.md`.
+For detailed deployment guides, see `docs/ops/deployment.md`.
 
 ## Environment Variables
 

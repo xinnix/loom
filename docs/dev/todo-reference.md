@@ -86,6 +86,7 @@ model User {
 ```
 
 **关键原则：**
+
 - `@@map()` 必须全部 `snake_case`
 - 必须为高频查询字段添加 `@@index`
 - 关联的外键字段名 = 模型名小写 + `Id`（如 `userId`、`categoryId`）
@@ -149,10 +150,10 @@ import { Module } from '@nestjs/common';
 import { TodoController } from './rest/todo.controller';
 
 @Module({
-  controllers: [TodoController],   // 注册 REST Controller
-  imports: [],                      // 依赖的模块
-  providers: [],                    // 注册 Service
-  exports: [],                      // 导出 Service
+  controllers: [TodoController], // 注册 REST Controller
+  imports: [], // 依赖的模块
+  providers: [], // 注册 Service
+  exports: [], // 导出 Service
 })
 export class TodoModule {}
 ```
@@ -177,17 +178,17 @@ import { TodoModule } from './modules/todo/module';
 
 所有业务 Service 必须继承 `BaseService`，它会自动提供：
 
-| BaseService 方法 | 用途 |
-|---|---|
-| `list(args?)` | 分页列表（data + total + page） |
-| `getOne(id)` | 按 ID 查询 |
-| `getOneOrThrow(id)` | 按 ID 查询，不存在则 throw |
-| `create(data)` | 创建（触发 before/after hooks） |
-| `update(id, data)` | 更新 |
-| `remove(id)` | 删除 |
-| `removeMany(ids)` | 批量删除 |
-| `count(where?)` | 计数 |
-| `exists(where)` | 存在检查 |
+| BaseService 方法    | 用途                            |
+| ------------------- | ------------------------------- |
+| `list(args?)`       | 分页列表（data + total + page） |
+| `getOne(id)`        | 按 ID 查询                      |
+| `getOneOrThrow(id)` | 按 ID 查询，不存在则 throw      |
+| `create(data)`      | 创建（触发 before/after hooks） |
+| `update(id, data)`  | 更新                            |
+| `remove(id)`        | 删除                            |
+| `removeMany(ids)`   | 批量删除                        |
+| `count(where?)`     | 计数                            |
+| `exists(where)`     | 存在检查                        |
 
 ```typescript
 @Injectable()
@@ -246,7 +247,7 @@ export const todoRouter = createCrudRouterWithCustom(
 import { todoRouter } from '../modules/todo/trpc/todo.router';
 
 export const appRouter = router({
-  todo: todoRouter,    // <-- 新增（resource 名称必须和 Admin 端一致）
+  todo: todoRouter, // <-- 新增（resource 名称必须和 Admin 端一致）
 });
 ```
 
@@ -368,12 +369,12 @@ import { TodoListPage, TodoDetailPage } from './modules/todo';
 const menuConfig = [
   // ... 已有菜单
   {
-    key: "todo",
-    label: "Todo 示例",
-    icon: "CheckSquareOutlined",
+    key: 'todo',
+    label: 'Todo 示例',
+    icon: 'CheckSquareOutlined',
     permission: null,
     children: [
-      { key: "/todos", label: "Todo 管理", icon: "CheckSquareOutlined", permission: null },
+      { key: '/todos', label: 'Todo 管理', icon: 'CheckSquareOutlined', permission: null },
     ],
   },
 ];
@@ -405,6 +406,7 @@ const res = await apiClient.delete(`/todos/${id}`);
 ```
 
 **响应格式：**
+
 ```typescript
 interface ApiResponse<T> {
   success: boolean;
@@ -427,13 +429,10 @@ import { http } from '@/utils/http';
 import { API_ENDPOINTS } from '@/config/api';
 
 export const todoApi = {
-  getList: (params?: { page?: number }) =>
-    http.get(API_ENDPOINTS.todos, params),
+  getList: (params?: { page?: number }) => http.get(API_ENDPOINTS.todos, params),
   getById: (id: string) => http.get(API_ENDPOINTS.todoDetail(id)),
-  create: (data: { title: string; description?: string }) =>
-    http.post(API_ENDPOINTS.todos, data),
-  update: (id: string, data: any) =>
-    http.put(API_ENDPOINTS.todoDetail(id), data),
+  create: (data: { title: string; description?: string }) => http.post(API_ENDPOINTS.todos, data),
+  update: (id: string, data: any) => http.put(API_ENDPOINTS.todoDetail(id), data),
   delete: (id: string) => http.delete(API_ENDPOINTS.todoDetail(id)),
 };
 ```
@@ -458,6 +457,7 @@ export const API_ENDPOINTS = {
 从 Todo 模块复制模式到新模块时，逐项检查：
 
 ### 数据层
+
 - [ ] `schema.prisma` — 添加 Model + 索引 + `@@map` + 关联关系
 - [ ] User（或其他父模型）— 添加关联字段（如 `todos Todo[]`）
 - [ ] `infra/shared` — 添加 CreateSchema / UpdateSchema / Schema / ListQuerySchema / 类型
@@ -466,6 +466,7 @@ export const API_ENDPOINTS = {
 - [ ] 重建 `@loom/shared`
 
 ### 后端 API
+
 - [ ] `services/xxx.service.ts` — 继承 `BaseService<'Xxx'>`
 - [ ] `trpc/xxx.router.ts` — 使用 `createCrudRouter` 或 `createCrudRouterWithCustom`
 - [ ] `rest/xxx.controller.ts` — 完整的 REST CRUD + 数据隔离
@@ -474,16 +475,19 @@ export const API_ENDPOINTS = {
 - [ ] `app.router.ts` — 注册 tRPC Router
 
 ### Admin 端
+
 - [ ] 列表页 — 使用 `StandardListPage`
 - [ ] 表单 — 使用 `StandardForm`（声明式 FieldDefinition[]）
 - [ ] `App.tsx` — 注册 resource + route
 - [ ] `AdminLayout.tsx` — 新增菜单
 
 ### Web 端
+
 - [ ] 列表页、创建页、详情页 — 使用 `apiClient` REST 调用
 - [ ] `Sidebar.tsx` — 新增导航链接
 
 ### 小程序端
+
 - [ ] `api/xxx.ts` — API 模块
 - [ ] `config/api.ts` — 端点配置
 - [ ] `api/index.ts` — 导出
@@ -493,31 +497,31 @@ export const API_ENDPOINTS = {
 
 ## Todo 模型字段的示范意义
 
-| 字段 | 类型 | 示范目的 |
-|---|---|---|
-| `title` | String (required) | 基础必填字段 |
-| `description` | String (optional) | 可选文本字段，支持 null |
-| `status` | String (default: "pending") | 枚举状态字段 |
-| `priority` | Int (default: 0) | 数字排序/筛选字段 |
-| `dueDate` | DateTime (optional) | 可选日期字段 |
-| `isCompleted` | Boolean (default: false) | 布尔状态字段 |
-| `userId` | String (foreign key) | 用户关联（数据隔离） |
-| `createdAt` | DateTime (auto) | 审计时间戳 |
-| `updatedAt` | DateTime (auto) | 审计时间戳 |
-| `completedAt` | DateTime (optional) | 业务时间戳（完成时间） |
+| 字段          | 类型                        | 示范目的                |
+| ------------- | --------------------------- | ----------------------- |
+| `title`       | String (required)           | 基础必填字段            |
+| `description` | String (optional)           | 可选文本字段，支持 null |
+| `status`      | String (default: "pending") | 枚举状态字段            |
+| `priority`    | Int (default: 0)            | 数字排序/筛选字段       |
+| `dueDate`     | DateTime (optional)         | 可选日期字段            |
+| `isCompleted` | Boolean (default: false)    | 布尔状态字段            |
+| `userId`      | String (foreign key)        | 用户关联（数据隔离）    |
+| `createdAt`   | DateTime (auto)             | 审计时间戳              |
+| `updatedAt`   | DateTime (auto)             | 审计时间戳              |
+| `completedAt` | DateTime (optional)         | 业务时间戳（完成时间）  |
 
 ---
 
 ## Todo 模块 vs genModule 自动生成的代码
 
-| 对比维度 | Todo 参考模块（手写） | genModule 自动生成 |
-|---|---|---|
-| 后端 Service | 继承 BaseService（有 hook 扩展点） | 继承 BaseService |
-| tRPC Router | createCrudRouterWithCustom（可扩展） | createCrudRouter（标准 CRUD） |
-| REST Controller | 完整 CRUD + 数据隔离 | 完整 CRUD + 数据隔离 |
-| Admin 列表页 | StandardListPage 配置驱动 | StandardListPage 配置驱动 |
-| Admin 表单 | StandardForm 声明式字段 | StandardForm 声明式字段 |
-| Web 页面 | REST API + Tailwind | 不生成 |
-| 小程序页面 | REST API + uni-app 组件 | 不生成 |
+| 对比维度        | Todo 参考模块（手写）                | genModule 自动生成            |
+| --------------- | ------------------------------------ | ----------------------------- |
+| 后端 Service    | 继承 BaseService（有 hook 扩展点）   | 继承 BaseService              |
+| tRPC Router     | createCrudRouterWithCustom（可扩展） | createCrudRouter（标准 CRUD） |
+| REST Controller | 完整 CRUD + 数据隔离                 | 完整 CRUD + 数据隔离          |
+| Admin 列表页    | StandardListPage 配置驱动            | StandardListPage 配置驱动     |
+| Admin 表单      | StandardForm 声明式字段              | StandardForm 声明式字段       |
+| Web 页面        | REST API + Tailwind                  | 不生成                        |
+| 小程序页面      | REST API + uni-app 组件              | 不生成                        |
 
 **总结：** genModule 生成「能用的模版」，Todo 模块展示「完整的最佳实践」。

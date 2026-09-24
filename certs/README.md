@@ -81,9 +81,8 @@ volumes:
 
 ## 相关文档
 
-- [微信支付快速配置指南](../docs/wechat-pay-quick-setup.md)
-- [微信支付公钥升级指南](../docs/wechat-pay-public-key-guide.md)
-- [生产环境部署指南](../docs/deployment-guide.md)
+- 微信支付快速配置：参见 [`docs/product/prd.md`](../docs/product/prd.md)（F5 微信支付）与下方环境变量说明
+- [生产环境部署指南](../docs/ops/deployment.md)
 
 ## 故障排查
 
@@ -113,4 +112,4 @@ docker logs ${PROJECT_NAME:-loom}-api-prod | grep "微信支付"
 
 ---
 
-**如有疑问，请参考 [生产环境部署指南](../docs/deployment-guide.md)**
+**如有疑问，请参考 [生产环境部署指南](../docs/ops/deployment.md)**

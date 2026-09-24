@@ -99,7 +99,7 @@ export class WechatPayService implements OnModuleInit {
       this.logger.warn(
         `未配置微信支付公钥（WX_PAY_PUBLIC_KEY_ID / WX_PAY_PUBLIC_KEY_PATH），支付功能将不可用`,
       );
-      this.logger.warn(`请参考文档配置微信支付公钥: docs/wechatpay-sdk-upgrade-guide.md`);
+      this.logger.warn(`请参考文档配置微信支付公钥: docs/product/prd.md (F5 微信支付)`);
       return;
     }
   }
