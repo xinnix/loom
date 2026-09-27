@@ -1,414 +1,876 @@
+import { CopyCommandButton } from './_components/copy-command-button';
+
+const NAV_LINKS = [
+  { label: '架构设计', href: '#architecture', active: true },
+  { label: '模块组件', href: '#modules', active: false },
+  { label: '指令行', href: '#cli', active: false },
+  { label: '生态网络', href: '#ecosystem', active: false },
+  { label: '基准对比', href: '#benchmarks', active: false },
+];
+
+const METRICS = [
+  {
+    no: 'METRIC // 01',
+    label: '系统能力',
+    value: '19',
+    valueClass: 'text-text-primary',
+    unit: 'SKILLS',
+    unitClass: 'text-primary',
+    desc: '集成化智能体技能',
+  },
+  {
+    no: 'METRIC // 02',
+    label: '接口标准',
+    value: '10',
+    valueClass: 'text-text-primary',
+    unit: 'CMDS',
+    unitClass: 'text-terminal-cyan',
+    desc: '斜杠协议指令集',
+  },
+  {
+    no: 'METRIC // 03',
+    label: '自动化深度',
+    value: '07',
+    valueClass: 'text-text-primary',
+    unit: 'HOOKS',
+    unitClass: 'text-secondary-fixed',
+    desc: '确定性生命周期钩子',
+  },
+  {
+    no: 'METRIC // 04',
+    label: '类型覆盖',
+    value: '100%',
+    valueClass: 'text-primary',
+    unit: 'SYNC',
+    unitClass: 'text-text-muted',
+    desc: '类型安全同步率',
+  },
+];
+
+const PROTOCOL_TRIGGERS = [
+  {
+    cmd: '/START-API',
+    cmdClass: 'bg-primary/10 border-primary/20 text-primary',
+    desc: '初始化 NestJS 契约及微路由总线',
+    status: 'STDOUT → 0 ERRORS',
+    statusClass: 'text-text-muted',
+  },
+  {
+    cmd: '/GEN-MODULE',
+    cmdClass: 'bg-terminal-cyan/10 border-terminal-cyan/20 text-terminal-cyan',
+    desc: '触发 CRUD 全链路控制器、模型生成',
+    status: 'SCHEMA VALIDATED',
+    statusClass: 'text-text-muted',
+  },
+  {
+    cmd: '/SYNC-SCHEMA',
+    cmdClass: 'bg-secondary-fixed/10 border-secondary-fixed/20 text-secondary-fixed',
+    desc: 'Zod 与 Prisma 类型跨工作区实时分发',
+    status: 'MONOREPO HOT-RELOAD',
+    statusClass: 'text-primary',
+  },
+];
+
+const TECH_STACK = [
+  {
+    label: '服务层',
+    name: 'NestJS',
+    badge: 'API',
+    badgeClass: 'text-primary',
+    desc: '企业级依赖注入与模块解耦框架',
+  },
+  {
+    label: '通讯协议',
+    name: 'tRPC',
+    badge: 'RPC',
+    badgeClass: 'text-terminal-cyan',
+    desc: '端到端完全类型安全的高效通讯',
+  },
+  {
+    label: '持久层',
+    name: 'Prisma',
+    badge: 'ORM',
+    badgeClass: 'text-secondary',
+    desc: '自动化迁移与声明式数据模型',
+  },
+  {
+    label: '管理后台',
+    name: 'Refine',
+    badge: 'ADMIN',
+    badgeClass: 'text-text-primary',
+    desc: '内部工具与运维面板的极速响应基座',
+  },
+  {
+    label: '数据校验',
+    name: 'Zod',
+    badge: 'SCHEMA',
+    badgeClass: 'text-primary',
+    desc: '运行时类型校验与静态推断同构',
+  },
+  {
+    label: '状态管理',
+    name: 'TanStack',
+    badge: 'STATE',
+    badgeClass: 'text-terminal-cyan',
+    desc: '异步数据同步与极致缓存策略',
+  },
+  {
+    label: '基础设施',
+    name: 'PostgreSQL',
+    badge: 'DATABASE',
+    badgeClass: 'text-secondary',
+    desc: '工业级 ACID 可靠性与复杂关系建模',
+  },
+  {
+    label: '运行环境',
+    name: 'Node.js',
+    badge: 'RUNTIME',
+    badgeClass: 'text-text-primary',
+    desc: '长期支持版本 LTS，极致高并发事件循环',
+  },
+];
+
+const CLI_FEATURES = [
+  {
+    icon: 'bolt',
+    iconClass: 'bg-primary/20 text-primary',
+    title: '脚手架即开即用',
+    desc: '项目骨架、数据库连接、认证系统全部预配置，克隆即开工。',
+  },
+  {
+    icon: 'sync',
+    iconClass: 'bg-terminal-cyan/20 text-terminal-cyan',
+    title: '类型安全同步',
+    desc: '跨整个系统表面积的自动化类型生成与校验。',
+  },
+];
+
+const SPONSOR_CHANNELS = [
+  {
+    label: '支付向量：微信',
+    dotClass: 'bg-primary',
+    cardHover: 'hover:border-primary/40',
+    qrHover: 'group-hover:border-primary/50',
+    icon: 'qr_code_2',
+    iconClass: 'text-primary',
+    code: 'COMMUNITY_WECHAT',
+    note: '扫描赞助开发者节点',
+  },
+  {
+    label: '支付向量：支付宝',
+    dotClass: 'bg-terminal-cyan',
+    cardHover: 'hover:border-terminal-cyan/40',
+    qrHover: 'group-hover:border-terminal-cyan/50',
+    icon: 'qr_code_scanner',
+    iconClass: 'text-terminal-cyan',
+    code: 'COMMUNITY_ALIPAY',
+    note: '扫描支持底层生态建设',
+  },
+];
+
+const FOOTER_LINKS = [
+  { label: '技术文档', href: '#' },
+  { label: '系统状态', href: '#' },
+  { label: '安全审计', href: '#' },
+  { label: '更新日志', href: '#' },
+  { label: '开源社区', href: '#ecosystem' },
+];
+
+const INSTALL_COMMAND = 'npx create-loom@latest my-app';
+
 export default function LandingPage() {
   return (
     <>
+      {/* 背景氛围层 */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(16,185,129,0.15),rgba(5,7,10,0))] opacity-80" />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-200">
-        <div className="flex justify-between items-center w-full px-margin-mobile md:px-gutter max-w-container-max mx-auto h-20">
-          <div className="flex items-center gap-12">
-            <a
-              className="font-headline-md text-2xl tracking-tighter text-on-surface flex items-center gap-3"
-              href="#"
-            >
-              <svg className="text-primary" fill="none" height="24" viewBox="0 0 24 24" width="24">
-                <path d="M4 4H20V20H4V4Z" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M4 12H20" stroke="currentColor" strokeDasharray="2 2" strokeWidth="1" />
-                <path d="M12 4V20" stroke="currentColor" strokeDasharray="2 2" strokeWidth="1" />
-              </svg>
-              LOOM
+      <header className="fixed top-0 w-full z-50 bg-surface-acrylic backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
+        <div className="h-16 max-w-7xl mx-auto px-margin md:px-margin-desktop flex items-center justify-between gap-space-md">
+          <div className="flex items-center gap-space-sm">
+            <a className="flex items-center gap-space-sm group" href="#">
+              <div className="w-7 h-7 rounded bg-surface-container flex items-center justify-center text-primary group-hover:text-primary-fixed transition-colors">
+                <span className="material-symbols-outlined text-[18px]">polyline</span>
+              </div>
+              <span className="font-headline-md text-headline-md font-bold tracking-tight text-text-primary uppercase">
+                LOOM
+              </span>
             </a>
-            <nav className="hidden md:flex items-center gap-8">
-              <a className="mono-label hover:text-primary transition-colors" href="#features">
-                架构设计
-              </a>
-              <a className="mono-label hover:text-primary transition-colors" href="#tech">
-                模块组件
-              </a>
-              <a className="mono-label hover:text-primary transition-colors" href="#terminal">
-                命令行
-              </a>
-              <a className="mono-label hover:text-primary transition-colors" href="#ecosystem">
-                网络生态
-              </a>
-            </nav>
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container-high">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="font-label-caps text-label-caps uppercase text-primary">v0.1</span>
+            </div>
           </div>
-          <div className="flex items-center gap-6">
-            <span className="mono-label hidden sm:block">v0.1</span>
-            <div className="w-px h-6 bg-slate-200" />
+          <nav className="hidden lg:flex items-center gap-space-lg">
+            {NAV_LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                aria-current={link.active ? 'page' : undefined}
+                className={
+                  link.active
+                    ? 'transition-colors py-1 text-primary font-bold'
+                    : 'font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors py-1'
+                }
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+          <div className="flex items-center gap-space-sm sm:gap-space-md">
             <a
-              className="text-on-surface hover:text-primary transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors"
               href="https://github.com/xinnix/loom"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-              </svg>
+              <span className="material-symbols-outlined text-[16px]">terminal</span>
+              <span className="hidden sm:inline font-label-mono text-label-mono">xinnix/loom</span>
+              <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-surface-base font-label-caps text-label-caps text-primary">
+                <span className="material-symbols-outlined text-[12px]">star</span>2.4k
+              </span>
             </a>
+            <a
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container text-on-primary-container hover:bg-primary font-code-snippet text-code-snippet font-bold transition-colors shadow-[0_0_16px_rgba(16,185,129,0.2)]"
+              href="#cli"
+            >
+              <span className="material-symbols-outlined text-[16px]">bolt</span>
+              快速部署
+            </a>
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="relative">
-        {/* Hero */}
-        <section className="relative min-h-[90vh] flex items-center justify-center py-section-gap-lg blueprint-grid border-b border-slate-200">
-          <div className="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-gutter text-center">
-            <div className="inline-flex items-center gap-3 mb-10">
-              <div className="h-px w-8 bg-slate-300" />
-              <span className="mono-label !text-sm !text-primary">
-                Claude Code · Codex · OpenCode · ZCode 开箱即用
+      <main className="relative z-10 w-full pt-16 bg-transparent min-h-[calc(100vh-14rem)]">
+        <div className="flex flex-col w-full">
+          {/* Hero */}
+          <section className="relative w-full max-w-7xl mx-auto px-margin md:px-margin-desktop pt-space-xl pb-space-3xl flex flex-col items-center text-center">
+            {/* 标题背后的氛围光晕 */}
+            <div className="absolute top-12 left-1/2 -translate-x-1/2 w-96 md:w-[680px] h-64 bg-primary/10 rounded-full blur-[90px] pointer-events-none -z-10" />
+
+            {/* Agent 徽章胶囊 */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-elevated/90 border border-border-strong backdrop-blur-md shadow-[0_0_24px_-4px_rgba(16,185,129,0.25)] mb-space-lg">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
               </span>
-              <div className="h-px w-8 bg-slate-300" />
+              <span className="font-label-caps text-label-caps uppercase tracking-wider text-text-muted">
+                专为
+              </span>
+              <span className="font-label-caps text-label-caps uppercase tracking-wider text-primary font-bold">
+                CLAUDE CODE
+              </span>
+              <span className="font-label-caps text-label-caps uppercase tracking-wider text-text-muted">
+                架构优化
+              </span>
+              <span className="text-text-muted/40 text-[10px]">|</span>
+              <span className="font-label-mono text-label-mono text-secondary">v0.1-STABLE</span>
             </div>
 
-            <h1 className="font-display-hero text-4xl md:text-5xl lg:text-6xl text-on-surface mb-8 max-w-5xl mx-auto leading-tight tracking-tight">
-              以智能体为中心构建应用的脚手架
+            {/* 主标题 */}
+            <h1 className="font-display-hero text-headline-xl md:text-display-hero text-text-primary tracking-tight max-w-4xl mx-auto leading-none font-bold">
+              以智能体为中心构建应用的
+              <span className="bg-gradient-to-r from-primary via-secondary-fixed to-text-primary bg-clip-text text-transparent">
+                脚手架
+              </span>
             </h1>
 
-            <p className="font-headline-md text-lg md:text-xl text-secondary max-w-3xl mx-auto mb-8 leading-relaxed">
-              Loom 意为织机，将 AI Agent、后端、前端与数据库精密编织为完整的全栈开发体验
+            {/* 核心哲学副标题 */}
+            <p className="mt-space-lg font-body-lg text-body-lg text-text-muted max-w-2xl mx-auto leading-relaxed">
+              Loom 意为织机，将 <span className="text-text-primary">AI Agent</span>
+              、后端、前端与数据库精密编织为完整的全栈开发体验。
             </p>
 
-            <p className="font-body-lg text-secondary max-w-2xl mx-auto mb-0">
-              <span className="text-on-surface font-medium">
-                18 种模块化技能 • 9 个自动化钩子 • 四大 Agent 编织
-              </span>
-            </p>
-          </div>
-        </section>
+            {/* 架构指标标语 */}
+            <div className="mt-space-md inline-flex flex-wrap items-center justify-center gap-2 font-label-mono text-label-mono text-secondary-fixed-dim bg-surface-elevated/60 px-4 py-2 rounded border border-border-subtle">
+              <span>19 种模块化技能</span>
+              <span className="text-primary/40">•</span>
+              <span>10 种核心指令</span>
+              <span className="text-primary/40">•</span>
+              <span className="text-primary font-semibold">精准编织</span>
+            </div>
 
-        {/* Stats */}
-        <section className="py-20 border-b border-slate-200 bg-white">
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 divide-x-0 md:divide-x divide-slate-100">
-              {[
-                { label: '系统能力', value: '18', desc: '集成化智能体技能' },
-                { label: '接口标准', value: '11', desc: '斜杠协议指令集' },
-                { label: '自动化深度', value: '09', desc: '确定性生命周期钩子' },
-                { label: '类型覆盖', value: '100%', desc: '类型安全同步率' },
-              ].map((s) => (
-                <div key={s.label} className="px-8 text-center md:text-left">
-                  <div className="mono-label text-primary mb-2">{s.label}</div>
-                  <div className="font-headline-md text-4xl text-on-surface">{s.value}</div>
-                  <p className="text-[11px] text-primary/60 mt-2 uppercase tracking-tighter">
-                    {s.desc}
-                  </p>
+            {/* 安装命令复制框 + 对比入口 */}
+            <div className="mt-space-xl w-full max-w-xl flex flex-col sm:flex-row items-center justify-center gap-space-sm">
+              <div className="w-full sm:w-auto flex-1 flex items-center justify-between px-4 py-3 bg-surface-base border border-border-strong/70 rounded shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] group">
+                <div className="flex items-center gap-2 font-code-snippet text-code-snippet overflow-x-auto">
+                  <span className="text-primary font-bold select-none">$</span>
+                  <span className="text-text-primary">{INSTALL_COMMAND}</span>
+                </div>
+                <CopyCommandButton command={INSTALL_COMMAND} />
+              </div>
+              <a
+                className="w-full sm:w-auto px-5 py-3 rounded bg-surface-container hover:bg-surface-container-high border border-border-subtle text-text-primary font-code-snippet text-code-snippet flex items-center justify-center gap-2 transition-colors"
+                href="#benchmarks"
+              >
+                <span className="material-symbols-outlined text-[18px] text-primary">
+                  view_timeline
+                </span>
+                架构全景对比
+              </a>
+            </div>
+
+            {/* 核心指标卡 */}
+            <div className="mt-space-2xl w-full max-w-5xl border-t border-border-subtle/80 pt-space-lg grid grid-cols-2 md:grid-cols-4 gap-space-md">
+              {METRICS.map((metric) => (
+                <div
+                  key={metric.no}
+                  className="p-4 rounded bg-surface-elevated/40 border border-border-subtle text-left relative overflow-hidden group hover:border-primary/40 transition-colors"
+                >
+                  <div className="absolute top-2 right-3 font-label-caps text-label-caps text-text-muted/60 tracking-widest">
+                    {metric.no}
+                  </div>
+                  <span className="font-label-mono text-label-mono text-text-muted block">
+                    {metric.label}
+                  </span>
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span
+                      className={`font-headline-xl text-headline-xl font-bold ${metric.valueClass}`}
+                    >
+                      {metric.value}
+                    </span>
+                    <span className={`font-label-caps text-label-caps ${metric.unitClass}`}>
+                      {metric.unit}
+                    </span>
+                  </div>
+                  <span className="mt-1 text-body-md text-text-muted text-[12px] block">
+                    {metric.desc}
+                  </span>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Features */}
-        <section className="py-section-gap-lg" id="features">
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
-            <div className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
-              <div className="max-w-xl">
-                <div className="mono-label text-primary mb-4">[ 架构完整性 ]</div>
-                <h2 className="font-headline-lg text-on-surface">以智能体为核心的优化</h2>
+          {/* 架构优化 Bento Grid */}
+          <section
+            className="w-full max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl"
+            id="architecture"
+          >
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-space-xl pb-space-md border-b border-border-subtle gap-space-sm">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 font-label-caps text-label-caps text-primary tracking-widest uppercase">
+                  <span className="text-text-muted">[</span> 架构完整性{' '}
+                  <span className="text-text-muted">]</span>
+                </div>
+                <h2 className="font-headline-xl text-headline-xl font-bold text-text-primary tracking-tight">
+                  以智能体为核心的优化
+                </h2>
               </div>
-              <p className="text-secondary max-w-sm font-body-md">
+              <p className="font-body-md text-body-md text-text-muted max-w-md">
                 通过标准化的系统编织，消除人类意图与机器执行之间的摩擦。
               </p>
             </div>
 
-            <div className="grid grid-cols-12 gap-8">
-              {/* Large featured block */}
-              <div className="col-span-12 lg:col-span-8 tech-border p-10 bg-slate-50 flex flex-col justify-between min-h-[400px]">
-                <div>
-                  <div className="mono-label text-primary mb-6">模块 // 01</div>
-                  <h3 className="font-headline-md text-3xl mb-4">多 Agent 指令协议</h3>
-                  <p className="text-secondary max-w-lg mb-8">
-                    技能以标准 SKILL.md
-                    格式分发至四大工具的发现目录，每个入口都是确定性的，产生的输出可供智能体解析、验证和迭代，不存在歧义。
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-space-md">
+              {/* 卡片 1：精准指令协议（大卡，7 列） */}
+              <div className="md:col-span-7 bg-surface-elevated/80 border border-border-subtle rounded-lg p-space-lg flex flex-col justify-between relative overflow-hidden group hover:border-border-strong transition-colors">
+                <div className="space-y-space-sm">
+                  <div className="flex items-center justify-between text-text-muted font-label-mono text-label-mono">
+                    <span>模块 // 01</span>
+                    <span className="text-primary flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      DETERMINISTIC
+                    </span>
+                  </div>
+                  <h3 className="font-headline-lg text-headline-lg font-semibold text-text-primary">
+                    精准指令协议
+                  </h3>
+                  <p className="font-body-md text-body-md text-text-muted max-w-xl">
+                    为 Claude Code
+                    提供标准化的入口点。每条指令都是确定性的，产生的输出可供智能体解析、验证和迭代，不存在歧义。
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-4 font-label-mono text-[11px]">
-                  <div className="px-4 py-2 border border-slate-200 bg-white">Claude Code</div>
-                  <div className="px-4 py-2 border border-slate-200 bg-white">Codex</div>
-                  <div className="px-4 py-2 border border-slate-200 bg-white">OpenCode</div>
-                  <div className="px-4 py-2 border border-slate-200 bg-white">ZCode</div>
+                {/* 协议触发可视化 */}
+                <div className="mt-space-lg space-y-space-xs font-code-snippet text-code-snippet">
+                  {PROTOCOL_TRIGGERS.map((trigger) => (
+                    <div
+                      key={trigger.cmd}
+                      className="p-3 bg-surface-base/90 rounded border border-border-subtle/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`px-2 py-0.5 rounded border font-bold whitespace-nowrap ${trigger.cmdClass}`}
+                        >
+                          {trigger.cmd}
+                        </span>
+                        <span className="text-on-surface-variant text-[12px]">{trigger.desc}</span>
+                      </div>
+                      <span
+                        className={`font-label-caps text-label-caps sm:text-right ${trigger.statusClass}`}
+                      >
+                        {trigger.status}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Vertical block */}
-              <div className="col-span-12 lg:col-span-4 tech-border p-10 flex flex-col justify-center border-l-4 border-l-primary/20">
-                <div className="mono-label text-primary mb-6">技能 // 矩阵</div>
-                <h3 className="font-headline-md text-2xl mb-4">18 种预编译技能</h3>
-                <p className="text-secondary text-sm leading-relaxed mb-6">
-                  从自动化 CRUD 生成到复杂的数据库迁移，Loom
-                  提供了一系列原始技能库，在项目范围内扩展智能体的核心能力——克隆即用，无需安装。
-                </p>
-                <svg className="w-full h-24 opacity-30" viewBox="0 0 200 60">
-                  <path
-                    d="M0 30H200M40 0V60M80 0V60M120 0V60M160 0V60"
-                    stroke="currentColor"
-                    strokeWidth="0.5"
-                  />
-                  <circle cx="80" cy="30" fill="currentColor" r="4" />
-                </svg>
+              {/* 卡片 2：19 种预编译技能（5 列） */}
+              <div className="md:col-span-5 bg-surface-elevated/80 border border-border-subtle rounded-lg p-space-lg flex flex-col justify-between hover:border-border-strong transition-colors">
+                <div className="space-y-space-sm">
+                  <div className="flex items-center justify-between text-text-muted font-label-mono text-label-mono">
+                    <span>技能 // 矩阵</span>
+                    <span className="font-label-caps text-label-caps text-terminal-cyan">
+                      19 AGENT CAPACITIES
+                    </span>
+                  </div>
+                  <h3 className="font-headline-lg text-headline-lg font-semibold text-text-primary">
+                    19 种预编译技能
+                  </h3>
+                  <p className="font-body-md text-body-md text-text-muted">
+                    从自动化 CRUD 生成到复杂的数据库迁移，Loom
+                    提供了一系列原始技能库，在项目范围内扩展了 Claude 的核心能力。
+                  </p>
+                </div>
+                {/* 织机网格可视化 */}
+                <div className="mt-space-md p-4 bg-surface-base/70 rounded border border-border-subtle flex flex-col items-center justify-center">
+                  <div className="w-full flex items-center justify-between font-label-caps text-label-caps text-text-muted mb-2">
+                    <span>CLAUDE CONTEXT</span>
+                    <span className="text-primary font-bold">WOVEN LATENCY: 2.1ms</span>
+                  </div>
+                  <svg className="w-full h-20 text-primary/40" fill="none" viewBox="0 0 300 70">
+                    <line
+                      stroke="currentColor"
+                      strokeDasharray="3 3"
+                      strokeWidth="1"
+                      x1="10"
+                      x2="290"
+                      y1="35"
+                      y2="35"
+                    />
+                    <circle className="animate-pulse" cx="50" cy="35" fill="#10B981" r="4" />
+                    <circle cx="100" cy="20" fill="#38BDF8" r="3" />
+                    <circle cx="150" cy="50" fill="#10B981" r="3" />
+                    <circle cx="200" cy="20" fill="#38BDF8" r="3" />
+                    <circle cx="250" cy="35" fill="#4edea3" r="5" />
+                    <path
+                      d="M 50 35 Q 100 0, 150 50 T 250 35"
+                      fill="none"
+                      stroke="#10B981"
+                      strokeOpacity="0.8"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      d="M 50 35 Q 100 70, 200 20 T 250 35"
+                      fill="none"
+                      stroke="#38BDF8"
+                      strokeOpacity="0.7"
+                      strokeWidth="1.2"
+                    />
+                  </svg>
+                  <div className="w-full flex justify-between font-label-mono text-label-mono text-text-muted text-[10px] mt-1">
+                    <span>PROMPT_IN</span>
+                    <span>PRISMA_GEN</span>
+                    <span>REST_TRPC</span>
+                    <span>DEPLOY_OUT</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Three smaller blocks */}
-              {[
-                {
-                  mono: '钩子 // 核心',
-                  title: '自动化同步机制',
-                  desc: 'Schema 变更自动同步 Prisma Client 与共享包，编辑后自动格式化与类型检查；迁移文件与 .env 受保护。',
-                },
-                {
-                  mono: '认证 // 向量',
-                  title: '双通道身份认证',
-                  desc: '统一认证层，同时支持管理端 JWT 与面向 Web/小程序的 REST 协议，微信登录开箱即用。',
-                },
-                {
-                  mono: '数据 // 编织',
-                  title: '共享 Zod Schema',
-                  desc: '类型的单一事实来源。一次更新，即刻传播至 API、管理端与客户端。',
-                },
-              ].map((f) => (
-                <div
-                  key={f.title}
-                  className="col-span-12 md:col-span-4 tech-border p-8 hover:bg-slate-50 transition-colors group"
-                >
-                  <div className="mono-label mb-4 group-hover:text-primary transition-colors">
-                    {f.mono}
+              {/* 卡片 3：钩子 */}
+              <div className="md:col-span-4 bg-surface-elevated/80 border border-border-subtle rounded-lg p-space-lg flex flex-col justify-between hover:border-border-strong transition-colors">
+                <div className="space-y-space-sm">
+                  <div className="flex items-center justify-between text-text-muted font-label-mono text-label-mono">
+                    <span>钩子 // 核心</span>
+                    <span className="material-symbols-outlined text-primary text-[18px]">
+                      lock_reset
+                    </span>
                   </div>
-                  <h4 className="font-bold mb-2">{f.title}</h4>
-                  <p className="text-xs text-secondary">{f.desc}</p>
+                  <h4 className="font-headline-md text-headline-md font-semibold text-text-primary">
+                    自动化同步机制
+                  </h4>
+                  <p className="font-body-md text-body-md text-text-muted">
+                    Post-commit 触发器与 pre-push 验证，确保整个 Monorepo 的结构一致性与代码健壮。
+                  </p>
+                </div>
+                <div className="mt-space-md pt-3 border-t border-border-subtle/50 flex items-center gap-2 font-label-mono text-label-mono text-text-muted">
+                  <span className="text-primary font-bold">git:</span> hook:{' '}
+                  <code className="text-text-primary bg-surface-container px-1.5 py-0.5 rounded">
+                    loom-precheck
+                  </code>
+                </div>
+              </div>
+
+              {/* 卡片 4：双通道认证 */}
+              <div className="md:col-span-4 bg-surface-elevated/80 border border-border-subtle rounded-lg p-space-lg flex flex-col justify-between hover:border-border-strong transition-colors">
+                <div className="space-y-space-sm">
+                  <div className="flex items-center justify-between text-text-muted font-label-mono text-label-mono">
+                    <span>认证 // 向量</span>
+                    <span className="material-symbols-outlined text-secondary text-[18px]">
+                      verified_user
+                    </span>
+                  </div>
+                  <h4 className="font-headline-md text-headline-md font-semibold text-text-primary">
+                    双通道身份认证
+                  </h4>
+                  <p className="font-body-md text-body-md text-text-muted">
+                    统一认证层架构，开箱同时支持管理端专用 JWT 令牌与面向 Web 客户端的 REST/Session
+                    协议。
+                  </p>
+                </div>
+                <div className="mt-space-md pt-3 border-t border-border-subtle/50 flex items-center justify-between font-label-mono text-label-mono">
+                  <span className="text-text-muted">ADMIN: JWT</span>
+                  <span className="text-text-muted">|</span>
+                  <span className="text-text-muted">WEB: REST SESSION</span>
+                </div>
+              </div>
+
+              {/* 卡片 5：共享 Zod Schema */}
+              <div className="md:col-span-4 bg-surface-elevated/80 border border-border-subtle rounded-lg p-space-lg flex flex-col justify-between hover:border-border-strong transition-colors">
+                <div className="space-y-space-sm">
+                  <div className="flex items-center justify-between text-text-muted font-label-mono text-label-mono">
+                    <span>数据 // 编织</span>
+                    <span className="material-symbols-outlined text-terminal-cyan text-[18px]">
+                      sync_alt
+                    </span>
+                  </div>
+                  <h4 className="font-headline-md text-headline-md font-semibold text-text-primary">
+                    共享 Zod Schema
+                  </h4>
+                  <p className="font-body-md text-body-md text-text-muted">
+                    类型的单一事实来源。只需在数据层做一次定义与更新，即可无缝传播至后端
+                    API、管理面板与移动端。
+                  </p>
+                </div>
+                <div className="mt-space-md pt-3 border-t border-border-subtle/50 flex items-center gap-1.5 font-label-mono text-label-mono text-primary">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span>Zero-Type-Drift Architecture</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 原子级组件技术栈 */}
+          <section
+            className="w-full max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl"
+            id="modules"
+          >
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-space-xl pb-space-md border-b border-border-subtle gap-space-sm">
+              <div>
+                <span className="font-label-caps text-label-caps uppercase text-primary tracking-wider">
+                  核心技术栈
+                </span>
+                <h2 className="mt-1 font-headline-xl text-headline-xl font-bold text-text-primary">
+                  原子级组件
+                </h2>
+              </div>
+              <p className="font-body-md text-body-md text-text-muted max-w-md">
+                每一层都因其确定性的特质和大规模下的卓越性能而被选中。
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-space-md">
+              {TECH_STACK.map((tech) => (
+                <div
+                  key={tech.name}
+                  className="p-space-md bg-surface-elevated/50 border border-border-subtle rounded hover:border-primary/50 transition-colors"
+                >
+                  <span className="font-label-mono text-label-mono text-text-muted block uppercase">
+                    {tech.label}
+                  </span>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="font-headline-md text-headline-md font-bold text-text-primary">
+                      {tech.name}
+                    </span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded bg-surface-container font-label-caps text-label-caps ${tech.badgeClass}`}
+                    >
+                      {tech.badge}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-text-muted text-[12px] font-body-md">{tech.desc}</p>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Tech Stack */}
-        <section className="py-24 bg-slate-50 border-y border-slate-200" id="tech">
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
-            <div className="grid lg:grid-cols-4 gap-12">
-              <div className="lg:col-span-1 border-r border-slate-200 pr-8">
-                <div className="mono-label text-primary mb-4">核心技术栈</div>
-                <h2 className="font-headline-md text-3xl mb-6">原子级组件</h2>
-                <p className="text-secondary text-sm">
-                  每一层都因其确定性的特质和大规模下的卓越性能而被选中。
-                </p>
-              </div>
-              <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-px bg-slate-200 border border-slate-200">
-                {[
-                  { name: 'NestJS', label: '服务层' },
-                  { name: 'tRPC', label: '通讯协议' },
-                  { name: 'Prisma', label: '持久层' },
-                  { name: 'Refine', label: '管理后台' },
-                  { name: 'Zod', label: '数据校验' },
-                  { name: 'TanStack', label: '状态管理' },
-                  { name: 'PostgreSQL', label: '基础设施' },
-                  { name: 'Node.js', label: '运行环境' },
-                ].map((t) => (
-                  <div
-                    key={t.name}
-                    className="bg-white p-8 flex flex-col items-center justify-center text-center group"
-                  >
-                    <span className="mono-label text-[9px] text-primary/70 mb-2">{t.label}</span>
-                    <div className="font-bold text-on-surface group-hover:text-primary transition-colors">
-                      {t.name}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* 性能基准对比 */}
+          <section
+            className="w-full max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl"
+            id="benchmarks"
+          >
+            <div className="text-center max-w-2xl mx-auto mb-space-xl">
+              <span className="font-label-caps text-label-caps text-primary uppercase tracking-widest">
+                性能基准对比
+              </span>
+              <h2 className="mt-2 font-headline-xl text-headline-xl font-bold text-text-primary">
+                Weaving 编织 vs. Scaffolding 脚手架
+              </h2>
+              <p className="mt-2 font-body-md text-body-md text-text-muted">
+                传统单体脚手架与 Loom 确定性织机引擎的范式迁移。
+              </p>
             </div>
-          </div>
-        </section>
-
-        {/* Comparison */}
-        <section className="py-section-gap-lg">
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
-            <div className="text-center mb-16">
-              <div className="mono-label text-primary mb-4">性能基准对比</div>
-              <h2 className="font-headline-lg">Weaving 编织 vs. Scaffolding 脚手架</h2>
-            </div>
-            <div className="tech-border overflow-hidden">
-              <table className="w-full text-left border-collapse bg-white">
+            <div className="w-full overflow-x-auto bg-surface-elevated/90 border border-border-subtle rounded-lg shadow-xl">
+              <table className="w-full text-left border-collapse font-body-md text-body-md">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="p-6 mono-label border-r border-slate-200">评估参数</th>
-                    <th className="p-6 mono-label border-r border-slate-200">传统模板</th>
-                    <th className="p-6 mono-label text-primary">Loom 确定性架构</th>
+                  <tr className="border-b border-border-subtle bg-surface-container-low font-label-mono text-label-mono text-text-muted uppercase">
+                    <th className="py-4 px-6 font-semibold w-1/4">评估参数</th>
+                    <th className="py-4 px-6 font-semibold w-5/12">传统模板 (Traditional)</th>
+                    <th className="py-4 px-6 font-semibold w-5/12 text-primary bg-primary/5">
+                      LOOM 确定性架构 (Deterministic)
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-body-md">
-                  {[
-                    {
-                      dim: '系统感知能力',
-                      legacy: '静态文件结构；对 AI 缺乏上下文感知。',
-                      loom: '智能体原生架构；从零时刻起即具备上下文深度。',
-                    },
-                    {
-                      dim: '维护循环',
-                      legacy: '需手动编写重复的 CRUD 逻辑层。',
-                      loom: '通过 genModule 技能进行算法级自动生成。',
-                    },
-                    {
-                      dim: '类型安全性',
-                      legacy: '跨端点的手动接口映射。',
-                      loom: '全端 Zod 编织。确定性同步。',
-                    },
-                    {
-                      dim: '认证体系',
-                      legacy: '需自行集成 passport、session 等。',
-                      loom: '双通道认证：Admin JWT + Web REST 开箱即用。',
-                    },
-                    {
-                      dim: 'Agent 生态',
-                      legacy: '绑定特定工具，更换工具即失效。',
-                      loom: 'SKILL.md 标准分发：Claude Code / Codex / OpenCode / ZCode。',
-                    },
-                  ].map((row) => (
-                    <tr key={row.dim}>
-                      <td className="p-6 border-r border-slate-200 font-bold text-sm">{row.dim}</td>
-                      <td className="p-6 border-r border-slate-200 text-xs text-secondary">
-                        {row.legacy}
-                      </td>
-                      <td className="p-6 text-sm bg-primary/5 border-l border-primary/20">
-                        {row.loom}
-                      </td>
-                    </tr>
-                  ))}
+                <tbody className="divide-y divide-border-subtle/40">
+                  <tr className="hover:bg-surface-container-high/30 transition-colors">
+                    <td className="py-4 px-6 font-semibold text-text-primary font-code-snippet">
+                      系统感知能力
+                    </td>
+                    <td className="py-4 px-6 text-text-muted">
+                      静态文件结构；对 AI 缺乏上下文感知。
+                    </td>
+                    <td className="py-4 px-6 text-text-primary bg-primary/[0.02]">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[18px]">
+                          check_circle
+                        </span>
+                        <span>智能体原生架构；从零时刻起即具备上下文深度。</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-surface-container-high/30 transition-colors">
+                    <td className="py-4 px-6 font-semibold text-text-primary font-code-snippet">
+                      维护循环
+                    </td>
+                    <td className="py-4 px-6 text-text-muted">需手动编写重复的 CRUD 逻辑层。</td>
+                    <td className="py-4 px-6 text-text-primary bg-primary/[0.02]">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[18px]">
+                          check_circle
+                        </span>
+                        <span>
+                          通过{' '}
+                          <code className="text-primary font-mono text-[12px] bg-surface-base px-1.5 py-0.5 rounded">
+                            /GEN-MODULE
+                          </code>{' '}
+                          协议进行算法级自动生成。
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-surface-container-high/30 transition-colors">
+                    <td className="py-4 px-6 font-semibold text-text-primary font-code-snippet">
+                      类型安全性
+                    </td>
+                    <td className="py-4 px-6 text-text-muted">
+                      跨端点的手动接口映射，极易发生类型偏航。
+                    </td>
+                    <td className="py-4 px-6 text-text-primary bg-primary/[0.02]">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[18px]">
+                          check_circle
+                        </span>
+                        <span>全端 Zod 编织。确定性同步，100% 编译期捕获错误。</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-surface-container-high/30 transition-colors">
+                    <td className="py-4 px-6 font-semibold text-text-primary font-code-snippet">
+                      认证体系
+                    </td>
+                    <td className="py-4 px-6 text-text-muted">
+                      需自行集成 passport、session 等割裂方案。
+                    </td>
+                    <td className="py-4 px-6 text-text-primary bg-primary/[0.02]">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[18px]">
+                          check_circle
+                        </span>
+                        <span>双通道认证：Admin JWT + Web REST 开箱即用。</span>
+                      </div>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* CLI Terminal */}
-        <section
-          className="py-section-gap-lg bg-slate-900 text-white relative overflow-hidden"
-          id="terminal"
-        >
-          <div className="absolute inset-0 blueprint-grid opacity-10 pointer-events-none" />
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-gutter">
-            <div className="grid lg:grid-cols-2 gap-16 items-center relative z-10">
-              <div>
-                <div className="mono-label text-primary/80 mb-4">命令行界面</div>
-                <h2 className="font-headline-md text-3xl mb-8">快速部署协议</h2>
-                <p className="text-slate-400 font-body-lg mb-10">
+          {/* CLI 协议与终端窗口 */}
+          <section
+            className="w-full max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl"
+            id="cli"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center bg-surface-elevated/40 border border-border-subtle rounded-xl p-space-lg md:p-space-2xl">
+              {/* 左侧说明 */}
+              <div className="lg:col-span-5 space-y-space-md">
+                <span className="font-label-caps text-label-caps text-primary tracking-widest uppercase">
+                  命令行界面
+                </span>
+                <h2 className="font-headline-xl text-headline-xl font-bold text-text-primary">
+                  快速部署协议
+                </h2>
+                <p className="font-body-md text-body-md text-text-muted">
                   一行 npx
                   命令即可初始化完整的全栈项目。自动配置数据库、认证系统、文件存储和支付接口。
                 </p>
-                <div className="space-y-6">
-                  {[
-                    {
-                      title: '脚手架即开即用',
-                      desc: '项目骨架、数据库连接、认证系统全部预配置，克隆即开工。',
-                    },
-                    { title: '类型安全同步', desc: '跨整个系统表面积的自动化类型生成与校验。' },
-                    {
-                      title: '四大 Agent 技能就绪',
-                      desc: 'Claude Code / Codex / OpenCode / ZCode 技能目录随仓库分发。',
-                    },
-                  ].map((item) => (
-                    <div key={item.title} className="flex gap-4 items-start">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2" />
+                <div className="space-y-space-sm pt-space-xs">
+                  {CLI_FEATURES.map((feature) => (
+                    <div key={feature.title} className="flex items-start gap-3">
+                      <div
+                        className={`w-5 h-5 rounded flex items-center justify-center mt-0.5 ${feature.iconClass}`}
+                      >
+                        <span className="material-symbols-outlined text-[14px]">
+                          {feature.icon}
+                        </span>
+                      </div>
                       <div>
-                        <div className="font-bold text-slate-100">{item.title}</div>
-                        <p className="text-sm text-slate-400">{item.desc}</p>
+                        <h4 className="font-body-lg text-body-lg font-semibold text-text-primary">
+                          {feature.title}
+                        </h4>
+                        <p className="font-body-md text-body-md text-text-muted">{feature.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Terminal */}
-              <div className="bg-[#020617] border border-slate-800 rounded-lg overflow-hidden shadow-2xl">
-                <div className="bg-slate-800/50 px-5 py-3 flex justify-between items-center border-b border-slate-700">
-                  <div className="flex gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-slate-600" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-slate-600" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-slate-600" />
+              {/* 右侧模拟终端 */}
+              <div className="lg:col-span-7 bg-surface-base border border-border-strong/80 rounded-lg shadow-2xl overflow-hidden font-code-snippet text-code-snippet">
+                <div className="px-4 py-2.5 bg-surface-container flex items-center justify-between border-b border-border-subtle">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-error/80" />
+                    <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                    <span className="w-3 h-3 rounded-full bg-primary/80" />
                   </div>
-                  <span className="mono-label text-[9px] text-slate-400">LOOM-CORE // BASH</span>
+                  <span className="font-label-mono text-label-mono text-text-muted">
+                    LOOM-CORE // BASH
+                  </span>
+                  <div className="w-8" />
                 </div>
-                <div className="p-10 font-label-mono text-sm space-y-6 text-slate-300">
-                  <div className="flex gap-4">
-                    <span className="text-primary opacity-60">01</span>
-                    <span>npx @xinnix/create-loom my-app</span>
+                <div className="p-space-lg space-y-3 font-code-snippet">
+                  <div className="flex items-center gap-3">
+                    <span className="text-text-muted select-none">01</span>
+                    <span className="text-primary select-none">$</span>
+                    <span className="text-text-primary font-bold">{INSTALL_COMMAND}</span>
                   </div>
-                  <div className="flex gap-4">
-                    <span className="text-primary opacity-60">02</span>
-                    <span>cd my-app</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-text-muted select-none">02</span>
+                    <span className="text-primary select-none">$</span>
+                    <span className="text-text-primary">cd my-app &amp;&amp; pnpm install</span>
                   </div>
-                  <div className="flex gap-4">
-                    <span className="text-primary opacity-60">03</span>
-                    <span>pnpm run dev</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-text-muted select-none">03</span>
+                    <span className="text-primary select-none">$</span>
+                    <span className="text-text-primary">pnpm run dev</span>
                   </div>
-                  <div className="pt-6 border-t border-slate-800 text-slate-500 italic text-xs">
-                    [系统] 项目脚手架生成完成。
-                    <br />
-                    [系统] API:3000 Admin:5173 Web:3002 Landing:3001 Miniapp:8080
+                  <div className="my-3 border-t border-border-subtle/50" />
+                  <div className="space-y-1 text-[12px] text-text-muted">
+                    <p className="text-primary flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[14px]">done</span>
+                      <span>[系统] 项目脚手架生成完成。</span>
+                    </p>
+                    <p className="text-text-primary flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[14px] text-secondary">
+                        lan
+                      </span>
+                      <span>[系统] API:3000 | Admin:5173 | Web:3002 | Landing:3001</span>
+                    </p>
+                    <p className="text-text-muted/60 pl-5">
+                      {'>'} Claude Code Context Loaded: 19 modular skills ready.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Sponsor */}
-        <section className="py-section-gap-lg" id="ecosystem">
-          <div className="max-w-3xl mx-auto px-margin-mobile text-center">
-            <div className="mono-label text-primary mb-6">开源生态网络</div>
-            <h2 className="font-headline-md text-3xl mb-8">维护愿景</h2>
-            <p className="text-secondary mb-16 max-w-xl mx-auto">
-              Loom 由社区共同维系。支持确定性智能体核心框架的持续开发。
-            </p>
-            <div className="grid sm:grid-cols-2 gap-px bg-slate-200 border border-slate-200 shadow-sm">
-              <div className="bg-white p-12 text-center group hover:bg-slate-50 transition-all">
-                <div className="mono-label mb-8 group-hover:text-primary">支持一下</div>
-                <div className="w-40 h-40 mx-auto bg-white border border-slate-100 flex items-center justify-center tech-border">
-                  <span className="px-2 text-center text-[10px] text-neutral-400">
-                    赞赏码占位
-                    <br />
-                    （替换为实际二维码）
-                  </span>
-                </div>
-              </div>
-              <div className="bg-white p-12 text-center group hover:bg-slate-50 transition-all">
-                <div className="mono-label mb-8 group-hover:text-primary">加入客服群</div>
-                <div className="w-40 h-40 mx-auto bg-white border border-slate-100 flex items-center justify-center tech-border">
-                  <span className="px-2 text-center text-[10px] text-neutral-400">
-                    客服群码占位
-                    <br />
-                    （替换为实际二维码）
-                  </span>
-                </div>
-              </div>
+          {/* 开源生态与赞助 */}
+          <section
+            className="w-full max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl text-center"
+            id="ecosystem"
+          >
+            <div className="max-w-xl mx-auto space-y-2 mb-space-xl">
+              <span className="font-label-caps text-label-caps text-primary tracking-widest uppercase">
+                开源生态网络
+              </span>
+              <h2 className="font-headline-xl text-headline-xl font-bold text-text-primary">
+                维护愿景
+              </h2>
+              <p className="font-body-md text-body-md text-text-muted">
+                Loom 由社区共同维系。支持确定性智能体核心框架的持续开发。
+              </p>
             </div>
-          </div>
-        </section>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-lg max-w-2xl mx-auto">
+              {SPONSOR_CHANNELS.map((channel) => (
+                <div
+                  key={channel.code}
+                  className={`p-space-lg bg-surface-elevated/60 border border-border-subtle rounded-lg flex flex-col items-center transition-colors group ${channel.cardHover}`}
+                >
+                  <div className="flex items-center gap-2 font-label-mono text-label-mono text-text-muted mb-4">
+                    <span className={`w-2 h-2 rounded-full ${channel.dotClass}`} />
+                    <span>{channel.label}</span>
+                  </div>
+                  <div
+                    className={`w-44 h-44 bg-surface-base border border-border-subtle rounded flex flex-col items-center justify-center p-3 relative transition-colors ${channel.qrHover}`}
+                  >
+                    <div className="w-full h-full border border-dashed border-border-subtle/80 flex flex-col items-center justify-center gap-2">
+                      <span
+                        className={`material-symbols-outlined text-[36px] ${channel.iconClass}`}
+                      >
+                        {channel.icon}
+                      </span>
+                      <span className="font-label-caps text-label-caps text-text-muted">
+                        {channel.code}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="mt-4 font-label-mono text-label-mono text-text-muted text-[11px]">
+                    {channel.note}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-16">
-        <div className="flex flex-col md:flex-row justify-between items-center w-full px-margin-mobile md:px-gutter max-w-container-max mx-auto gap-12">
-          <div className="space-y-4">
-            <div className="font-headline-md text-xl text-on-surface flex items-center gap-2">
-              <svg className="text-primary" fill="none" height="18" viewBox="0 0 24 24" width="18">
-                <path d="M4 4H20V20H4V4Z" stroke="currentColor" strokeWidth="2" />
-              </svg>
-              LOOM
+      <footer className="relative z-10 w-full bg-surface-container-lowest mt-space-3xl">
+        <div className="max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-xl pb-space-xl">
+            <div className="space-y-space-xs">
+              <div className="flex items-center gap-space-sm">
+                <div className="w-6 h-6 rounded bg-surface-container flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[15px]">polyline</span>
+                </div>
+                <span className="font-headline-md text-headline-md font-bold tracking-tight text-text-primary uppercase">
+                  LOOM
+                </span>
+                <span className="px-2 py-0.5 rounded bg-surface-container-high font-label-caps text-label-caps text-text-muted uppercase">
+                  ARCH-CORE
+                </span>
+              </div>
+              <p className="font-body-md text-body-md text-text-muted">
+                © {new Date().getFullYear()} Loom Framework. 为自主智能体提供精准编织。
+              </p>
             </div>
-            <p className="mono-label text-[9px]">
-              &copy; {new Date().getFullYear()} Loom Framework. 为自主智能体提供精准编织。
-            </p>
+            <nav className="flex flex-wrap items-center gap-x-space-lg gap-y-space-sm">
+              {FOOTER_LINKS.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="font-code-snippet text-code-snippet text-on-surface-variant hover:text-primary transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
           </div>
-          <nav className="flex flex-wrap justify-center gap-10">
-            <a className="mono-label hover:text-primary transition-colors" href="#">
-              技术文档
-            </a>
-            <a className="mono-label hover:text-primary transition-colors" href="#">
-              系统状态
-            </a>
-            <a className="mono-label hover:text-primary transition-colors" href="#">
-              安全审计
-            </a>
-          </nav>
+          <div className="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm text-text-muted font-label-mono text-label-mono">
+            <div className="flex items-center gap-space-sm">
+              <span>TELEMETRY: OPTIMAL</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              <span>CLUSTER: PRODUCTION-NODE-01</span>
+            </div>
+            <div className="font-label-caps text-label-caps uppercase">
+              DETERMINISTIC AGENT ORCHESTRATION ENGINE
+            </div>
+          </div>
         </div>
       </footer>
     </>

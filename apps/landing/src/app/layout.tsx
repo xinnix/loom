@@ -16,16 +16,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className="light">
+    <html lang="zh-CN" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Material+Symbols+Outlined:opsz,wght,FILL@20..48,100..700,0,1&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased overflow-x-hidden selection:bg-primary/20 bg-white">
+      <body className="bg-bg-canvas font-body-md text-on-surface antialiased min-h-screen relative selection:bg-primary selection:text-on-primary">
         {children}
       </body>
     </html>
