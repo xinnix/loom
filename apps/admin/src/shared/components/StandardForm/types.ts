@@ -1,6 +1,6 @@
 // StandardForm 类型定义
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { Rule, FormInstance } from 'antd/es/form';
 
 /**
@@ -43,9 +43,10 @@ export interface FieldDefinition {
   // 类型特定配置
   options?: SelectOption[]; // Select 选项
   resource?: string; // 下拉数据源 resource
-  resourceFilter?: Record<string, unknown>; // 下拉数据筛选条件
+  resourceFilter?: { field: string; operator: string; value: unknown }; // 下拉数据筛选条件
   maxFileSize?: number; // 上传文件大小限制
   accept?: string; // 上传文件类型
+  uploadType?: 'merchant_logo' | 'news_banner' | 'merchant_gallery' | 'news_content' | 'avatar'; // OSS 上传目录
   maxCount?: number; // 多图上传数量限制
   min?: number; // 数字最小值
   max?: number; // 数字最大值

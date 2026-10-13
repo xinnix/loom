@@ -97,8 +97,8 @@ const roleDetailFields: DetailFieldConfig[] = [
 ];
 
 // 渲染用户列表
-const isActiveLabels: Record<boolean, string> = { true: '激活', false: '停用' };
-const isActiveColors: Record<boolean, string> = { true: 'success', false: 'error' };
+const isActiveLabels: Record<string, string> = { true: '激活', false: '停用' };
+const isActiveColors: Record<string, string> = { true: 'success', false: 'error' };
 
 /**
  * 角色详情页
@@ -123,15 +123,14 @@ export function RoleDetailPage() {
   const role: RoleData | undefined = roleData;
   const isLoading = roleQuery?.isLoading;
 
-  const { data: usersData } = useList<RoleUser>({
+  const { result: usersResult } = useList<RoleUser>({
     resource: 'role',
-    id: id || '',
-    action: 'getUsers',
+    meta: { method: 'getUsers', params: { id: id || '' } },
     pagination: { pageSize: 10 },
     queryOptions: { enabled: !!id },
-  }) as any;
+  });
 
-  const users: RoleUser[] = usersData || [];
+  const users: RoleUser[] = usersResult?.data || [];
 
   // 初始化权限选择
   if (role?.permissions && selectedPermissions.length === 0) {
@@ -226,7 +225,9 @@ export function RoleDetailPage() {
                     <span>|</span>
                     <span>{[user.firstName, user.lastName].filter(Boolean).join(' ') || '-'}</span>
                     <span>|</span>
-                    <Tag color={isActiveColors[user.isActive]}>{isActiveLabels[user.isActive]}</Tag>
+                    <Tag color={isActiveColors[String(user.isActive)]}>
+                      {isActiveLabels[String(user.isActive)]}
+                    </Tag>
                     <span>|</span>
                     <span>分配于: {new Date(user.assignedAt).toLocaleDateString('zh-CN')}</span>
                   </Space>

@@ -236,6 +236,7 @@ export const dataProvider = {
           page: currentPage,
           limit: pageSize,
           ...filterValues,
+          ...(meta.params || {}),
         });
 
         // Handle different return formats:

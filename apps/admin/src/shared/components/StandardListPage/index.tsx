@@ -229,14 +229,15 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
   // 统计数据计算
   const getStatisticValue = (config: StatisticConfig) => {
     if (config.value !== undefined) return config.value;
-    if (!config.field) return 0;
+    const { field, filter } = config;
+    if (!field) return 0;
 
-    if (config.filter) {
-      return data.filter((item) => item[config.filter.field] === config.filter.value).length;
+    if (filter) {
+      return data.filter((item) => item[filter.field] === filter.value).length;
     }
 
     // 计算总和
-    return data.reduce((sum: number, item) => sum + ((item[config.field] as number) || 0), 0);
+    return data.reduce((sum: number, item) => sum + ((item[field] as number) || 0), 0);
   };
 
   return (

@@ -65,19 +65,19 @@ export function AdminDetailPage() {
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(undefined);
   const { message } = App.useApp();
 
-  const { data: adminData, query: adminQuery } = useOne<any>({
+  const { result: adminData, query: adminQuery } = useOne<any>({
     resource: 'admin',
     id: id || '',
     queryOptions: { enabled: !!id },
-  }) as any;
+  });
 
-  const { data: rolesResult } = useList({
+  const { result: rolesResult } = useList({
     resource: 'role',
     pagination: { pageSize: 100 },
   });
 
   const admin = adminData;
-  const allRoles = (rolesResult as any)?.data || [];
+  const allRoles = rolesResult?.data || [];
 
   const isLoading = adminQuery?.isLoading;
 

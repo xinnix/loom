@@ -52,8 +52,8 @@ export function UserListPage() {
       width: 80,
       align: 'center' as const,
       render: (isActive: boolean) => (
-        <Tag color={IS_ACTIVE_COLORS[isActive] || 'default'}>
-          {IS_ACTIVE_LABELS[isActive] || '未知'}
+        <Tag color={IS_ACTIVE_COLORS[String(isActive)] || 'default'}>
+          {IS_ACTIVE_LABELS[String(isActive)] || '未知'}
         </Tag>
       ),
     },

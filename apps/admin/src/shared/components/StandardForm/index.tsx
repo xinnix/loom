@@ -2,6 +2,8 @@ import { Form, Input, InputNumber, Select, Switch, Checkbox, DatePicker } from '
 import { useList } from '@refinedev/core';
 import { useWatch } from 'antd/es/form/Form';
 import type { FormInstance } from 'antd/es/form';
+import type { Rule } from 'antd/es/form';
+import type { CrudFilter } from '@refinedev/core';
 import type { StandardFormProps, FieldDefinition } from './types';
 import { OSSUpload } from '../OSSUpload';
 import { OSSUploadMultiple } from '../OSSUploadMultiple';
@@ -67,8 +69,8 @@ function FormFieldItem({
 /**
  * 构建验证规则
  */
-function buildRules(field: FieldDefinition) {
-  const rules: unknown[] = [];
+function buildRules(field: FieldDefinition): Rule[] {
+  const rules: Rule[] = [];
 
   // 必填规则
   if (field.required) {
@@ -221,6 +223,7 @@ function renderField(field: FieldDefinition, form: FormInstance) {
     case 'upload':
       return (
         <OSSUpload
+          type={field.uploadType || 'avatar'}
           accept={field.accept || 'image/jpeg,image/png,image/webp'}
           maxFileSize={field.maxFileSize || 5 * 1024 * 1024}
         />
@@ -229,6 +232,7 @@ function renderField(field: FieldDefinition, form: FormInstance) {
     case 'uploadMultiple':
       return (
         <OSSUploadMultiple
+          type={field.uploadType || 'avatar'}
           accept={field.accept || 'image/jpeg,image/png,image/webp'}
           maxFileSize={field.maxFileSize || 5 * 1024 * 1024}
           maxCount={field.maxCount || 5}
@@ -253,7 +257,7 @@ function DynamicSelect({ field, mode }: { field: FieldDefinition; mode?: 'multip
   const { result } = useList<Record<string, unknown>>({
     resource: field.resource!,
     pagination: { pageSize: 100 },
-    filters: field.resourceFilter ? [field.resourceFilter] : [],
+    filters: (field.resourceFilter ? [field.resourceFilter] : []) as CrudFilter[],
   });
 
   const data = result?.data || [];

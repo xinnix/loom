@@ -66,17 +66,6 @@ function AppContent() {
           reactQuery: {
             clientConfig: queryClient,
           },
-          notification: {
-            success: (msg: unknown) => {
-              if (typeof msg === 'string') {
-                messageApi.success(msg);
-              }
-            },
-            error: (msg: unknown) => {
-              const errorMsg = typeof msg === 'string' ? msg : '操作失败';
-              messageApi.error(errorMsg);
-            },
-          },
         }}
         resources={[
           { name: 'user', list: '/users' },

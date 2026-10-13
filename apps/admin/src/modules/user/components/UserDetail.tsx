@@ -38,12 +38,12 @@ export const userDetailFields: DetailFieldConfig[] = [
 /**
  * 活跃状态标签映射
  */
-export const IS_ACTIVE_LABELS: Record<boolean, string> = {
+export const IS_ACTIVE_LABELS: Record<string, string> = {
   true: '激活',
   false: '停用',
 };
 
-export const IS_ACTIVE_COLORS: Record<boolean, string> = {
+export const IS_ACTIVE_COLORS: Record<string, string> = {
   true: 'success',
   false: 'error',
 };

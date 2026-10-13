@@ -119,11 +119,12 @@ export const createTrpcClient = () => {
             if (response.status === 401) {
               // 🔥 如果是登录相关的请求返回 401，不要触发全局处理
               // 登录失败应该由 authProvider.login 处理，显示错误信息而不是跳转
+              const requestUrl = String(inputUrl);
               const isLoginRequest =
-                inputUrl.includes('auth.adminLogin') ||
-                inputUrl.includes('auth.login') ||
-                inputUrl.includes('auth.register') ||
-                inputUrl.includes('auth.wechatLogin');
+                requestUrl.includes('auth.adminLogin') ||
+                requestUrl.includes('auth.login') ||
+                requestUrl.includes('auth.register') ||
+                requestUrl.includes('auth.wechatLogin');
 
               if (isLoginRequest) {
                 console.log('[tRPC] 登录请求返回 401，不触发全局处理');
