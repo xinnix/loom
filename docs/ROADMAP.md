@@ -28,6 +28,8 @@ Monorepo 脚手架骨架 + 核心能力全部就绪：双用户认证、RBAC、�
 
 目标：生成器覆盖 Web/miniapp 端、端到端测试体系、核心包类型安全。工作项见 [backlog](product/backlog.md) E1 / E2 / E4（外加 E3 安全加固中不依赖 M3 的部分）。
 
+期间产物（2026-10）：AI 三层架构（ADR-005，pi 底座：LlmConfig 加密配置 / YML 工具 / YML Agent 编排 + Playground，2026-10-12）。
+
 进入 M4 的条件：E1 E2E 主路径跑通、E2 strict 全绿、E4 genModule 全端输出落地。
 
 ## 回写规则

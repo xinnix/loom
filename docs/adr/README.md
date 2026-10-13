@@ -10,6 +10,7 @@
 | [ADR-002](002-refine-antd-frontend.md)        | Admin 前端选择 Refine + Ant Design                                 | 2026-07-20 | ✅ 已采纳 |
 | [ADR-003](003-standardized-ui-pattern.md)     | 声明式 UI 模式（StandardForm/StandardListPage/StandardDetailPage） | 2026-07-20 | ✅ 已采纳 |
 | [ADR-004](004-module-standardization-push.md) | 模块标准化推广至全部业务模块                                       | 2026-07-21 | ✅ 已采纳 |
+| [ADR-005](005-native-ai-three-layer.md)       | 框架原生 AI 三层架构（LLM / 工具 / Agent 编排）                    | 2026-10-12 | ✅ 已采纳 |
 
 ## 状态说明
 

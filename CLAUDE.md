@@ -8,6 +8,7 @@
 - 双用户认证体系（Admin + User，支持微信登录）
 - 微信支付集成（JSAPI + 退款）
 - 开箱即用的 CRUD 模板生成（genModule）
+- AI 三层架构（LLM 配置 / YML 工具 / YML Agent 编排，ADR-005）
 - 端到端类型安全（tRPC）
 - 多端支持（Admin 后台 + Web 用户端 + 小程序 + Landing）
 - Monorepo 统一管理
@@ -178,17 +179,19 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 
 ## Module Registry
 
-| Module     | Prisma Model | tRPC Router      | REST Controller   | Admin Page                      | Web Page          | Miniapp API |
-| ---------- | ------------ | ---------------- | ----------------- | ------------------------------- | ----------------- | ----------- |
-| admin      | Admin        | adminRouter      | -                 | AdminListPage                   | -                 | -           |
-| user       | User         | userRouter       | UserController    | UserListPage + UserDetailPage   | -                 | authApi     |
-| role       | Role         | roleRouter       | -                 | RoleListPage + RoleDetailPage   | -                 | -           |
-| agents     | Agent        | agentsRouter     | AgentsController  | AgentListPage + AgentDetailPage | -                 | agentsApi   |
-| auth       | -            | authRouter       | AuthController    | LoginPage                       | Login/Register    | authApi     |
-| upload     | -            | uploadRouter     | UploadController  | -                               | -                 | uploadApi   |
-| payment    | -            | paymentRouter    | PaymentController | -                               | -                 | -           |
-| permission | Permission   | permissionRouter | -                 | -                               | -                 | -           |
-| todo       | Todo         | todoRouter       | TodoController    | TodoListPage + TodoDetailPage   | todos/list/detail | todosApi    |
+| Module     | Prisma Model | tRPC Router               | REST Controller    | Admin Page                                   | Web Page          | Miniapp API |
+| ---------- | ------------ | ------------------------- | ------------------ | -------------------------------------------- | ----------------- | ----------- |
+| admin      | Admin        | adminRouter               | -                  | AdminListPage                                | -                 | -           |
+| user       | User         | userRouter                | UserController     | UserListPage + UserDetailPage                | -                 | authApi     |
+| role       | Role         | roleRouter                | -                  | RoleListPage + RoleDetailPage                | -                 | -           |
+| agents     | Agent        | agentsRouter（只读+runs） | AiAgentsController | AgentListPage + AgentDetailPage + Playground | -                 | -           |
+| llmConfig  | LlmConfig    | llmConfigsRouter          | -                  | LlmConfigListPage                            | -                 | -           |
+| aiTool     | -（YML）     | aiToolsRouter             | -                  | ToolListPage                                 | -                 | -           |
+| auth       | -            | authRouter                | AuthController     | LoginPage                                    | Login/Register    | authApi     |
+| upload     | -            | uploadRouter              | UploadController   | -                                            | -                 | uploadApi   |
+| payment    | -            | paymentRouter             | PaymentController  | -                                            | -                 | -           |
+| permission | Permission   | permissionRouter          | -                  | -                                            | -                 | -           |
+| todo       | Todo         | todoRouter                | TodoController     | TodoListPage + TodoDetailPage                | todos/list/detail | todosApi    |
 
 ### Web 端架构说明
 
@@ -210,6 +213,7 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 | [ADR-002](docs/adr/002-refine-antd-frontend.md)        | Admin 前端选择 Refine + Ant Design                                 |
 | [ADR-003](docs/adr/003-standardized-ui-pattern.md)     | 声明式 UI 模式（StandardForm/StandardListPage/StandardDetailPage） |
 | [ADR-004](docs/adr/004-module-standardization-push.md) | 模块标准化推广至全部业务模块                                       |
+| [ADR-005](docs/adr/005-native-ai-three-layer.md)       | 框架原生 AI 三层架构（LLM / 工具 / Agent 编排，pi 底座）           |
 
 新增 ADR 时使用模板：
 

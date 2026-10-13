@@ -64,6 +64,18 @@ UPLOAD_PATH=./uploads
 SERVER_URL=http://localhost:3000
 ```
 
+## AI 三层架构（LLM / 工具 / Agent 编排）
+
+| 变量                | 必填 | 说明                                                                                                  |
+| ------------------- | ---- | ----------------------------------------------------------------------------------------------------- |
+| `AI_ENCRYPTION_KEY` | ✅   | LLM apiKey 落库加密密钥（AES-256-GCM，32 字节）。生成：`openssl rand -base64 32`。缺失时 API 启动失败 |
+| `LLM_API_URL`       | -    | env 兜底 LLM 地址（默认 `https://api.openai.com/v1`）。正常路径走管理后台的模型配置（llm_configs 表） |
+| `LLM_API_KEY`       | -    | env 兜底 LLM Key。仅当数据库无 `isDefault` 配置时使用                                                 |
+| `LLM_MODEL`         | -    | env 兜底模型名（默认 `gpt-4o`）                                                                       |
+| `PORT`              | -    | API 端口（默认 3000）。AI 工具回环调用（127.0.0.1:$PORT）依赖此值                                     |
+
+优先级：YML 节点 `llm:` > Agent 行 `llmConfigId` > `llm_configs.isDefault` > env。详见 `docs/adr/005-native-ai-three-layer.md`。
+
 ## 生产环境检查清单
 
 | 变量                | 要求                                        |
