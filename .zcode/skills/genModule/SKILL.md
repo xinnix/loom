@@ -1,6 +1,6 @@
 ---
 name: genModule
-description: Rapidly generates full-stack CRUD modules with smart field inference, auto relation detection, and intelligent UI pattern selection. Phase 2 enhanced with currency/email/phone/slug/image validation, belongsTo/TreeSelect relation generation, and modal/separate page auto-selection.
+description: 全栈 CRUD 模块生成器——Prisma/Zod/tRPC + REST Controller + Admin 三件套（StandardListPage/StandardForm/StandardDetailPage）+ miniapp API client + Web REST client，支持自定义字段与中文文案。
 allowed-tools:
   - Bash(node:*)
   - Bash(cd:*)
@@ -20,16 +20,36 @@ node .claude/skills/genModule/scripts/generate-module.ts product
 # Preview mode with smart inference report
 node .claude/skills/genModule/scripts/generate-module.ts article --dry-run
 
-# Category (auto-detects parentId → TreeSelect)
-node .claude/skills/genModule/scripts/generate-module.ts category
+# 自定义字段 + 中文名称 + 枚举中文文案
+node .claude/skills/genModule/scripts/generate-module.ts bookmark \
+  --fields '[{"name":"name","type":"string","required":true},{"name":"status","type":"enum","required":true,"enum":["active","archived"]}]' \
+  --meta '{"label":"收藏","enumLabels":{"status":{"active":"启用","archived":"归档"}}}'
+
+# 纯管理端模块（跳过 REST Controller）
+node .claude/skills/genModule/scripts/generate-module.ts category --no-rest
 ```
 
 **What it generates:**
 
-- Database: Prisma schema with relations
-- Backend: tRPC router with factory function
-- Frontend: List page with smart UI components
-- Auto-registration: Updates App.tsx, app.router.ts, and AdminLayout.tsx
+- Database: Prisma schema（含 userId 数据隔离字段与 createdById/updatedById 审计字段）+ 迁移
+- Shared: Zod schemas + Permission Registry 权限注册
+- Backend (Admin): tRPC router + spec 测试
+- Backend (外部端): REST Controller（`/api/<plural>`，JwtAuthGuard + userId 隔离；`--no-rest` 跳过）
+- Admin 前端: StandardListPage 列表页 + StandardForm 表单 + **StandardDetailPage 详情页** + 双 barrel + 路由/菜单/资源注册
+- Miniapp: API client + 端点注册（页面手写）
+- Web: REST client（`apps/web/src/lib/api/<camel>.ts`，wire 类型 + 枚举字典 + apiClient 封装）（页面手写）
+- Auto-registration: App.tsx、app.router.ts、AdminLayout.tsx、app.module.ts
+
+> **明确不生成**：Web 端页面、miniapp 端页面（各端页面个性化程度高，按项目手写；REST Controller 与 client 已就位）。
+
+**CLI 参数：**
+
+| 参数                | 说明                                                                |
+| ------------------- | ------------------------------------------------------------------- |
+| `--fields '<json>'` | 自定义字段数组 `[{name,type,required,enum?}]`；缺省按业务模式推断   |
+| `--meta '<json>'`   | 中文文案 `{label, fieldLabels, enumLabels}`；Agent 编排时向用户收集 |
+| `--no-rest`         | 跳过 REST Controller（纯 Admin 模块）；缺省生成                     |
+| `--dry-run`         | 预览文件清单 / 枚举字典 / Zod 预览，不写文件                        |
 
 **Safety features:**
 
@@ -38,18 +58,6 @@ node .claude/skills/genModule/scripts/generate-module.ts category
 - Project structure validation: Checks required files exist
 - Automatic rollback: Reverts all changes if any step fails
 - Dry-run mode: Preview without writing files
-
-**Phase 2 Smart Features:**
-
-- Currency fields (price, amount) → InputNumber with ¥ formatter + min:0
-- Email fields → email validation
-- Phone fields → regex validation
-- Slug fields → auto-generate + regex
-- Image fields (avatar, cover) → OSSUpload
-- Date fields → DatePicker with showTime
-- Percent fields → InputNumber with % formatter
-- Relation fields (\*Id) → Select/TreeSelect auto-detection
-- UI pattern → auto-select modal vs separate pages
 
 **Supported Business Patterns:**
 
@@ -65,9 +73,21 @@ node .claude/skills/genModule/scripts/generate-module.ts category
 ```bash
 cd infra/database && npx prisma migrate dev --name add_<module>
 npx prisma generate
+pnpm --filter @loom/shared build   # 权限注册进 dist，Admin 菜单依赖它
 ```
 
 ---
+
+# 编排流程（Agent）
+
+genModule 由 Agent 执行时按以下顺序编排（先收集、再预览、后生成）：
+
+1. **问模块名与中文名**：`--meta.label`（如「收藏」）；不给则用英文 toLabel
+2. **问字段**：逐字段确认 name/type/required；enum 字段同步收集每个枚举值的中文文案 → 组装 `--fields` 与 `--meta`（含 `fieldLabels`/`enumLabels`）
+3. **问是否需要外部端**：无 Web/小程序诉求的纯管理模块传 `--no-rest`
+4. **`--dry-run` 预览**：向用户展示文件清单、枚举字典、Zod 预览，确认后执行
+5. **执行生成**
+6. **引导收尾**：`/db-migrate` → `pnpm --filter @loom/shared build` → `/type-check`（api/admin/web 全绿）
 
 # Smart Field Inference (Phase 2)
 
@@ -795,11 +815,13 @@ Make sure you're running the script from the correct project root directory. The
 ### Schema Checklist
 
 - [ ] Prisma schema added to `infra/database/prisma/schema.prisma`
-- [ ] Migration run: `npx prisma migrate dev`
-- [ ] Prisma client generated: `npx prisma generate`
+  - [ ] REST 模块含 `userId String?`（数据隔离）与 `createdById`/`updatedById`（审计，createCrudRouter 注入）
+- [ ] Migration run: `npx prisma migrate dev`（随后 `npx prisma generate`）
 - [ ] Zod schemas added to `infra/shared/src/index.ts`
   - [ ] updateInput does NOT include `id` field
   - [ ] Optional string fields use `.nullable().optional()`
+- [ ] Permission registered in `infra/shared/src/permissions/registry.ts`
+- [ ] `pnpm --filter @loom/shared build` 重建 dist
 
 ### Backend Checklist
 
@@ -807,18 +829,25 @@ Make sure you're running the script from the correct project root directory. The
   - [ ] Use relative path: `../../../trpc/trpc.helper`
   - [ ] Use `@loom/shared` for schema imports
 - [ ] tRPC router registered in `apps/api/src/trpc/app.router.ts`
-- [ ] Router uses correct parameter format: `(modelName, { create, update, getMany, getOne })`
+- [ ] Router spec 可跑：`npx vitest run src/modules/<name>/trpc/<name>.router.spec.ts`
+- [ ] REST Controller（外部端模块）：`/api/<plural>` 五端点 + JwtAuthGuard + userId 隔离
+- [ ] REST Controller 注册进 NestJS `module.ts` 的 controllers
+- [ ] NestJS module 注册进 `app.module.ts`
+- [ ] curl 冒烟：登录 → CRUD → 无 token 401
 
-### Frontend Checklist
+### Admin Checklist
 
-- [ ] Frontend module `index.ts` created (auto-exported)
-- [ ] `{PascalName}Form.tsx` created with `FieldDefinition[]` configuration (auto-generated)
-- [ ] Frontend list page uses `StandardListPage` (auto-generated)
-- [ ] Form component uses `StandardForm` (auto-generated)
-- [ ] App.tsx updated with import, resource, and route (inside AdminLayout)
-- [ ] AdminLayout.tsx updated with sidebar menu item
-- [ ] Resource name matches between Refine and tRPC
-- [ ] For custom form fields: add to `FieldDefinition[]` instead of writing `Form.Item`
+- [ ] `StandardListPage` 列表页（行操作含 详情/编辑/删除）
+- [ ] `StandardForm` 表单（FieldDefinition[] 声明式 + 枚举字典导出）
+- [ ] `StandardDetailPage` 详情页（Detail 字段配置 + statusConfig）
+- [ ] 组件 barrel（`components/index.ts`）与模块 barrel（`index.ts`）
+- [ ] App.tsx（import + resource + list/detail 路由）、AdminLayout.tsx 菜单
+- [ ] 资源名与 tRPC 路由一致
+
+### Web Client Checklist
+
+- [ ] `apps/web/src/lib/api/<camel>.ts`（wire 类型 + 枚举字典 + xxxApi）
+- [ ] web `tsc` 全绿（页面按项目手写，import client 使用）
 
 ---
 

@@ -41,9 +41,9 @@ Admin 用户（`admins` 表，RBAC）与 User 用户（`users` 表，邮箱 + �
 
 ### F3 全栈 CRUD 生成（genModule）
 
-从模块名与字段描述生成：Prisma Model + 迁移 + Zod Schema + Service（继承 BaseService）+ tRPC Router + REST Controller（可选）+ Admin 三页（三大标准组件）+ 菜单/路由注册 + spec 骨架。
+从模块名与字段描述生成：Prisma Model（含 userId 隔离与审计字段）+ 迁移 + Zod Schema + 权限注册 + Service 所需的 tRPC Router + spec + REST Controller（外部端模块，`/api/<plural>`，userId 数据隔离）+ Admin 三页（StandardListPage / StandardForm / StandardDetailPage，配置驱动 + 枚举字典）+ 菜单/路由/资源注册 + miniapp API client + Web REST client（wire 类型 + 枚举字典）。Web/miniapp 端页面不生成（各端手写，见 D7）。
 
-**验收**：生成的模块通过[模块健康检查清单](../dev/module-health-checklist.md)全部条目；生成后 `/db-migrate` → `/sync` → `type-check` 全绿。
+**验收**：生成的模块通过[模块健康检查清单](../dev/module-health-checklist.md)全部条目；生成后 `/db-migrate` → `/sync` → type-check（api/admin/web）全绿；REST 五端点 curl 冒烟通过。
 
 ### F4 多策略文件存储
 
@@ -73,14 +73,15 @@ agents 模块以通用 LLM 配置（provider/model/apiKey）替代单一平台�
 
 产品/工程决策追加于此（编号递增）；纯技术架构决策记录在 [adr/](../adr/README.md)，此处只引用。
 
-| 编号 | 决策                                                                        | 依据                                                 | 日期       |
-| ---- | --------------------------------------------------------------------------- | ---------------------------------------------------- | ---------- |
-| D1   | 双协议架构：Admin tRPC / 外部端 REST                                        | [ADR-001](../adr/001-dual-protocol-architecture.md)  | 2026-07-20 |
-| D2   | Admin 前端采用 Refine + Ant Design                                          | [ADR-002](../adr/002-refine-antd-frontend.md)        | 2026-07-20 |
-| D3   | 声明式 UI 三件套作为管理端唯一页面模式                                      | [ADR-003](../adr/003-standardized-ui-pattern.md)     | 2026-07-20 |
-| D4   | 模块标准化推广至全部业务模块                                                | [ADR-004](../adr/004-module-standardization-push.md) | 2026-07-21 |
-| D5   | Seed 数据用 SQL 脚本直灌，不用 Prisma seed（Prisma 7.x adapter 兼容性问题） | `AGENTS.md` Seed 说明                                | 2026-07    |
-| D6   | agents 模块以通用 LLM 抽象层替代 Dify 平台集成                              | 解耦单一平台依赖，provider 可配置                    | 2026-08    |
+| 编号 | 决策                                                                                                                                                                                                                                                                                      | 依据                                                 | 日期       |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ---------- |
+| D1   | 双协议架构：Admin tRPC / 外部端 REST                                                                                                                                                                                                                                                      | [ADR-001](../adr/001-dual-protocol-architecture.md)  | 2026-07-20 |
+| D2   | Admin 前端采用 Refine + Ant Design                                                                                                                                                                                                                                                        | [ADR-002](../adr/002-refine-antd-frontend.md)        | 2026-07-20 |
+| D3   | 声明式 UI 三件套作为管理端唯一页面模式                                                                                                                                                                                                                                                    | [ADR-003](../adr/003-standardized-ui-pattern.md)     | 2026-07-20 |
+| D4   | 模块标准化推广至全部业务模块                                                                                                                                                                                                                                                              | [ADR-004](../adr/004-module-standardization-push.md) | 2026-07-21 |
+| D5   | Seed 数据用 SQL 脚本直灌，不用 Prisma seed（Prisma 7.x adapter 兼容性问题）                                                                                                                                                                                                               | `AGENTS.md` Seed 说明                                | 2026-07    |
+| D6   | agents 模块以通用 LLM 抽象层替代 Dify 平台集成                                                                                                                                                                                                                                            | 解耦单一平台依赖，provider 可配置                    | 2026-08    |
+| D7   | genModule 范围定界：生成 REST Controller + Admin 三件套 + 两端 API client；Web/miniapp 页面个性化高，不生成（各端手写）；前端 wire 类型由生成器生成（不从 shared import z.infer——date 的 zod Date 与 wire string 阻抗）；REST 层照抄现状形态（无 Zod 校验/Service 化/Swagger），演进留 E6 | 2026-10-13 E4 用户定界                               | 2026-10-13 |
 
 ## 北极星指标
 

@@ -1,403 +1,121 @@
 # REST Layer Implementation
 
-REST APIs for external integrations (mobile apps, third-party services).
+外部端（Web / 小程序）的 REST API 层。Admin 端走 tRPC，不经过此层（R4 双协议边界）。
 
-**Note:** Admin dashboard uses tRPC directly. REST is optional unless needed for external clients.
+**Note:** genModule 已自动生成标准 REST Controller（外部端模块缺省生成，`--no-rest` 跳过）。本文档是生成产物的契约说明，也是手写/定制 REST 层时的参考。
 
-## Controller Template
+## Controller 契约（以实际实现为准）
 
-**Location:** `apps/api/src/modules/[module]/rest/[module].controller.ts`
+**Location:** `apps/api/src/modules/[module]/rest/[camel].controller.ts`
+
+真实依赖路径与模式（与早期 Swagger/DTO 方案不同，以仓库实际为准）：
 
 ```typescript
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from "@nestjs/swagger";
-import { [Module]Service } from "../services/[module].service";
-import { Create[Module]Dto, Update[Module]Dto } from "../dtos/[module].dto";
-import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
-import { PermissionsGuard } from "../../core/guards/permissions.guard";
-import { RequirePermissions } from "../../core/decorators/permissions.decorator";
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { JwtAuthGuard } from '../../../core/guards/jwt.guard';
+import { CurrentUser } from '../../../modules/auth/decorators/decorators';
 
-@ApiTags("[Module_plural]")
-@Controller("[module_plural]")
+@Controller('[module_plural]')
 export class [Module]Controller {
-  constructor(private readonly [module]Service: [Module]Service) {}
-
-  @Get()
-  @ApiOperation({ summary: "List all [module_plural]" })
-  @ApiQuery({ name: "page", required: false, type: Number })
-  @ApiQuery({ name: "limit", required: false, type: Number })
-  @ApiQuery({ name: "search", required: false, type: String })
-  @ApiResponse({ status: 200, description: "Returns paginated list" })
-  findAll(@Query() query: any) {
-    return this.[module]Service.findAll(query);
-  }
-
-  @Get(":id")
-  @ApiOperation({ summary: "Get [module] by ID" })
-  @ApiParam({ name: "id", type: String })
-  @ApiResponse({ status: 200, description: "[Module] found" })
-  @ApiResponse({ status: 404, description: "[Module] not found" })
-  findOne(@Param("id") id: string) {
-    return this.[module]Service.findOne(id);
-  }
-
-  @Post()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions("[module]:create")
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Create new [module]" })
-  @ApiResponse({ status: 201, description: "[Module] created" })
-  @ApiResponse({ status: 400, description: "Bad request" })
-  @ApiResponse({ status: 401, description: "Unauthorized" })
-  create(@Body() createDto: Create[Module]Dto) {
-    return this.[module]Service.create(createDto);
-  }
-
-  @Put(":id")
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions("[module]:update")
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Update [module]" })
-  @ApiParam({ name: "id", type: String })
-  @ApiResponse({ status: 200, description: "[Module] updated" })
-  @ApiResponse({ status: 404, description: "[Module] not found" })
-  update(@Param("id") id: string, @Body() updateDto: Update[Module]Dto) {
-    return this.[module]Service.update(id, updateDto);
-  }
-
-  @Delete(":id")
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions("[module]:delete")
-  @ApiBearerAuth()
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: "Delete [module]" })
-  @ApiParam({ name: "id", type: String })
-  @ApiResponse({ status: 204, description: "[Module] deleted" })
-  @ApiResponse({ status: 404, description: "[Module] not found" })
-  delete(@Param("id") id: string) {
-    return this.[module]Service.delete(id);
-  }
-}
-```
-
-## Service Template
-
-**Location:** `apps/api/src/modules/[module]/services/[module].service.ts`
-
-```typescript
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
-import { PrismaService } from "../../../prisma.service";
-import { Create[Module]Dto, Update[Module]Dto } from "../dtos/[module].dto";
-
-@Injectable()
-export class [Module]Service {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: any) {
-    const { page = 1, limit = 10, search, ...filters } = query;
-
-    const where: any = {};
-
-    // Search logic
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ];
-    }
-
-    // Apply filters
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        where[key] = value;
-      }
-    });
-
-    const [items, total] = await Promise.all([
-      this.prisma.[module].findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
-      }),
-      this.prisma.[module].count({ where }),
-    ]);
-
-    return {
-      data: items,
-      meta: {
-        total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  async findOne(id: string) {
-    const item = await this.prisma.[module].findUnique({
-      where: { id },
-    });
-
-    if (!item) {
-      throw new NotFoundException(`[Module] with ID ${id} not found`);
-    }
-
-    return item;
-  }
-
-  async create(createDto: Create[Module]Dto) {
-    // Validation
-    if (createDto.email) {
-      const existing = await this.prisma.[module].findUnique({
-        where: { email: createDto.email },
-      });
-
-      if (existing) {
-        throw new BadRequestException("Email already exists");
-      }
-    }
-
-    return this.prisma.[module].create({
-      data: createDto,
-    });
-  }
-
-  async update(id: string, updateDto: Update[Module]Dto) {
-    // Check existence
-    await this.findOne(id);
-
-    return this.prisma.[module].update({
-      where: { id },
-      data: updateDto,
-    });
-  }
-
-  async delete(id: string) {
-    // Check existence
-    await this.findOne(id);
-
-    return this.prisma.[module].delete({
-      where: { id },
-    });
-  }
+  // 每个端点：@UseGuards(JwtAuthGuard) + @CurrentUser() 注入 userId
+  // 数据隔离（R5）：所有查询 where: { ..., userId: currentUser.id }
 }
 ```
 
-## DTOs Template
+**五端点：**
 
-**Location:** `apps/api/src/modules/[module]/dtos/[module].dto.ts`
+| 方法   | 路径                | 入参                                             | 说明                       |
+| ------ | ------------------- | ------------------------------------------------ | -------------------------- |
+| GET    | `/api/[plural]`     | query: page/pageSize/search + enum/bool/num 筛选 | 分页列表（createdAt 倒序） |
+| GET    | `/api/[plural]/:id` | param id                                         | 单条详情                   |
+| POST   | `/api/[plural]`     | body 字段 + 自动注入 userId                      | 创建                       |
+| PUT    | `/api/[plural]/:id` | param id + body（date 字段转 `new Date()`）      | 更新                       |
+| DELETE | `/api/[plural]/:id` | param id                                         | 删除                       |
 
-```typescript
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsString, IsOptional, IsEmail, IsNumber, IsBoolean, IsEnum, Min, IsDateString } from "class-validator";
+**要点：**
 
-export class Create[Module]Dto {
-  @ApiProperty({ example: "Example [module]" })
-  @IsString()
-  name: string;
+- **无 Swagger、无 DTO class、无 Zod 校验**——校验在 tRPC 层（Admin），REST 层保持轻量（如需 REST 层校验属 E6 演进）
+- **直注 PrismaService**，不经过 Service 层（与 Todo 参考实现一致；Service 化属 E6）
+- 资源不存在时返回 `{ success: false, data: null, message: '...' }`（HTTP 200），客户端靠 data/message 判断
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  description?: string;
+## 响应格式（TransformInterceptor 统一包装）
 
-  @ApiPropertyOptional({ example: "active", enum: ["active", "inactive"] })
-  @IsOptional()
-  @IsEnum(["active", "inactive"])
-  status?: string;
+全局 `TransformInterceptor`（`core/interceptors/transform.interceptor.ts`）会重组 Controller 返回值——**分页字段必须顶层扁平返回**（不要嵌套 meta 对象，会被丢弃）：
 
-  @ApiPropertyOptional({ example: 100 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  sortOrder?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-}
-
-export class Update[Module]Dto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  name?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @ApiPropertyOptional({ example: "active", enum: ["active", "inactive"] })
-  @IsOptional()
-  @IsEnum(["active", "inactive"])
-  status?: string;
-
-  @ApiPropertyOptional({ example: 100 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  sortOrder?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "Success",
+  "data": { "...": "..." },
+  "timestamp": "2026-10-13T09:00:00.000Z",
+  "total": 1,
+  "page": 1,
+  "pageSize": 10,
+  "totalPages": 1
 }
 ```
 
-## Module Registration
-
-**Location:** `apps/api/src/modules/[module]/[module].module.ts`
+列表端点 Controller 应返回：
 
 ```typescript
-import { Module } from "@nestjs/common";
-import { [Module]Controller } from "./rest/[module].controller";
-import { [Module]Service } from "./services/[module].service";
-import { PrismaModule } from "../../../prisma.service";
+return {
+  success: true,
+  data: items,
+  total,
+  page: p,
+  pageSize: ps,
+  totalPages: Math.ceil(total / ps),
+};
+```
+
+## 模块注册
+
+**Location:** `apps/api/src/modules/[module]/module.ts`（genModule 双版：有 REST 时注册 controller，否则空壳）
+
+```typescript
+import { [Module]Controller } from './rest/[camel].controller';
+import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [PrismaModule],
   controllers: [[Module]Controller],
-  providers: [[Module]Service],
-  exports: [[Module]Service],
+  providers: [],
+  exports: [],
 })
 export class [Module]Module {}
 ```
 
-**Register in app.module.ts:**
+再注册到 `apps/api/src/app.module.ts` 的 imports。
 
-```typescript
-import { [Module]Module } from "./modules/[module]/[module].module";
+## Web 端消费
 
-@Module({
-  imports: [
-    // ... other modules
-    [Module]Module,
-  ],
-})
-export class AppModule {}
-```
+`apps/web/src/lib/api-client.ts` 提供 `apiClient.get/post/put/delete`（Bearer 注入 + 401 刷新互斥锁 + `ApiResponse<T>` 扁平信封）。genModule 生成的 per-module client 在 `apps/web/src/lib/api/[camel].ts`（wire 类型 + 枚举字典 + `xxxApi`），页面手写时直接 import。
 
-## Response Format
-
-### Success Response (200)
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "clx123...",
-    "name": "Example",
-    "status": "active",
-    "createdAt": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-### List Response (200)
-
-```json
-{
-  "success": true,
-  "data": [...],
-  "meta": {
-    "total": 100,
-    "page": 1,
-    "limit": 10,
-    "totalPages": 10
-  }
-}
-```
-
-### Error Response (4xx/5xx)
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "[Module] not found",
-    "details": {}
-  }
-}
-```
+小程序端走 `apps/miniapp/src/utils/http.ts`（`http.get<T>` 的 T 为 data payload，信封由 `Response<T>` 提供；勿二次包装）。
 
 ## Testing Endpoints
 
 ```bash
-# List
-curl http://localhost:3000/api/v1/[module_plural]?page=1&limit=10
-
-# Get by ID
-curl http://localhost:3000/api/v1/[module_plural]/clx123...
-
-# Create (with auth)
-curl -X POST http://localhost:3000/api/v1/[module_plural] \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+# 登录（User 账号，REST 只服务外部端用户）
+TOKEN=$(curl -s http://localhost:3000/api/auth/login -X POST \
   -H "Content-Type: application/json" \
-  -d '{"name":"Example","status":"active"}'
+  -d '{"username":"user@example.com","password":"password123"}' \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['accessToken'])")
 
-# Update (with auth)
-curl -X PUT http://localhost:3000/api/v1/[module_plural]/clx123... \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Updated"}'
+# 列表（分页 + 搜索 + 筛选）
+curl "http://localhost:3000/api/[module_plural]?page=1&pageSize=10&search=kw" -H "Authorization: Bearer $TOKEN"
 
-# Delete (with auth)
-curl -X DELETE http://localhost:3000/api/v1/[module_plural]/clx123... \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
+# 详情 / 创建 / 更新 / 删除
+curl "http://localhost:3000/api/[module_plural]/<id>" -H "Authorization: Bearer $TOKEN"
+curl -X POST http://localhost:3000/api/[module_plural] -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -d '{"name":"Example","status":"active"}'
+curl -X PUT http://localhost:3000/api/[module_plural]/<id> -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -d '{"name":"Updated"}'
+curl -X DELETE http://localhost:3000/api/[module_plural]/<id> -H "Authorization: Bearer $TOKEN"
 
-## Swagger Documentation
-
-Access at: `http://localhost:3000/api/docs`
-
-Add detailed documentation using decorators:
-
-```typescript
-@ApiOperation({
-  summary: "Create [module]",
-  description: "Creates a new [module] with the provided data"
-})
-@ApiResponse({
-  status: 201,
-  description: "Successfully created",
-  schema: {
-    example: {
-      id: "clx123...",
-      name: "Example",
-      createdAt: "2024-01-01T00:00:00Z"
-    }
-  }
-})
-@ApiResponse({
-  status: 400,
-  description: "Invalid input data"
-})
-create(@Body() createDto: Create[Module]Dto) {
-  return this.[module]Service.create(createDto);
-}
+# 无 token 应返回 401
+curl -o /dev/null -w "%{http_code}" http://localhost:3000/api/[module_plural]
 ```

@@ -1,5 +1,7 @@
 # Frontend Templates
 
+> ⚠️ **已过期**：本文档展示的分离页面 Refine 模式已被声明式三件套取代。生成以 `generate-module.ts` 产物为准（StandardListPage / StandardForm / StandardDetailPage 配置驱动），手写指导见 SKILL.md 与 `frontend-templates.md` 之外的其他 references。仅作历史参考保留。
+
 Complete templates for Refine + Ant Design frontend pages.
 
 ## List Page Template
