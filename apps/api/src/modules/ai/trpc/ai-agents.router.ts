@@ -8,9 +8,9 @@ import { AgentsCatalogService } from '../services/agents-catalog.service';
 import { AgentYamlLoader } from '../../../ai/agents/agent-yaml.loader';
 
 /**
- * AI 第 3 层 Agent 目录（tRPC，Admin 只读）。
- * 编排定义真理源在 YML，Agent 行由 loader upsert 维护——故只开放 read，
- * create/update/delete 权限点已随 D8 收敛删除。
+ * AI 第 3 层 Agent 目录（tRPC，Admin 管理）。
+ * 编排定义真理源在 YML，Agent 行由 loader upsert 维护——YML 内容只读；
+ * 仅部署期绑定（llmConfigId）开放受控更新，走 agent:update 权限。
  */
 export const createAiAgentsRouter = (service: AgentsCatalogService, loader: AgentYamlLoader) =>
   createCrudRouterWithCustom(
@@ -39,6 +39,14 @@ export const createAiAgentsRouter = (service: AgentsCatalogService, loader: Agen
           }
           return { slug: input.slug, yaml: raw };
         }),
+      bindLlm: permissionProcedure(Permission.agent.update)
+        .input(
+          z.object({
+            id: z.string().min(1),
+            llmConfigId: z.string().min(1).nullable(),
+          }),
+        )
+        .mutation(async ({ input }) => service.bindLlm(input.id, input.llmConfigId)),
     }),
     {
       includeCreate: false,
