@@ -27,6 +27,24 @@ describe('AgentYmlSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('audience 缺省为 admin', () => {
+    const result = AgentYmlSchema.parse(validAgent);
+    expect(result.audience).toBe('admin');
+  });
+
+  it('接受显式 audience 并保留', () => {
+    for (const audience of ['admin', 'user', 'all'] as const) {
+      const result = AgentYmlSchema.safeParse({ ...validAgent, audience });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.audience).toBe(audience);
+    }
+  });
+
+  it('拒绝非法 audience', () => {
+    const result = AgentYmlSchema.safeParse({ ...validAgent, audience: 'everyone' });
+    expect(result.success).toBe(false);
+  });
+
   it('拒绝空 workflow', () => {
     const result = AgentYmlSchema.safeParse({ ...validAgent, workflow: [] });
     expect(result.success).toBe(false);

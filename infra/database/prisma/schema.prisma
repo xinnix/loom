@@ -67,6 +67,7 @@ model User {
   // 关联
   refreshTokens UserRefreshToken[]
   todos         Todo[]
+  agentSessions AgentSession[]
 
   @@index([openid])
   @@index([email])
@@ -255,6 +256,40 @@ model AgentRun {
   @@index([agentSlug, createdAt])
   @@index([status])
   @@map("agent_runs")
+}
+
+// ============================================
+// AgentSession / AgentMessage 模型（AI 第 3 层：用户端多轮会话，ADR-006）
+// 会话作用域仅用户端：归属恒为 User（admin 调用会话端点 403）
+// ============================================
+model AgentSession {
+  id            String   @id @default(cuid())
+  agentSlug     String // 冗余常驻：会话绑定单一 agent，不跨 agent 复用
+  title         String? // 首条用户消息截断生成
+  lastMessageAt DateTime @default(now()) // 会话列表排序键
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId   String
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AgentMessage[]
+
+  @@index([userId, lastMessageAt])
+  @@map("agent_sessions")
+}
+
+model AgentMessage {
+  id        String   @id @default(cuid())
+  role      String // user | assistant
+  content   String
+  runId     String? // → AgentRun 审计关联（无 FK，同 AgentRun.triggeredById 风格）
+  createdAt DateTime @default(now())
+
+  sessionId String
+  session   AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("agent_messages")
 }
 
 // ============================================

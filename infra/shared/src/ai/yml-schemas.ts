@@ -136,6 +136,8 @@ export const AgentYmlSchema = z
     icon: z.string().optional(),
     /** run 级 token 预算（默认 100_000），OWASP token/cost limits */
     budgetTokens: z.number().int().positive().optional(),
+    /** 用户端可见性（ADR-006 D1）：缺省 admin——新增 agent 默认不暴露给用户端 */
+    audience: z.enum(['admin', 'user', 'all']).default('admin'),
     triggers: TriggersSchema.optional(),
     /** 有序数组 = 执行顺序（严格顺序执行，无 DAG/分支/并行） */
     workflow: z.array(WorkflowNodeSchema).min(1, 'workflow 至少需要一个节点'),
