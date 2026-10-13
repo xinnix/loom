@@ -214,6 +214,93 @@ describe('AgentRuntimeService', () => {
     expect(result.status).toBe('success');
   });
 
+  it('会话历史注入首个节点 prompt（XML 包裹，本轮在最后）', async () => {
+    writeAgentYml(tmpDir, CHAT_AGENT);
+    const loader = (runtime as any).loader as AgentYamlLoader;
+    await loader.onModuleInit();
+
+    async function* fakeStream() {
+      yield {
+        type: 'done',
+        message: {
+          stopReason: 'stop',
+          content: [{ type: 'text', text: 'ok' }],
+          usage: { input: 1, output: 1 },
+        },
+      } as any;
+    }
+    const spy = vi.spyOn(llmService, 'chatStreamWith').mockResolvedValue(fakeStream() as any);
+
+    await runtime.run(
+      'test-agent',
+      { name: '张三' },
+      {
+        ...runCtx,
+        history: [
+          { role: 'user', content: '我叫什么？' },
+          { role: 'assistant', content: '你叫张三。' },
+        ],
+      },
+      () => {},
+    );
+
+    const params = spy.mock.calls[0][1];
+    expect(params.messages).toHaveLength(1);
+    const prompt = params.messages[0].content as string;
+    expect(prompt).toContain('<conversation_history>');
+    expect(prompt).toContain('用户: 我叫什么？');
+    expect(prompt).toContain('助手: 你叫张三。');
+    // 本轮 prompt 在历史之后
+    expect(prompt.indexOf('</conversation_history>')).toBeLessThan(prompt.indexOf('你好，张三'));
+  });
+
+  it('user 身份跳过工具 permission 闸门（ADR-006 D2）', async () => {
+    // YML 工具声明 permission：admin 无该权限会被 block，user 直接放行
+    fs.writeFileSync(
+      path.join(tmpDir, 'tools', 'tools.yml'),
+      `
+tools:
+  - name: stub_tool
+    description: 桩工具
+    parameters: { type: object, properties: {} }
+    permission: todo:read
+    rest: { method: GET, path: /api/anything }
+`,
+    );
+    writeAgentYml(tmpDir, LOOP_AGENT);
+    const toolRegistry = new ToolRegistry(new ToolExecutor());
+    Object.defineProperty(toolRegistry, 'definitionsDir', {
+      get: () => path.join(tmpDir, 'tools'),
+    });
+    toolRegistry.onModuleInit();
+    const loader = new AgentYamlLoader(prisma, toolRegistry);
+    Object.defineProperty(loader, 'definitionsDir', { get: () => path.join(tmpDir, 'agents') });
+    await loader.onModuleInit();
+    const runtime2 = new AgentRuntimeService(
+      prisma,
+      loader,
+      new AgentRunService(prisma),
+      toolRegistry,
+      (runtime as any).llmConfig,
+      llmService,
+    );
+
+    faux.setResponses([
+      fauxAssistantMessage([fauxToolCall('stub_tool', {})]),
+      fauxAssistantMessage('完成'),
+    ]);
+
+    const events: RunEvent[] = [];
+    const result = await runtime2.run(
+      'test-agent',
+      { topic: 'x' },
+      { permissions: [], userId: 'u9', userType: 'user' },
+      (e) => events.push(e),
+    );
+    expect(result.status).toBe('success');
+    expect(events.some((e) => e.type === 'tool_call')).toBe(true);
+  });
+
   it('Agent 不存在抛 AGENT_NOT_FOUND', async () => {
     await expect(runtime.run('ghost', {}, runCtx, () => {})).rejects.toMatchObject({
       errorCode: 'ERR_6001',

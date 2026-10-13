@@ -2,7 +2,8 @@ import { Module, type Provider } from '@nestjs/common';
 import { AiModule } from '../../ai/ai.module';
 import { LlmConfigsService } from './services/llm-configs.service';
 import { AgentsCatalogService } from './services/agents-catalog.service';
-import { AiAgentsController } from './rest/ai-agents.controller';
+import { AgentSessionService } from './services/agent-session.service';
+import { AiAgentsController, AiSessionsController } from './rest/ai-agents.controller';
 import { createLlmConfigsRouter } from './trpc/llm-configs.router';
 import { createAiAgentsRouter } from './trpc/ai-agents.router';
 import { createAiToolsRouter } from './trpc/ai-tools.router';
@@ -37,8 +38,8 @@ const routersProvider: Provider = {
 
 @Module({
   imports: [AiModule],
-  controllers: [AiAgentsController],
-  providers: [LlmConfigsService, AgentsCatalogService, routersProvider],
+  controllers: [AiAgentsController, AiSessionsController],
+  providers: [LlmConfigsService, AgentsCatalogService, AgentSessionService, routersProvider],
   exports: [LlmConfigsService, AgentsCatalogService],
 })
 export class AiAdminModule {}

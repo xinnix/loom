@@ -2,6 +2,7 @@
 # 运行前提：管理后台存在 LlmConfig，且 Agent 行（DB）绑定 llmConfigId 或存在 isDefault 配置
 name: todo-analyst
 description: 接收自然语言问题，查询待办数据并生成分析报告
+audience: all # 用户端可见（非会话型：input.question 单轮输入）
 icon: BarChartOutlined
 triggers:
   http:

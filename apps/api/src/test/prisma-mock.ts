@@ -38,6 +38,8 @@ const DEFAULT_MODELS = [
   'userRefreshToken',
   'agent',
   'agentRun',
+  'agentSession',
+  'agentMessage',
   'llmConfig',
   'todo',
   'upload',
@@ -51,7 +53,10 @@ export function createPrismaMock(extraModels: string[] = []) {
     prisma[name] = createModelMock();
   }
 
-  (prisma as any).$transaction = vi.fn(async (fn: Function) => fn(prisma));
+  // 兼容两种形态：交互式 fn(prisma) 与数组式 Promise[]
+  (prisma as any).$transaction = vi.fn(async (arg: any) =>
+    Array.isArray(arg) ? Promise.all(arg) : arg(prisma),
+  );
   (prisma as any).$connect = vi.fn();
   (prisma as any).$disconnect = vi.fn();
 

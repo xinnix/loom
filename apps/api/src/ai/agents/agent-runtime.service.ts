@@ -31,11 +31,19 @@ export type RunEvent =
 
 export type Emit = (event: RunEvent) => void;
 
+/** 会话历史消息（ADR-006 D5：注入 workflow 首个节点） */
+export interface HistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface RunContext extends ToolExecutionContext {
   /** 请求级中止信号（客户端断连 → 中止 LLM fetch） */
   signal?: AbortSignal;
   triggeredById?: string;
   triggeredByType?: 'admin' | 'user';
+  /** 会话模式：注入首个节点的历史消息（正序，已截断至上限） */
+  history?: HistoryMessage[];
 }
 
 export interface RunResult {
@@ -110,7 +118,7 @@ export class AgentRuntimeService {
     try {
       const budget = def.budgetTokens ?? DEFAULT_BUDGET_TOKENS;
 
-      for (const node of def.workflow) {
+      for (const [i, node] of def.workflow.entries()) {
         if (usage.totalTokens >= budget) {
           truncated = true;
           allWarnings.push(`token 预算（${budget}）已耗尽，跳过节点 ${node.id}`);
@@ -128,6 +136,9 @@ export class AgentRuntimeService {
 
         const rendered = this.renderNode(node, input, nodesOutput, allWarnings);
         const resolved = await this.resolveLlmForNode(node, agentRow?.llmConfigId);
+        // ADR-006 D5：会话历史平铺注入首个节点 prompt（XML 包裹），
+        // 后续节点只消费前序节点输出
+        if (i === 0) rendered.prompt = this.withHistory(rendered.prompt, ctx.history);
 
         let output: string;
         if (node.type === 'chat') {
@@ -265,10 +276,16 @@ export class AgentRuntimeService {
       maxTokens: resolved.maxTokens,
       signal: ctx.signal,
       // 权限闸门：授权先于工具执行（D4 第二道闸门，OWASP Tool Authorization Middleware）
+      // ADR-006 D2：user 无 RBAC 体系，permission 检查仅对 admin 生效；
+      // user 的边界 = 内部 REST 端点自身鉴权 + 数据隔离（转发 user JWT）
       beforeToolCall: async (c) => {
         const tool = this.toolRegistry.get(c.toolCall.name);
         if (!tool) return { block: true, reason: `未知工具: ${c.toolCall.name}` };
-        if (tool.permission && !ctx.permissions.includes(tool.permission)) {
+        if (
+          ctx.userType !== 'user' &&
+          tool.permission &&
+          !ctx.permissions.includes(tool.permission)
+        ) {
           return { block: true, reason: `权限不足：需要 ${tool.permission}` };
         }
         emit({
@@ -350,6 +367,15 @@ export class AgentRuntimeService {
   }
 
   // ── 辅助 ──────────────────────────────────────────────
+
+  /** ADR-006 D5：会话历史平铺为 XML 包裹文本，置于本轮 prompt 之前 */
+  private withHistory(prompt: string, history?: HistoryMessage[]): string {
+    if (!history?.length) return prompt;
+    const transcript = history
+      .map((m) => `${m.role === 'user' ? '用户' : '助手'}: ${m.content}`)
+      .join('\n');
+    return `<conversation_history>\n${transcript}\n</conversation_history>\n\n${prompt}`;
+  }
 
   /** D3：node.llm > Agent.llmConfigId > isDefault/env */
   private async resolveLlmForNode(node: WorkflowNode, agentLlmConfigId?: string | null) {
