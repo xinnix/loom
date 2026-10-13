@@ -1,0 +1,15 @@
+{
+  "name": "@loom/e2e",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:admin": "playwright test --project=admin",
+    "test:web": "playwright test --project=web",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}
