@@ -18,12 +18,13 @@
 
 ### API 集成测试（真实 PostgreSQL）
 
-- [ ] 测试库 `loom_test` 创建 + migrate deploy 流程
-- [ ] vitest 集成测试配置（与现有 unit 测试隔离，走真实 Prisma）
-- [ ] 用例：Todo CRUD 真实落库
-- [ ] 用例：数据隔离（User 只能查到自己的数据，R5）
+- [x] 测试库 `loom_test` 创建 + migrate deploy 流程（`infra/database` 下 `DATABASE_URL=<loom_test> prisma migrate deploy`）
+- [x] vitest 集成测试配置（`vitest.integration.config.ts`，与单测隔离；setup 强制改写 dbname 为 loom_test 防误连开发库）
+- [x] 用例：Todo CRUD 真实落库（schema 默认值/时间戳）+ TodoService complete/uncomplete
+- [x] 用例：数据隔离（R5：list 按 userId 过滤；跨用户 id+userId 读/改/删均不越权）
+- [x] `pnpm --filter @loom/api run test:integration` 运行（4 用例全过）；主 `pnpm test` 不含集成目录
 
-> 状态：E2E 部分完成（2026-10-13）；集成测试部分待下个任务段。
+> 状态：✅ E1 最小版全部完成（2026-10-13）。CI 接入归 E5。
 
 ## 实施中发现并修复的真 bug（E2E 首跑即抓到 4 个）
 
@@ -37,6 +38,7 @@
 ## 变更文件清单
 
 - `apps/e2e/`（新包）：package.json、playwright.config.ts、tests/admin-crud.spec.ts、tests/web-todo.spec.ts
+- `apps/api/vitest.integration.config.ts`、`src/test/integration/`（setup + todo 集成用例）、`package.json`（test:integration 脚本 + @types/pg）
 - `apps/api/src/modules/auth/module.ts`：JwtModule registerAsync
 - `apps/web/src/middleware.ts`：/api/* 注入 Authorization
 - `apps/web/src/app/api/auth/me/route.ts`（新）、`refresh/route.ts`（新）
