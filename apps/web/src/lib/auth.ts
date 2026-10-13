@@ -3,7 +3,6 @@
  * 通过 Next.js API Route 代理后端认证，使用 httpOnly Cookie 存储 Token
  */
 
-import { apiClient } from './api-client';
 import type { User } from '@loom/shared';
 
 export interface AuthResponse {
@@ -64,11 +63,13 @@ export async function register(data: {
   return result.data;
 }
 
-/** 获取当前用户 */
+/** 获取当前用户（走 Next.js 代理——httpOnly cookie 客户端不可读，不能直连后端） */
 export async function getCurrentUser(): Promise<User | null> {
   try {
-    const res = await apiClient.get<User>('/auth/me');
-    return res.data;
+    const res = await fetch('/api/auth/me');
+    if (!res.ok) return null;
+    const result = await res.json();
+    return result.data ?? null;
   } catch {
     return null;
   }
