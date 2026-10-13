@@ -46,7 +46,7 @@ M3 收尾双项。完成后 M3 关闭、进入 M4（运行时 AI 演进）。
 
 ## 当前状态
 
-✅ E4 全部完成（2026-10-13）。待办：docker 引擎卡死期间 bookmark 的 DB 残留未清（`Bookmark` 表 + `_prisma_migrations` 两条记录；迁移文件已删）——docker 恢复后执行 `DROP TABLE IF EXISTS "Bookmark";` + 清 `_prisma_migrations` 中 bookmark 记录，否则下次 `migrate dev` 会报 drift。
+✅ E4 全部完成（2026-10-13）。~~待办：docker 引擎卡死期间 bookmark 的 DB 残留未清~~（✅ 2026-10-13 已随 M4 第一批清掉：DROP TABLE + 清 `_prisma_migrations` 两条记录，migrate dev 恢复正常）。
 
 ## 变更文件清单
 

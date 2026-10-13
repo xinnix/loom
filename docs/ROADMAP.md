@@ -35,7 +35,10 @@ Monorepo 脚手架骨架 + 核心能力全部就绪：双用户认证、RBAC、�
 
 ### M4 — 运行时 AI 演进（AI 原生第一批）🔨
 
-方向与顺序见 [ai-native-roadmap.md](product/ai-native-roadmap.md) 第 3/4 步：用户端 REST 消费（User 身份 Agent 执行路径 + 用户 JWT 工具转发）、会话持久化、写操作工具 + 审批链。实施前先补 ADR。
+方向与顺序见 [ai-native-roadmap.md](product/ai-native-roadmap.md) 第 3/4 步。实施前先补 ADR。
+
+- 第 3 步完成：用户端 REST 消费 + 会话持久化（[ADR-006](adr/006-runtime-ai-user-consumption-session.md)：YML audience 可见性 / AgentSession+AgentMessage 两表 / SSE 零变更 / 历史注入首个节点 / Web 聊天示范页，2026-10-13）
+- 待做：第 4 步写操作工具 + human-in-the-loop 审批链（另立 ADR）
 
 ## 回写规则
 
