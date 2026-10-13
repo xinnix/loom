@@ -76,8 +76,8 @@ async function main() {
       }),
     ),
 
-    // Agent CRUD
-    ...['create', 'read', 'update', 'delete'].map((action) =>
+    // Agent 权限（AI 三层架构：只读 + 运行，编排定义真理源在 YML）
+    ...['read', 'run'].map((action) =>
       prisma.permission.upsert({
         where: { resource_action: { resource: 'agent', action } },
         update: {},
@@ -85,14 +85,37 @@ async function main() {
           resource: 'agent',
           action,
           description: {
-            create: '创建 Agent',
             read: '查看 Agent',
-            update: '更新 Agent',
-            delete: '删除 Agent',
+            run: '运行 Agent',
           }[action],
         },
       }),
     ),
+
+    // LlmConfig CRUD（模型配置管理）
+    ...['create', 'read', 'update', 'delete'].map((action) =>
+      prisma.permission.upsert({
+        where: { resource_action: { resource: 'llmConfig', action } },
+        update: {},
+        create: {
+          resource: 'llmConfig',
+          action,
+          description: {
+            create: '创建模型配置',
+            read: '查看模型配置',
+            update: '更新模型配置',
+            delete: '删除模型配置',
+          }[action],
+        },
+      }),
+    ),
+
+    // AiTool 只读（工具声明真理源在 YML）
+    prisma.permission.upsert({
+      where: { resource_action: { resource: 'aiTool', action: 'read' } },
+      update: {},
+      create: { resource: 'aiTool', action: 'read', description: '查看 AI 工具' },
+    }),
 
     // WeCom permissions
     ...['create', 'read', 'update', 'delete'].map((action) =>
@@ -116,7 +139,17 @@ async function main() {
     prisma.permission.upsert({
       where: { resource_action: { resource: 'menu', action: 'agents' } },
       update: {},
-      create: { resource: 'menu', action: 'agents', description: 'Agent 管理菜单' },
+      create: { resource: 'menu', action: 'agents', description: 'Agent 编排菜单' },
+    }),
+    prisma.permission.upsert({
+      where: { resource_action: { resource: 'menu', action: 'llmConfigs' } },
+      update: {},
+      create: { resource: 'menu', action: 'llmConfigs', description: '模型配置菜单' },
+    }),
+    prisma.permission.upsert({
+      where: { resource_action: { resource: 'menu', action: 'aiTools' } },
+      update: {},
+      create: { resource: 'menu', action: 'aiTools', description: 'AI 工具菜单' },
     }),
     prisma.permission.upsert({
       where: { resource_action: { resource: 'menu', action: 'admins' } },

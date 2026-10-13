@@ -29,10 +29,17 @@ export const Permission = {
     delete: 'role:delete',
   },
   agent: {
-    create: 'agent:create',
     read: 'agent:read',
-    update: 'agent:update',
-    delete: 'agent:delete',
+    run: 'agent:run',
+  },
+  llmConfig: {
+    create: 'llmConfig:create',
+    read: 'llmConfig:read',
+    update: 'llmConfig:update',
+    delete: 'llmConfig:delete',
+  },
+  aiTool: {
+    read: 'aiTool:read',
   },
   wecom: {
     create: 'wecom:create',
@@ -48,6 +55,8 @@ export const Permission = {
   },
   menu: {
     agents: 'menu:agents',
+    llmConfigs: 'menu:llmConfigs',
+    aiTools: 'menu:aiTools',
     admins: 'menu:admins',
     roles: 'menu:roles',
     wecom: 'menu:wecom',

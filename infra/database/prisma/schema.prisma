@@ -30,6 +30,8 @@ model Admin {
   roles         AdminRole[]
   agentCreatedBy Agent[] @relation("AgentCreatedBy")
   agentUpdatedBy Agent[] @relation("AgentUpdatedBy")
+  llmConfigCreatedBy LlmConfig[] @relation("LlmConfigCreatedBy")
+  llmConfigUpdatedBy LlmConfig[] @relation("LlmConfigUpdatedBy")
   wecomConfigCreatedBy WecomConfig[] @relation("WecomConfigCreatedBy")
   wecomConfigUpdatedBy WecomConfig[] @relation("WecomConfigUpdatedBy")
 
@@ -198,32 +200,89 @@ model UserRefreshToken {
 }
 
 // ============================================
-// Agent 模型（LLM 配置）
+// LlmConfig 模型（AI 第 1 层：LLM 配置）
+// apiKey 经 AES-256-GCM 加密存 apiKeyEnc，明文永不落库/回传/入日志
+// ============================================
+model LlmConfig {
+  id          String   @id @default(cuid())
+  name        String // 显示名，如 "DeepSeek 生产"
+  configKey   String   @unique // 程序引用键，YML 节点 llm: configKey
+  provider    String   @default("openai") // pi provider 键，MVP 仅 openai（兼容 openai-compatible 端点）
+  apiUrl      String   @default("https://api.openai.com/v1")
+  apiKeyEnc   String // "v1:" + base64(iv | authTag | ciphertext)
+  apiKeyMask  String? // 展示掩码，如 "sk-***abcd"
+  model       String // 默认模型名
+  temperature Float?
+  maxTokens   Int?
+  timeoutMs   Int      @default(60000)
+  maxRetries  Int      @default(1)
+  isDefault   Boolean  @default(false) // 全局默认（应用层保证唯一）
+  isActive    Boolean  @default(true)
+  description String?
+  createdById String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy Admin? @relation("LlmConfigCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy Admin? @relation("LlmConfigUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  agents Agent[]
+
+  @@map("llm_configs")
+}
+
+// ============================================
+// AgentRun 模型（AI 第 3 层：执行记录，最小 observability）
+// ============================================
+model AgentRun {
+  id              String   @id @default(cuid())
+  agentId         String? // FK → Agent，YML 移除后 run 仍可考
+  agent           Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  agentSlug       String // 冗余常驻，YML 删除后仍可读
+  status          String   @default("running") // running | success | failed | truncated
+  input           Json
+  output          String?
+  error           String?
+  nodeTrace       Json? // [{nodeId,type,iterations,toolCalls:[{name,args,ok,ms}],durationMs,warnings}]
+  usage           Json? // {calls,promptTokens,completionTokens,totalTokens}
+  durationMs      Int?
+  triggeredById   String? // 无 FK（admin/user 双源）
+  triggeredByType String? // "admin" | "user"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([agentSlug, createdAt])
+  @@index([status])
+  @@map("agent_runs")
+}
+
+// ============================================
+// Agent 模型（AI 第 3 层：部署期绑定记录）
+// 编排定义真理源在 YML（apps/api/src/ai/definitions/agents/），
+// DB 行只保留部署期关注点，由 loader 按 slug upsert 同步展示字段
 // ============================================
 model Agent {
-  id           String   @id @default(cuid())
-  name         String
-  slug         String   @unique
-  description  String?
-  icon         String?
-  model        String   @default("gpt-4o")
-  systemPrompt String?
-  temperature  Float?
-  maxTokens    Int?
-  provider     String   @default("openai")
-  apiUrl       String?
-  apiKey       String?
-  isActive     Boolean  @default(true)
-  sort         Int      @default(0)
-  createdById  String?
-  updatedById  String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  slug        String   @unique // = YML agent.name = REST 触发路径段
+  name        String // loader 从 YML 同步的展示缓存
+  description String?
+  icon        String?
+  llmConfigId String? // Agent 级默认模型配置（节点无 llm: 时回退，D3）
+  llmConfig   LlmConfig? @relation(fields: [llmConfigId], references: [id], onDelete: SetNull)
+  tools       Json? // Agent 级默认工具清单 string[]（loop 节点无 tools: 时回退）
+  isActive    Boolean  @default(true) // kill switch（DB 权威，loader 不覆盖）
+  sort        Int      @default(0) // DB 权威
+  createdById String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   createdBy Admin? @relation("AgentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy Admin? @relation("AgentUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  @@index([slug])
+  runs AgentRun[]
+
   @@index([isActive])
   @@map("agents")
 }

@@ -20,6 +20,12 @@ import type { PermissionEntry as PE } from './permissions/seed';
 export type { PE as PermissionEntry };
 
 // ============================================
+// AI 三层架构 YML 契约（Agent 编排 / 工具声明）
+// ============================================
+
+export * from './ai';
+
+// ============================================
 // Auth Schemas
 // ============================================
 
@@ -284,43 +290,77 @@ export type UpdateAdminInput = z.infer<typeof UpdateAdminSchema>;
 export type AdminListQueryInput = z.infer<typeof AdminListQuerySchema>;
 
 // ============================================
-// Agent CRUD Schemas（LLM 配置）
+// Agent CRUD Schemas（部署期绑定记录，编排定义真理源在 YML）
 // ============================================
 
 export const CreateAgentSchema = z.object({
-  name: z.string().min(1, '名称不能为空'),
   slug: z.string().min(1, '标识不能为空'),
+  name: z.string().min(1, '名称不能为空'),
   description: z.string().optional(),
   icon: z.string().optional(),
-  model: z.string().optional().default('gpt-4o'),
-  systemPrompt: z.string().optional(),
-  temperature: z.number().min(0).max(2).optional(),
-  maxTokens: z.number().int().positive().optional(),
-  provider: z.string().optional().default('openai'),
-  apiUrl: z.string().optional(),
-  apiKey: z.string().optional(),
+  llmConfigId: z.string().optional(),
+  tools: z.array(z.string()).optional(),
   isActive: z.boolean().optional().default(true),
   sort: z.number().int().optional().default(0),
 });
 
 export const UpdateAgentSchema = z.object({
-  name: z.string().min(1).optional(),
   slug: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
   icon: z.string().nullable().optional(),
-  model: z.string().optional(),
-  systemPrompt: z.string().nullable().optional(),
-  temperature: z.number().min(0).max(2).nullable().optional(),
-  maxTokens: z.number().int().positive().nullable().optional(),
-  provider: z.string().optional(),
-  apiUrl: z.string().nullable().optional(),
-  apiKey: z.string().nullable().optional(),
+  llmConfigId: z.string().nullable().optional(),
+  tools: z.array(z.string()).nullable().optional(),
   isActive: z.boolean().optional(),
   sort: z.number().int().optional(),
 });
 
 export type CreateAgentInput = z.infer<typeof CreateAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof UpdateAgentSchema>;
+
+// ============================================
+// LlmConfig CRUD Schemas（LLM 配置，apiKey 明文仅作为入参，服务层加密落库）
+// ============================================
+
+export const CreateLlmConfigSchema = z.object({
+  name: z.string().min(1, '名称不能为空'),
+  configKey: z
+    .string()
+    .min(1, '配置键不能为空')
+    .regex(/^[a-z0-9][a-z0-9-]*$/, '配置键仅限小写字母/数字/横杠'),
+  provider: z.string().optional().default('openai'),
+  apiUrl: z.string().optional(),
+  /** 明文 apiKey 入参，服务层 AES-256-GCM 加密后存 apiKeyEnc */
+  apiKey: z.string().min(1, 'API Key 不能为空'),
+  model: z.string().min(1, '模型不能为空'),
+  temperature: z.number().min(0).max(2).optional(),
+  maxTokens: z.number().int().positive().optional(),
+  timeoutMs: z.number().int().positive().optional(),
+  maxRetries: z.number().int().min(0).optional(),
+  isDefault: z.boolean().optional().default(false),
+  isActive: z.boolean().optional().default(true),
+  description: z.string().optional(),
+});
+
+export const UpdateLlmConfigSchema = z.object({
+  name: z.string().min(1).optional(),
+  configKey: z.string().min(1).optional(),
+  provider: z.string().optional(),
+  apiUrl: z.string().nullable().optional(),
+  /** 留空/缺省 = 不修改 */
+  apiKey: z.string().optional(),
+  model: z.string().min(1).optional(),
+  temperature: z.number().min(0).max(2).nullable().optional(),
+  maxTokens: z.number().int().positive().nullable().optional(),
+  timeoutMs: z.number().int().positive().optional(),
+  maxRetries: z.number().int().min(0).optional(),
+  isDefault: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  description: z.string().nullable().optional(),
+});
+
+export type CreateLlmConfigInput = z.infer<typeof CreateLlmConfigSchema>;
+export type UpdateLlmConfigInput = z.infer<typeof UpdateLlmConfigSchema>;
 
 // ============================================
 // WeCom (企业微信) Schemas

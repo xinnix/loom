@@ -159,8 +159,6 @@ describe('Agent Schemas', () => {
       });
       expect(result.isActive).toBe(true);
       expect(result.sort).toBe(0);
-      expect(result.model).toBe('gpt-4o');
-      expect(result.provider).toBe('openai');
     });
 
     it('rejects empty name', () => {
