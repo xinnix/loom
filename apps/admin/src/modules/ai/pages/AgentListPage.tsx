@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { Tag, Space, Button } from 'antd';
 import {
   EyeOutlined,
@@ -8,6 +9,15 @@ import {
 } from '@ant-design/icons';
 import { StandardListPage } from '../../../shared/components/StandardListPage';
 import type { StandardListPageProps } from '../../../shared/components/StandardListPage/types';
+
+/**
+ * YML agent 的 icon 字段存的是 AntD 图标组件名字符串（如 "RobotOutlined"），
+ * 需映射为图标节点渲染，直接放进 JSX 会把组件名当文本显示。
+ */
+const AGENT_ICONS: Record<string, ReactNode> = {
+  RobotOutlined: <RobotOutlined />,
+  BarChartOutlined: <BarChartOutlined />,
+};
 
 /**
  * Agent 编排列表页（AI 第 3 层，只读）。
@@ -25,7 +35,7 @@ export function AgentListPage() {
       width: 160,
       render: (name: string, record: any) => (
         <Space>
-          {record.icon ? <span>{record.icon}</span> : <RobotOutlined />}
+          {(record.icon && AGENT_ICONS[record.icon]) || <RobotOutlined />}
           <span>{name}</span>
         </Space>
       ),
@@ -83,5 +93,3 @@ export function AgentListPage() {
     />
   );
 }
-
-export { BarChartOutlined };

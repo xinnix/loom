@@ -1,6 +1,6 @@
 // StandardListPage 主组件
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   useTable,
   useCreate,
@@ -147,11 +147,15 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
       meta,
     });
 
-  // 当过滤器变化时自动触发搜索
+  // 当过滤器变化时自动触发搜索。
+  // 注意：searchFields/filterFields 通常由调用方内联传入（每次渲染新引用），
+  // 若把 buildFilters 放进依赖数组会导致 setFilters → 重渲染 → 新引用 → 循环
+  // （Maximum update depth exceeded）。用 ref 持有最新 buildFilters，effect 只响应状态变化。
+  const buildFiltersRef = useRef(buildFilters);
+  buildFiltersRef.current = buildFilters;
   useEffect(() => {
-    const filters = buildFilters();
-    setFilters(filters);
-  }, [buildFilters, setFilters]);
+    setFilters(buildFiltersRef.current());
+  }, [debouncedSearchValues, filterValues, setFilters]);
 
   const result = tableQuery.data;
   const query = tableQuery;

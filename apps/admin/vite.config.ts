@@ -17,7 +17,9 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['quill'],
+    // @loom/shared 为 CJS 构建产物（API 端 Node 要求），dev 下需 esbuild 预打包成 ESM，
+    // 否则浏览器原生 ESM 无法解构 named export（build 走 commonjsOptions 不受影响）
+    include: ['quill', '@loom/shared'],
   },
   build: {
     commonjsOptions: {
