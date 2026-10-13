@@ -11,7 +11,7 @@ import { renderTemplate } from './prompt-template';
 import { ToolRegistry } from '../tools/tool.registry';
 import { LlmConfigService } from '../llm/llm-config.service';
 import { LlmService } from '../llm/llm.service';
-import { buildPiModel } from '../llm/pi-model.factory';
+import { buildPiModel, dynamicImport } from '../llm/pi-model.factory';
 import { accumulateUsage, emptyUsage, type LlmUsageAggregate } from '../llm/interfaces';
 import type { WorkflowNode } from '@loom/shared';
 import type { ToolExecutionContext } from '../tools/interfaces';
@@ -315,7 +315,10 @@ export class AgentRuntimeService {
       },
     };
 
-    const { agentLoop } = await import('@earendil-works/pi-agent-core');
+    // pi-agent-core 为 ESM-only，走 dynamicImport 保留原生动态导入（见 pi-model.factory）
+    const { agentLoop } = (await dynamicImport(
+      '@earendil-works/pi-agent-core',
+    )) as typeof import('@earendil-works/pi-agent-core');
     const stream = agentLoop(
       [userMessage],
       { messages: [], tools },

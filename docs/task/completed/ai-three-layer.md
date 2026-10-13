@@ -70,6 +70,7 @@
 
 - @loom/shared 构建输出 esnext → commonjs（Node 22.21 ESM 语法检测下的既有回归，阻断启动）
 - pi 包 ESM-only：buildPiModel/agentLoop 经动态 import() 加载；子路径类型由 src/types/pi-ai-subpaths.d.ts 补充
+  - ⚠️ 后续修复（2026-10-13）：tsc 在 module:CommonJS 下把字面量 import() 转译为 require()，ESM-only 包运行时解析失败（No "exports" main defined）——vitest/esbuild 保留真动态导入故测试未暴露。已改为 dynamicImport（Function 构造器保留原生导入），testConnection 实测通过
 - nest-cli.json assets 补 **/*.yml（definitions 需复制进 dist）
 - prisma-mock 补 llmConfig/agentRun 模型
 

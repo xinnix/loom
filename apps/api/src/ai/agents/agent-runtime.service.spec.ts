@@ -26,6 +26,8 @@ fauxModels.setProvider(faux.provider);
 
 vi.mock('../llm/pi-model.factory', () => ({
   buildPiModel: async () => ({ models: fauxModels, model: faux.getModel() }),
+  // loop 节点经 dynamicImport 加载真实 pi-agent-core（ESM-only），此处转发原生动态导入
+  dynamicImport: (specifier: string) => import(specifier),
 }));
 
 const KEY_B64 = Buffer.alloc(32, 7).toString('base64');

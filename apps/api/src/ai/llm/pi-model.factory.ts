@@ -7,6 +7,15 @@ import type {
 import type { LlmConfigResolved, PiModelHandle } from './interfaces';
 
 /**
+ * tsc 在 module:CommonJS 下会把字面量 import() 转译为 require()，而 pi 包
+ * exports 无 require 条件（ESM-only）——require 解析直接失败
+ * （No "exports" main defined）。经 Function 构造器保留原生动态导入；
+ * Node 模块缓存使后续调用无额外开销。
+ */
+export const dynamicImport = (specifier: string): Promise<unknown> =>
+  new Function('s', 'return import(s)')(specifier) as Promise<unknown>;
+
+/**
  * 由 LlmConfigResolved 构建 pi model 句柄。
  *
  * MVP 仅注册 openai-completions 一条 API 路径：pi 的该适配器兼容一切
@@ -17,12 +26,16 @@ import type { LlmConfigResolved, PiModelHandle } from './interfaces';
  * 在请求瞬间注入，不进入模型对象序列化路径。
  *
  * pi 包为 ESM-only（exports 无 require 条件），本项目为 CommonJS——
- * 经动态 import() 加载（模块缓存使后续调用无额外开销），因此本工厂为 async。
+ * 经 dynamicImport 加载（见上，模块缓存使后续调用无额外开销），因此本工厂为 async。
  */
 export async function buildPiModel(config: LlmConfigResolved): Promise<PiModelHandle> {
-  const pi = await import('@earendil-works/pi-ai');
+  const pi = (await dynamicImport(
+    '@earendil-works/pi-ai',
+  )) as typeof import('@earendil-works/pi-ai');
   // 子路径类型见 src/types/pi-ai-subpaths.d.ts
-  const openaiCompletions = await import('@earendil-works/pi-ai/api/openai-completions');
+  const openaiCompletions = (await dynamicImport(
+    '@earendil-works/pi-ai/api/openai-completions',
+  )) as OpenaiCompletionsModule;
 
   const providerId = `loom-${config.configKey}`;
   const provider = pi.createProvider({
