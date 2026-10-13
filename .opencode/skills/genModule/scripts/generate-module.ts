@@ -64,11 +64,25 @@ interface BusinessPattern {
   fields: Field[];
 }
 
+/** 业务元信息：中文 label 与枚举/字段文案（由 Agent 编排时经 --meta 传入） */
+interface GenMeta {
+  /** 模块中文名（如「收藏」），缺省用 toLabel(moduleName) */
+  label?: string;
+  /** 字段中文文案：{ fieldName: '名称' } */
+  fieldLabels?: Record<string, string>;
+  /** 枚举值中文文案：{ fieldName: { value: '中文' } } */
+  enumLabels?: Record<string, Record<string, string>>;
+}
+
 interface GenerateOptions {
   moduleName: string;
   fields?: Field[];
   fileUpload?: boolean;
   dryRun?: boolean;
+  /** 跳过 REST Controller 生成（纯 Admin 模块）；缺省生成 */
+  noRest?: boolean;
+  /** 中文文案元信息 */
+  meta?: GenMeta;
 }
 
 // ============================================
@@ -235,7 +249,7 @@ const FIELD_INFERENCE_RULES: Record<
       required ? 'z.number().min(0, "不能小于0")' : 'z.number().min(0, "不能小于0").optional()',
     zodUpdateRule: () => 'z.number().min(0, "不能小于0").optional()',
     columnRender: (fieldName) =>
-      `render: (${fieldName}: number) => ${fieldName} !== undefined ? \`¥\${${fieldName}.toFixed(2)}\` : "-"`,
+      `render: (${fieldName}: number | null) => ${fieldName} != null ? \`¥\${${fieldName}.toFixed(2)}\` : "-"`,
   },
   email: {
     patterns: ['email', 'mail'],
@@ -327,7 +341,7 @@ const FIELD_INFERENCE_RULES: Record<
       required ? 'z.number().min(0).max(100)' : 'z.number().min(0).max(100).optional()',
     zodUpdateRule: () => 'z.number().min(0).max(100).optional()',
     columnRender: (fieldName) =>
-      `render: (${fieldName}: number) => ${fieldName} !== undefined ? \`\${${fieldName}}%\` : "-"`,
+      `render: (${fieldName}: number | null) => ${fieldName} != null ? \`\${${fieldName}}%\` : "-"`,
   },
   sort: {
     patterns: ['sortOrder', 'priority', 'order', 'sort', 'weight', 'sequence'],
@@ -376,7 +390,9 @@ function inferFieldConfig(field: Field): InferredFieldConfig | null {
     });
 
     if (matched) {
-      const isAudit = rule.patterns.some((p) => field.name === p);
+      // 仅 audit 规则（createdById 等）视为审计字段；
+      // 普通字段与模式同名（如 price/url/dueDate）不应被误判
+      const isAudit = ruleName === 'audit';
 
       return {
         uiComponent: rule.uiComponent,
@@ -574,6 +590,49 @@ function toLabel(str: string): string {
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
+/** 模块显示名：--meta.label 优先，缺省 toLabel */
+function getModuleLabel(moduleName: string, meta?: GenMeta): string {
+  return meta?.label || toLabel(moduleName);
+}
+
+/** 字段显示名：--meta.fieldLabels 优先，缺省 toLabel */
+function getFieldLabel(field: Field, meta?: GenMeta): string {
+  return meta?.fieldLabels?.[field.name] || toLabel(field.name);
+}
+
+/** 枚举值显示名：--meta.enumLabels 优先，缺省 toLabel */
+function getEnumLabel(field: Field, value: string, meta?: GenMeta): string {
+  return meta?.enumLabels?.[field.name]?.[value] || toLabel(value);
+}
+
+// ============================================
+// Enum Dictionary (shared by Form / Detail / Web client)
+// ============================================
+
+interface EnumDict {
+  /** 字段名 */
+  field: string;
+  /** 常量名基座（字段名的 UPPER_SNAKE），如 status → STATUS */
+  constName: string;
+  entries: { value: string; label: string; color: string }[];
+}
+
+const ENUM_TAG_COLORS = ['orange', 'green', 'blue', 'red'];
+
+function buildEnumDicts(fields: Field[], meta?: GenMeta): EnumDict[] {
+  return fields
+    .filter((f) => f.enum && f.enum.length > 0)
+    .map((f) => ({
+      field: f.name,
+      constName: f.name.replace(/([A-Z])/g, '_$1').toUpperCase(),
+      entries: f.enum!.map((value, i) => ({
+        value,
+        color: ENUM_TAG_COLORS[i % ENUM_TAG_COLORS.length],
+        label: getEnumLabel(f, value, meta),
+      })),
+    }));
+}
+
 // ============================================
 // Pattern Detection
 // ============================================
@@ -614,6 +673,7 @@ function generatePrismaSchema(
   moduleName: string,
   fields: Field[],
   relations: RelationField[],
+  includeUserId = false,
 ): string {
   const pascalName = toPascalCase(moduleName);
 
@@ -636,8 +696,16 @@ function generatePrismaSchema(
   }
 
   schema += `  priority  Int      @default(2)\n`;
+  if (includeUserId) {
+    schema += `  userId    String?  // 所属用户（REST 端创建时注入，数据隔离；Admin 端创建可为空）\n`;
+  }
+  schema += `  createdById String? // 审计（createCrudRouter 自动注入）\n`;
+  schema += `  updatedById String?\n`;
   schema += `  createdAt DateTime @default(now())\n`;
   schema += `  updatedAt DateTime @updatedAt\n`;
+  if (includeUserId) {
+    schema += `\n  @@index([userId])\n`;
+  }
   schema += `}\n`;
 
   return schema;
@@ -780,12 +848,31 @@ export const ${camelName}Router = createCrudRouter(
 `;
 }
 
-function generateRouterSpec(moduleName: string): string {
+function generateRouterSpec(moduleName: string, fields: Field[]): string {
   const pascalName = toPascalCase(moduleName);
   const camelName = toCamelCase(moduleName);
 
+  // create 用例的入参需满足必填字段（含枚举首值）
+  const createDataProps = fields
+    .filter((f) => f.required && f.name !== 'id')
+    .map((f) => {
+      if (f.enum) return `          ${f.name}: '${f.enum[0]}',`;
+      switch (f.type) {
+        case 'number':
+        case 'float':
+          return `          ${f.name}: 1,`;
+        case 'boolean':
+          return `          ${f.name}: true,`;
+        case 'date':
+          return `          ${f.name}: new Date(),`;
+        default:
+          return `          ${f.name}: 'Test ${f.name}',`;
+      }
+    })
+    .join('\n');
+
   return `import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createPrismaMock } from '../../../../test/prisma-mock';
+import { createPrismaMock } from '../../../test/prisma-mock';
 import { ${camelName}Router } from './${camelName}.router';
 
 function createTestCaller(user: any = null) {
@@ -798,8 +885,15 @@ function createTestCaller(user: any = null) {
     res: {},
     user,
   };
-  return { caller: ${camelName}Router.createCaller(ctx), prisma };
+  return { caller: ${camelName}Router.createCaller(ctx as any), prisma };
 }
+
+const adminUser = {
+  id: 'user-1',
+  type: 'admin',
+  roles: [],
+  permissions: ['${camelName}:read', '${camelName}:create', '${camelName}:update', '${camelName}:delete'],
+};
 
 describe('${pascalName}Router', () => {
   let caller: any;
@@ -808,7 +902,7 @@ describe('${pascalName}Router', () => {
   describe('getMany', () => {
     it('returns paginated items', async () => {
       const items = [{ id: '1', name: 'Test' }];
-      const result = createTestCaller({ id: 'user-1', type: 'admin' });
+      const result = createTestCaller(adminUser);
       caller = result.caller;
       prisma = result.prisma;
 
@@ -824,7 +918,7 @@ describe('${pascalName}Router', () => {
   describe('getOne', () => {
     it('returns a record by ID', async () => {
       const record = { id: '1', name: 'Test' };
-      const result = createTestCaller({ id: 'user-1', type: 'admin' });
+      const result = createTestCaller(adminUser);
       caller = result.caller;
       prisma = result.prisma;
 
@@ -837,14 +931,18 @@ describe('${pascalName}Router', () => {
 
   describe('create', () => {
     it('creates a record', async () => {
-      const created = { id: '1', name: 'New' };
-      const result = createTestCaller({ id: 'user-1', type: 'admin' });
+      const created = { id: '1' };
+      const result = createTestCaller(adminUser);
       caller = result.caller;
       prisma = result.prisma;
 
       prisma.${camelName}.create.mockResolvedValue(created);
 
-      const res = await caller.create({ data: { name: 'New' } });
+      const res = await caller.create({
+        data: {
+${createDataProps}
+        },
+      });
       expect(res).toEqual(created);
     });
   });
@@ -857,12 +955,12 @@ function generateFrontendListPage(
   fields: Field[],
   relations: RelationField[],
   uiPattern: UIPatternConfig,
+  meta?: GenMeta,
 ): string {
   const pascalName = toPascalCase(moduleName);
   const camelName = toCamelCase(moduleName);
   const pluralName = toPlural(camelName);
-  const moduleLabel = toLabel(moduleName);
-  const pluralLabel = toLabel(pluralName);
+  const listTitle = meta?.label ? `${meta.label}列表` : toLabel(pluralName);
 
   // Generate smart columns (reuse existing function)
   const columns = generateSmartColumns(fields, moduleName);
@@ -880,7 +978,7 @@ function generateFrontendListPage(
   const filterableFields = fields.filter((f) => f.enum || f.type === 'boolean');
 
   return `import { useNavigate } from 'react-router-dom';
-import { Button, Space, Tag } from 'antd';
+import { Button, Popconfirm, Space, Tag } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
 import { StandardListPage } from '../../../shared/components/StandardListPage';
 import { ${pascalName}Form } from '../components';
@@ -893,37 +991,47 @@ ${columns}
   return (
     <StandardListPage
       resource="${camelName}"
-      title="${pluralLabel}"
+      title="${listTitle}"
       columns={allColumns}
       formComponent={${pascalName}Form}
       formWidth={520}
-      searchFields={[]}
       ${
         filterableFields.length > 0
           ? `filterFields={[${filterableFields
               .map((f) => {
                 if (f.enum) {
                   const options = f
-                    .enum!.map((v) => `{ value: '${v}', label: '${toLabel(v)}' }`)
+                    .enum!.map((v) => `{ value: '${v}', label: '${getEnumLabel(f, v, meta)}' }`)
                     .join(', ');
-                  return `\n        { field: '${f.name}', type: 'select', placeholder: '${toLabel(f.name)}', options: [${options}] },`;
+                  return `\n        { field: '${f.name}', type: 'select', placeholder: '${getFieldLabel(f, meta)}', options: [${options}] },`;
                 }
                 return '';
               })
               .join('')}\n      ]}`
           : ''
       }
-      ${searchableFields.length > 0 ? `searchFields={[{ field: 'search', placeholder: '搜索${toLabel(searchableFields)}' }]}` : ''}
-      renderRowActions={(record: any) => (
+      ${searchableFields.length > 0 ? `searchFields={[{ field: 'search', placeholder: '搜索${toLabel(searchableFields)}' }]}` : 'searchFields={[]}'}
+      renderRowActions={(
+        record: any,
+        helpers: { edit: (r: any) => void; delete: (id: string) => void },
+      ) => (
         <Space>
           <Button
             type="link"
             size="small"
             icon={<EyeOutlined />}
-            onClick={() => navigate(\`/${camelName}/\${record.id}\`)}
+            onClick={() => navigate(\`/${pluralName}/\${record.id}\`)}
           >
             详情
           </Button>
+          <Button type="link" size="small" onClick={() => helpers.edit(record)}>
+            编辑
+          </Button>
+          <Popconfirm title="确认删除？" onConfirm={() => helpers.delete(String(record.id))}>
+            <Button type="link" size="small" danger>
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       )}
     />
@@ -973,6 +1081,7 @@ function generateStandardFormFields(
   fields: Field[],
   relations: RelationField[],
   moduleName: string,
+  meta?: GenMeta,
 ): string {
   let config = 'export const formFields: FieldDefinition[] = [\n';
 
@@ -980,7 +1089,7 @@ function generateStandardFormFields(
     if (field.name === 'id') continue;
 
     const inferred = inferFieldConfig(field);
-    const label = toLabel(field.name);
+    const label = getFieldLabel(field, meta);
 
     // Skip audit / auto-inject fields
     if (inferred?.hideInForm) continue;
@@ -1040,7 +1149,9 @@ function generateStandardFormFields(
     }
 
     if (field.enum && field.enum.length > 0) {
-      const options = field.enum.map((v) => `{ value: '${v}', label: '${toLabel(v)}' }`).join(', ');
+      const options = field.enum
+        .map((v) => `{ value: '${v}', label: '${getEnumLabel(field, v, meta)}' }`)
+        .join(', ');
       config += `  { key: '${field.name}', label: '${label}', type: 'select',${field.required ? '' : ''} options: [${options}] },\n`;
       continue;
     }
@@ -1083,23 +1194,187 @@ function generateStandardFormRelationField(relation: RelationField, field: Field
   return `  { key: '${relation.field}', label: '${label}', type: 'select', options: [] /* TODO: 从 API 加载选项 */ },\n`;
 }
 
+/** 生成枚举字典常量声明（Form 组件内导出，Detail/Web client 复用） */
+function generateEnumDictDeclarations(enumDicts: EnumDict[]): string {
+  let out = '';
+  for (const dict of enumDicts) {
+    out += `/** ${toLabel(dict.field)} 标签颜色映射 */\n`;
+    out += `export const ${dict.constName}_COLORS: Record<string, string> = {\n`;
+    for (const e of dict.entries) {
+      out += `  ${e.value}: '${e.color}',\n`;
+    }
+    out += `};\n\n`;
+    out += `/** ${toLabel(dict.field)} 标签文案映射 */\n`;
+    out += `export const ${dict.constName}_LABELS: Record<string, string> = {\n`;
+    for (const e of dict.entries) {
+      out += `  ${e.value}: '${e.label}',\n`;
+    }
+    out += `};\n\n`;
+  }
+  return out;
+}
+
 function generateStandardFormComponent(
   moduleName: string,
   fields: Field[],
   relations: RelationField[],
+  meta?: GenMeta,
 ): string {
   const pascalName = toPascalCase(moduleName);
-  const fieldConfig = generateStandardFormFields(fields, relations, moduleName);
+  const fieldConfig = generateStandardFormFields(fields, relations, moduleName, meta);
+  const enumDicts = buildEnumDicts(fields, meta);
 
   return `import { StandardForm } from "../../../shared/components/StandardForm";
 import type { FieldDefinition } from "../../../shared/components/StandardForm/types";
 import type { FormInstance } from "antd/es/form";
 import { TreeSelect } from "antd";
 
-${fieldConfig}
-
+${generateEnumDictDeclarations(enumDicts)}${fieldConfig}
 export function ${pascalName}Form({ form, isEdit }: { form: FormInstance; isEdit: boolean }) {
   return <StandardForm form={form} isEdit={isEdit} fields={formFields} />;
+}
+`;
+}
+
+// ============================================
+// Detail Page Generation (StandardDetailPage)
+// ============================================
+
+/** string 字段在详情页的类型细分 */
+function detailStringType(field: Field): 'email' | 'url' | 'image' | 'text' {
+  const n = field.name.toLowerCase();
+  if (['email', 'mail'].includes(n)) return 'email';
+  if (['url', 'website', 'link', 'homepage'].includes(n)) return 'url';
+  if (['avatar', 'logo', 'icon', 'cover', 'thumbnail', 'image', 'picture', 'photo'].includes(n))
+    return 'image';
+  return 'text';
+}
+
+/** float/number 字段是否百分比语义 */
+function isPercentField(field: Field): boolean {
+  return ['rate', 'percent', 'ratio', 'discount'].includes(field.name.toLowerCase());
+}
+
+function generateDetailFieldsConfig(
+  moduleName: string,
+  fields: Field[],
+  relations: RelationField[],
+  meta?: GenMeta,
+): string {
+  const pascalName = toPascalCase(moduleName);
+  const camelName = toCamelCase(moduleName);
+  const moduleLabel = getModuleLabel(moduleName, meta);
+  const enumDicts = buildEnumDicts(fields, meta);
+
+  let out = `import type { DetailFieldConfig } from '../../../shared/components/StandardDetailPage/types';\n`;
+  if (enumDicts.length > 0) {
+    const names = enumDicts.flatMap((d) => [`${d.constName}_COLORS`, `${d.constName}_LABELS`]);
+    out += `import { ${names.join(', ')} } from './${pascalName}Form';\n`;
+  }
+  out += `\n/**\n * ${moduleLabel}详情字段配置（StandardDetailPage 配置驱动）\n */\n`;
+  out += `export const ${camelName}DetailFields: DetailFieldConfig[] = [\n`;
+
+  for (const field of fields) {
+    if (field.name === 'id') continue;
+
+    const inferred = inferFieldConfig(field);
+    if (inferred?.hideInTable) continue; // audit 字段不进详情
+
+    const label = getFieldLabel(field, meta);
+    const showCond = field.required
+      ? ''
+      : `, showCondition: (entity: any) => !!entity.${field.name}`;
+
+    // 关联字段
+    if (relations.some((r) => r.field === field.name)) {
+      out += `  { key: '${field.name}', label: '${label}', type: 'relation'${showCond} },\n`;
+      continue;
+    }
+
+    // 枚举字段 → tag
+    if (field.enum) {
+      const dict = enumDicts.find((d) => d.field === field.name)!;
+      out += `  {\n    key: '${field.name}',\n    label: '${label}',\n    type: 'tag',\n    tagColors: ${dict.constName}_COLORS,\n    tagLabels: ${dict.constName}_LABELS,\n  },\n`;
+      continue;
+    }
+
+    switch (field.type) {
+      case 'boolean':
+        out += `  { key: '${field.name}', label: '${label}', type: 'boolean', booleanLabels: ['否', '是'], booleanColors: ['default', 'success'] },\n`;
+        break;
+      case 'text':
+        out += `  { key: '${field.name}', label: '${label}', type: 'text'${showCond} },\n`;
+        break;
+      case 'number':
+        out += `  { key: '${field.name}', label: '${label}', type: '${isPercentField(field) ? 'percent' : 'number'}'${showCond} },\n`;
+        break;
+      case 'float':
+        out += `  { key: '${field.name}', label: '${label}', type: '${isPercentField(field) ? 'percent' : 'currency'}'${isPercentField(field) ? '' : ", currencySymbol: '¥', currencyPrecision: 2"}${showCond} },\n`;
+        break;
+      case 'date':
+        out += `  { key: '${field.name}', label: '${label}', type: 'date'${showCond} },\n`;
+        break;
+      case 'string':
+      case 'image':
+      case 'file': {
+        const t = detailStringType(field);
+        out += `  { key: '${field.name}', label: '${label}', type: '${t}'${showCond} },\n`;
+        break;
+      }
+      default:
+        out += `  { key: '${field.name}', label: '${label}', type: 'text'${showCond} },\n`;
+    }
+  }
+
+  out += `  { key: 'createdAt', label: '创建时间', type: 'datetime' },\n`;
+  out += `  { key: 'updatedAt', label: '更新时间', type: 'datetime' },\n`;
+  out += `];\n`;
+  return out;
+}
+
+function generateFrontendDetailPage(moduleName: string, fields: Field[], meta?: GenMeta): string {
+  const pascalName = toPascalCase(moduleName);
+  const camelName = toCamelCase(moduleName);
+  const pluralName = toPlural(camelName);
+  const moduleLabel = getModuleLabel(moduleName, meta);
+  const enumDicts = buildEnumDicts(fields, meta);
+  const firstEnum = enumDicts[0];
+  const titleField = fields.find((f) => f.type === 'string' && f.required && !f.enum);
+
+  const imports = `import { StandardDetailPage } from '../../../shared/components/StandardDetailPage';
+import { ${camelName}DetailFields${firstEnum ? `, ${firstEnum.constName}_COLORS, ${firstEnum.constName}_LABELS` : ''} } from '../components';`;
+
+  const titleFieldProp = titleField ? `\n      titleField="${titleField.name}"` : '';
+  const statusProps = firstEnum
+    ? `
+      statusField="${firstEnum.field}"
+      statusConfig={(() => {
+        const config: Record<string, { color: string; text: string }> = {};
+        for (const [key, color] of Object.entries(${firstEnum.constName}_COLORS)) {
+          config[key] = { color, text: ${firstEnum.constName}_LABELS[key] || key };
+        }
+        return config;
+      })()}`
+    : '';
+
+  return `${imports}
+
+/**
+ * ${moduleLabel}详情页（StandardDetailPage 配置驱动）
+ */
+export function ${pascalName}DetailPage() {
+  return (
+    <StandardDetailPage
+      resource="${camelName}"
+      title="${moduleLabel}详情"
+      headerType="simple"
+      backPath="/${pluralName}"
+      backLabel="返回列表"${titleFieldProp}${statusProps}
+      fields={${camelName}DetailFields}
+      column={2}
+      maxWidth={800}
+    />
+  );
 }
 `;
 }
@@ -1172,6 +1447,28 @@ function checkModuleExists(moduleName: string): { exists: boolean; locations: st
   );
   if (fs.existsSync(listPagePath)) {
     locations.push(`Frontend list page (${listPagePath})`);
+  }
+
+  // Check frontend detail page
+  const detailPagePath = getFilePath(
+    `apps/admin/src/modules/${moduleName}/pages/${pascalName}DetailPage.tsx`,
+  );
+  if (fs.existsSync(detailPagePath)) {
+    locations.push(`Frontend detail page (${detailPagePath})`);
+  }
+
+  // Check REST controller
+  const restControllerPath = getFilePath(
+    `apps/api/src/modules/${moduleName}/rest/${camelName}.controller.ts`,
+  );
+  if (fs.existsSync(restControllerPath)) {
+    locations.push(`REST controller (${restControllerPath})`);
+  }
+
+  // Check Web API client
+  const webApiPath = getFilePath(`apps/web/src/lib/api/${camelName}.ts`);
+  if (fs.existsSync(webApiPath)) {
+    locations.push(`Web API client (${webApiPath})`);
   }
 
   // Check Zod schema
@@ -1352,7 +1649,7 @@ function updateAppTsx(moduleName: string): void {
 
   modifyFile(appPath, (content) => {
     // Add import — find last import line and append after it
-    const importLine = `import { ${pascalName}ListPage } from "./modules/${moduleName}";`;
+    const importLine = `import { ${pascalName}ListPage, ${pascalName}DetailPage } from "./modules/${moduleName}";`;
     if (!content.includes(importLine)) {
       const importMatch = content.match(/^import .+$/gm);
       if (!importMatch) throw new Error('Cannot find import statements in App.tsx');
@@ -1362,19 +1659,22 @@ function updateAppTsx(moduleName: string): void {
       content = content.slice(0, insertIdx) + importLine + '\n' + content.slice(insertIdx);
     }
 
-    // Add resource — find resources=[...] and insert before the closing ]}
-    const resource = `              {\n                name: "${camelName}",\n                list: "/${pluralName}",\n              },`;
+    // Add resource — find resources=[...] and insert a new entry line before the closing line
+    const resource = `          {\n            name: "${camelName}",\n            list: "/${pluralName}",\n          },\n`;
     if (!content.includes(`name: "${camelName}"`)) {
       const resourcesMatch = content.match(/resources=\{(\[[\s\S]*?\])\}/);
       if (!resourcesMatch) throw new Error('Cannot find resources={[...]} in App.tsx');
       const resourcesStart = content.indexOf(resourcesMatch[0]);
       const bracketEnd = content.indexOf(']}', resourcesStart);
       if (bracketEnd === -1) throw new Error('Cannot find resources closing ]} in App.tsx');
-      content = content.slice(0, bracketEnd) + resource + '\n' + content.slice(bracketEnd);
+      const lineStart = content.lastIndexOf('\n', bracketEnd) + 1; // ]} 所在行行首，保留其缩进
+      content = content.slice(0, lineStart) + resource + content.slice(lineStart);
     }
 
-    // Add route — find the AdminLayout Route group and insert before its closing </Route>
-    const route = `                  <Route path="${pluralName}" element={<${pascalName}ListPage />} />\n`;
+    // Add routes — list + detail, inserted before the AdminLayout Route group's closing </Route>
+    const route =
+      `            <Route path="${pluralName}" element={<${pascalName}ListPage />} />\n` +
+      `            <Route path="${pluralName}/:id" element={<${pascalName}DetailPage />} />\n`;
     if (!content.includes(`<${pascalName}ListPage`)) {
       const layoutRouteMatch = content.match(
         /<Route\s+path="\/"\s+element=\{<AdminLayout[^>]*>[\s\S]*?<\/Route>/,
@@ -1387,7 +1687,8 @@ function updateAppTsx(moduleName: string): void {
       );
       if (closingRouteIdx === -1)
         throw new Error('Cannot find closing </Route> for AdminLayout in App.tsx');
-      content = content.slice(0, closingRouteIdx) + route + content.slice(closingRouteIdx);
+      const lineStart = content.lastIndexOf('\n', closingRouteIdx) + 1; // </Route> 所在行行首，保留其缩进
+      content = content.slice(0, lineStart) + route + content.slice(lineStart);
     }
 
     return content;
@@ -1411,59 +1712,46 @@ function updateAppRouter(moduleName: string): void {
       content = content.slice(0, insertIdx) + importLine + '\n' + content.slice(insertIdx);
     }
 
-    // Add router entry — find export const appRouter = mergeRouters(...) and insert before closing }
+    // Add router entry — insert before the closing of the appRouter object
     const routerLine = `  ${camelName}: ${camelName}Router,`;
     if (!content.includes(`${camelName}:`)) {
-      const routerMatch = content.match(/export const appRouter\s*=\s*mergeRouters\([\s\S]*?\)/);
-      if (!routerMatch) throw new Error('Cannot find appRouter definition in app.router.ts');
-      // Find the object literal inside the merged router
-      const objEndMatch = content.match(/export const appRouter[\s\S]*?(\n\};)/);
-      if (objEndMatch) {
-        const objEndIdx = content.indexOf(objEndMatch[1]);
-        content = content.slice(0, objEndIdx) + routerLine + '\n' + content.slice(objEndIdx);
-      } else {
-        // Fallback: find the last } after appRouter
-        const appRouterIdx = content.indexOf('export const appRouter');
-        const lastBrace = content.lastIndexOf(
-          '}',
-          content.indexOf('\n\n', appRouterIdx) || content.length,
-        );
-        if (lastBrace === -1)
-          throw new Error('Cannot find router object closing } in app.router.ts');
-        content = content.slice(0, lastBrace) + routerLine + '\n' + content.slice(lastBrace);
-      }
+      const appRouterMatch = content.match(
+        /export const appRouter\s*=\s*(?:router|mergeRouters)\(\{/,
+      );
+      if (!appRouterMatch) throw new Error('Cannot find appRouter definition in app.router.ts');
+      const objStart = content.indexOf(appRouterMatch[0]);
+      const objEnd = content.indexOf('});', objStart);
+      if (objEnd === -1) throw new Error('Cannot find appRouter object closing in app.router.ts');
+      content = content.slice(0, objEnd) + routerLine + '\n' + content.slice(objEnd);
     }
 
     return content;
   });
 }
 
-function updateAdminLayout(moduleName: string): void {
+function updateAdminLayout(moduleName: string, meta?: GenMeta): void {
   const camelName = toCamelCase(moduleName);
   const pluralName = toPlural(camelName);
   const layoutPath = getFilePath('apps/admin/src/shared/layouts/AdminLayout.tsx');
 
   modifyFile(layoutPath, (content) => {
-    const menuItem = `    { key: "/${pluralName}", label: "${toLabel(moduleName)}管理", icon: "FolderOutlined", permission: Permission.${camelName}.read },`;
+    const menuItem = `      { key: "/${pluralName}", label: "${getModuleLabel(moduleName, meta)}管理", icon: "FolderOutlined", permission: Permission.${camelName}.read },`;
 
     if (!content.includes(`key: "/${pluralName}"`)) {
       // Find the menuConfig array and append to the last children group
-      const menuConfigMatch = content.match(/const menuConfig\s*=\s*\[([\s\S]*?)\];/);
+      const menuConfigMatch = content.match(/const menuConfig\s*=\s*\[([\s\S]*?)\n\];/);
       if (!menuConfigMatch) throw new Error('Cannot find menuConfig in AdminLayout.tsx');
 
-      // Find the last children: [...] array within menuConfig and append there
+      // Find the last children array (closing line is 4-space-indented "],") within menuConfig
       const menuConfigStart = content.indexOf(menuConfigMatch[0]);
-      const menuConfigEnd = menuConfigStart + menuConfigMatch[0].length;
-
-      // Find the last children array end (]);) within menuConfig
-      const menuConfigBlock = content.slice(menuConfigStart, menuConfigEnd);
-      const childrenEndMatch = [...menuConfigBlock.matchAll(/\];/g)];
+      const menuConfigBlock = menuConfigMatch[0];
+      const childrenEndMatch = [...menuConfigBlock.matchAll(/\n    \],/g)];
       if (childrenEndMatch.length === 0)
         throw new Error('Cannot find children array in menuConfig');
 
       const lastChildrenEnd = childrenEndMatch[childrenEndMatch.length - 1];
-      const insertOffset = menuConfigStart + lastChildrenEnd.index!;
-      content = content.slice(0, insertOffset) + '\n' + menuItem + content.slice(insertOffset);
+      const insertOffset = menuConfigStart + lastChildrenEnd.index! + 1; // 行首（跳过换行）
+      content = content.slice(0, insertOffset) + menuItem + '\n' + content.slice(insertOffset);
     }
 
     return content;
@@ -1474,11 +1762,30 @@ function createModuleIndex(moduleName: string): void {
   const pascalName = toPascalCase(moduleName);
   const indexContent = `// apps/admin/src/modules/${moduleName}/index.ts
 export { ${pascalName}ListPage } from "./pages/${pascalName}ListPage";
+export { ${pascalName}DetailPage } from "./pages/${pascalName}DetailPage";
 export { ${pascalName}Form } from "./components/${pascalName}Form";
 `;
 
   const indexPath = getFilePath(`apps/admin/src/modules/${moduleName}/index.ts`);
   createFile(indexPath, indexContent);
+}
+
+function createComponentsIndex(moduleName: string, fields: Field[], meta?: GenMeta): void {
+  const pascalName = toPascalCase(moduleName);
+  const camelName = toCamelCase(moduleName);
+  const enumDicts = buildEnumDicts(fields, meta);
+  const dictExports = enumDicts.flatMap((d) => [`${d.constName}_COLORS`, `${d.constName}_LABELS`]);
+
+  let content = `// apps/admin/src/modules/${moduleName}/components/index.ts
+export { ${pascalName}Form } from "./${pascalName}Form";
+export { ${camelName}DetailFields } from "./${pascalName}Detail";
+`;
+  if (dictExports.length > 0) {
+    content += `export {\n  ${dictExports.join(',\n  ')},\n} from "./${pascalName}Form";\n`;
+  }
+
+  const indexPath = getFilePath(`apps/admin/src/modules/${moduleName}/components/index.ts`);
+  createFile(indexPath, content);
 }
 
 // ============================================
@@ -1581,12 +1888,19 @@ function updateMiniappApiIndex(moduleName: string): void {
   });
 }
 
-function generateNestModule(moduleName: string): void {
+function generateNestModule(moduleName: string, hasController: boolean): void {
   const pascalName = toPascalCase(moduleName);
-  const moduleContent = `import { Module } from '@nestjs/common';
+  const camelName = toCamelCase(moduleName);
+
+  const controllerImport = hasController
+    ? `import { ${pascalName}Controller } from './rest/${camelName}.controller';\n`
+    : '';
+  const controllersLine = hasController ? `  controllers: [${pascalName}Controller],\n` : '';
+
+  const moduleContent = `${controllerImport}import { Module } from '@nestjs/common';
 
 @Module({
-  providers: [],
+${controllersLine}  providers: [],
   exports: [],
 })
 export class ${pascalName}Module {}
@@ -1596,16 +1910,357 @@ export class ${pascalName}Module {}
   createFile(modulePath, moduleContent);
 }
 
+// ============================================
+// REST Controller Generation (Web/Miniapp 端数据入口)
+// ============================================
+
+/** 字段的 REST wire TS 类型（date 以 string 传输） */
+function restWireType(field: Field): string {
+  if (field.enum) return 'string';
+  switch (field.type) {
+    case 'number':
+    case 'float':
+      return 'number';
+    case 'boolean':
+      return 'boolean';
+    default:
+      return 'string';
+  }
+}
+
+function generateRestController(moduleName: string, fields: Field[], meta?: GenMeta): string {
+  const pascalName = toPascalCase(moduleName);
+  const camelName = toCamelCase(moduleName);
+  const pluralName = toPlural(camelName);
+  const moduleLabel = getModuleLabel(moduleName, meta);
+
+  // 列表筛选参数：enum / boolean / number / float 字段
+  const filterFields = fields.filter(
+    (f) => f.enum || f.type === 'boolean' || f.type === 'number' || f.type === 'float',
+  );
+  const searchFields = fields
+    .filter((f) => (f.type === 'string' || f.type === 'text') && !f.enum)
+    .slice(0, 2);
+
+  let queryParams = '';
+  let whereLines = '';
+  for (const f of filterFields) {
+    queryParams += `    @Query('${f.name}') ${f.name}?: string,\n`;
+    if (f.type === 'boolean') {
+      whereLines += `    if (${f.name} !== undefined) where.${f.name} = ${f.name} === 'true';\n`;
+    } else if (f.type === 'number' || f.type === 'float') {
+      whereLines += `    if (${f.name}) where.${f.name} = Number(${f.name});\n`;
+    } else {
+      whereLines += `    if (${f.name}) where.${f.name} = ${f.name};\n`;
+    }
+  }
+
+  const searchBlock =
+    searchFields.length > 0
+      ? `
+    if (search) {
+      where.OR = [
+${searchFields
+  .map((f) => `        { ${f.name}: { contains: search, mode: 'insensitive' as const } },`)
+  .join('\n')}
+      ];
+    }
+`
+      : '';
+
+  const createBodyType = fields
+    .map((f) => `      ${f.name}${f.required ? '' : '?'}: ${restWireType(f)};`)
+    .join('\n');
+  const createDataLines = fields
+    .map((f) => {
+      if (f.type === 'date')
+        return `        ${f.name}: body.${f.name} ? new Date(body.${f.name}) : null,`;
+      if (f.required && (f.type === 'number' || f.type === 'float'))
+        return `        ${f.name}: body.${f.name} ?? 0,`;
+      return `        ${f.name}: body.${f.name},`;
+    })
+    .join('\n');
+
+  const updateBodyType = fields.map((f) => `      ${f.name}?: ${restWireType(f)};`).join('\n');
+  const updateDateLines = fields
+    .filter((f) => f.type === 'date')
+    .map(
+      (f) => `    if (body.${f.name} !== undefined) {
+      data.${f.name} = body.${f.name} ? new Date(body.${f.name}) : null;
+    }`,
+    )
+    .join('\n\n');
+
+  return `import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { JwtAuthGuard } from '../../../core/guards/jwt.guard';
+import { CurrentUser } from '../../../modules/auth/decorators/decorators';
+
+/**
+ * ${pascalName} REST Controller
+ *
+ * Web 端（Next.js）和小程序端（uni-app）通过 REST API 调用。
+ * Admin 端走 tRPC，不经过此 Controller。
+ *
+ * 响应经全局 TransformInterceptor 统一包装：
+ *   {
+ *     success: true,
+ *     data: { ... } | [...],
+ *     message, statusCode, timestamp,
+ *     total, page, pageSize, totalPages  // 仅列表接口（顶层扁平）
+ *   }
+ *
+ * @see 对应的 tRPC Router：trpc/${camelName}.router.ts
+ */
+@Controller('${pluralName}')
+export class ${pascalName}Controller {
+  constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * 获取当前用户的${moduleLabel}列表（分页 + 搜索 + 筛选）
+   */
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async list(
+    @CurrentUser() currentUser: any,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('search') search?: string,${queryParams ? '\n' + queryParams.trimEnd() : ''}
+  ) {
+    const userId = currentUser.id;
+    const p = Number(page) || 1;
+    const ps = Number(pageSize) || 10;
+    const where: any = { userId };
+${searchBlock}${whereLines ? '\n' + whereLines : ''}
+    const [items, total] = await Promise.all([
+      this.prisma.${camelName}.findMany({
+        where,
+        skip: (p - 1) * ps,
+        take: ps,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.${camelName}.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: items,
+      total,
+      page: p,
+      pageSize: ps,
+      totalPages: Math.ceil(total / ps),
+    };
+  }
+
+  /**
+   * 获取单条${moduleLabel}详情
+   */
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getOne(@CurrentUser() currentUser: any, @Param('id') id: string) {
+    const record = await this.prisma.${camelName}.findFirst({
+      where: { id, userId: currentUser.id },
+    });
+
+    if (!record) {
+      return { success: false, data: null, message: '${moduleLabel}不存在' };
+    }
+
+    return { success: true, data: record };
+  }
+
+  /**
+   * 创建${moduleLabel}
+   */
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  async create(
+    @CurrentUser() currentUser: any,
+    @Body() body: {
+${createBodyType}
+    },
+  ) {
+    const record = await this.prisma.${camelName}.create({
+      data: {
+${createDataLines}
+        userId: currentUser.id,
+      },
+    });
+
+    return { success: true, data: record };
+  }
+
+  /**
+   * 更新${moduleLabel}
+   */
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  async update(
+    @CurrentUser() currentUser: any,
+    @Param('id') id: string,
+    @Body() body: {
+${updateBodyType}
+    },
+  ) {
+    const existing = await this.prisma.${camelName}.findFirst({
+      where: { id, userId: currentUser.id },
+    });
+
+    if (!existing) {
+      return { success: false, data: null, message: '${moduleLabel}不存在' };
+    }
+
+    const data: any = { ...body };
+${updateDateLines}
+
+    const record = await this.prisma.${camelName}.update({
+      where: { id },
+      data,
+    });
+
+    return { success: true, data: record };
+  }
+
+  /**
+   * 删除${moduleLabel}
+   */
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async delete(@CurrentUser() currentUser: any, @Param('id') id: string) {
+    const existing = await this.prisma.${camelName}.findFirst({
+      where: { id, userId: currentUser.id },
+    });
+
+    if (!existing) {
+      return { success: false, data: null, message: '${moduleLabel}不存在' };
+    }
+
+    await this.prisma.${camelName}.delete({ where: { id } });
+
+    return { success: true, data: null, message: '删除成功' };
+  }
+}
+`;
+}
+
+// ============================================
+// Web API Client Generation (apps/web/src/lib/api/)
+// ============================================
+
+function generateWebApiClient(moduleName: string, fields: Field[], meta?: GenMeta): string {
+  const pascalName = toPascalCase(moduleName);
+  const camelName = toCamelCase(moduleName);
+  const pluralName = toPlural(camelName);
+  const moduleLabel = getModuleLabel(moduleName, meta);
+  const enumDicts = buildEnumDicts(fields, meta);
+
+  const interfaceFields = fields
+    .map((f) => `  ${f.name}${f.required ? '' : '?'}: ${restWireType(f)};`)
+    .join('\n');
+  const createInputFields = fields
+    .map((f) => `  ${f.name}${f.required ? '' : '?'}: ${restWireType(f)};`)
+    .join('\n');
+
+  const listParamFields = fields
+    .filter((f) => f.enum || f.type === 'boolean' || f.type === 'number' || f.type === 'float')
+    .map((f) => {
+      if (f.type === 'boolean') return `  ${f.name}?: boolean;`;
+      if (f.type === 'number' || f.type === 'float') return `  ${f.name}?: number;`;
+      return `  ${f.name}?: string;`;
+    })
+    .join('\n');
+
+  const dictBlocks = enumDicts
+    .map(
+      (d) => `/** ${toLabel(d.field)} 选项（value / label / tag color） */
+export const ${d.constName}_OPTIONS: { value: string; label: string; color: string }[] = [
+${d.entries.map((e) => `  { value: '${e.value}', label: '${e.label}', color: '${e.color}' },`).join('\n')}
+];
+
+export const ${d.constName}_MAP: Record<string, { label: string; color: string }> = Object.fromEntries(
+  ${d.constName}_OPTIONS.map((o) => [o.value, { label: o.label, color: o.color }]),
+);`,
+    )
+    .join('\n\n');
+
+  return `/**
+ * ${moduleLabel} REST API client（Web 端）
+ *
+ * 封装 apiClient（自动携带 Bearer Token、401 自动刷新）。
+ * 对应后端端点：/api/${pluralName}（apps/api/src/modules/${moduleName}/rest/）
+ */
+import { apiClient } from '@/lib/api-client';
+
+export interface ${pascalName} {
+  id: string;
+  userId?: string;
+${interfaceFields}
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Create${pascalName}Input {
+${createInputFields}
+}
+
+export type Update${pascalName}Input = Partial<Create${pascalName}Input>;
+
+export interface ${pascalName}ListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+${listParamFields}
+}
+${dictBlocks ? '\n' + dictBlocks + '\n' : ''}
+/** 将参数对象转为 query string（忽略空值） */
+function buildQuery(params?: object): string {
+  if (!params) return '';
+  const entries = Object.entries(params).filter(
+    ([, v]) => v !== undefined && v !== null && v !== '',
+  );
+  if (entries.length === 0) return '';
+  const qs = new URLSearchParams();
+  for (const [key, value] of entries) {
+    qs.set(key, String(value));
+  }
+  return \`?\${qs.toString()}\`;
+}
+
+const BASE_PATH = '/${pluralName}';
+
+export const ${camelName}Api = {
+  /** 获取${moduleLabel}列表（分页 + 搜索 + 筛选） */
+  getList: (params?: ${pascalName}ListParams) =>
+    apiClient.get<${pascalName}[]>(\`\${BASE_PATH}\${buildQuery(params)}\`),
+
+  /** 获取${moduleLabel}详情 */
+  getById: (id: string) => apiClient.get<${pascalName}>(\`\${BASE_PATH}/\${id}\`),
+
+  /** 创建${moduleLabel} */
+  create: (data: Create${pascalName}Input) => apiClient.post<${pascalName}>(BASE_PATH, data),
+
+  /** 更新${moduleLabel} */
+  update: (id: string, data: Update${pascalName}Input) =>
+    apiClient.put<${pascalName}>(\`\${BASE_PATH}/\${id}\`, data),
+
+  /** 删除${moduleLabel} */
+  delete: (id: string) => apiClient.delete(\`\${BASE_PATH}/\${id}\`),
+};
+`;
+}
+
 function updateAppModule(moduleName: string): void {
   const pascalName = toPascalCase(moduleName);
   const modulePath = getFilePath('apps/api/src/app.module.ts');
 
   modifyFile(modulePath, (content) => {
-    const importLine = `import { ${pascalName}Module } from "./modules/${moduleName}/module";`;
+    const importLine = `import { ${pascalName}Module } from './modules/${moduleName}/module';`;
 
     // Add import after last module import
     if (!content.includes(importLine)) {
-      const moduleImportMatches = [...content.matchAll(/^import .+from "\.\/modules\/.+";$/gm)];
+      const moduleImportMatches = [
+        ...content.matchAll(/^import .+from ['"]\.\/modules\/.+['"];$/gm),
+      ];
       if (moduleImportMatches.length === 0) {
         throw new Error('Cannot find module imports in app.module.ts');
       }
@@ -1661,7 +2316,7 @@ function updatePermissionRegistry(moduleName: string): void {
 // ============================================
 
 export async function generateModule(options: GenerateOptions): Promise<void> {
-  const { moduleName, fields: customFields, fileUpload, dryRun } = options;
+  const { moduleName, fields: customFields, fileUpload, dryRun, noRest = false, meta } = options;
   const pascalName = toPascalCase(moduleName);
   const camelName = toCamelCase(moduleName);
   const pluralName = toPlural(camelName);
@@ -1706,8 +2361,37 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
   console.log('\x1b[36m%s\x1b[0m', `\n🎨 UI Pattern: ${uiPattern.pattern}`);
   console.log(`   Reason: ${uiPattern.reason}`);
 
+  // Step 3.5: REST scope
+  console.log(
+    '\x1b[36m%s\x1b[0m',
+    `\n🔌 REST Controller: ${noRest ? 'skipped (--no-rest, admin-only)' : 'generated (Web/Miniapp 数据入口)'}`,
+  );
+
   if (dryRun) {
     console.log('\n\x1b[33m%s\x1b[0m', '⚠️  Dry run mode - no files will be created');
+
+    const enumDicts = buildEnumDicts(fields, meta);
+    if (enumDicts.length > 0) {
+      console.log('\n🏷️  Enum dictionaries:');
+      for (const dict of enumDicts) {
+        const pairs = dict.entries.map((e) => `${e.value}=${e.label}(${e.color})`).join(', ');
+        console.log(`   - ${dict.constName}: ${pairs}`);
+      }
+    }
+
+    console.log('\n📁 Files plan:');
+    const plan = [
+      'infra/database/prisma/schema.prisma (append model)',
+      'infra/shared/src/index.ts (append schemas)',
+      'infra/shared/src/permissions/registry.ts (append resource)',
+      `apps/api/src/modules/${moduleName}/ (router + spec + module${noRest ? '' : ' + rest controller'})`,
+      `apps/admin/src/modules/${moduleName}/ (ListPage + DetailPage + Form + Detail fields + barrels)`,
+      'apps/admin/src/App.tsx + app.router.ts + AdminLayout.tsx (register)',
+      `apps/miniapp/src/api/${camelName}.ts + config + index (API client)`,
+      `apps/web/src/lib/api/${camelName}.ts (REST client)`,
+    ];
+    plan.forEach((p) => console.log(`   - ${p}`));
+
     console.log('\n📋 Generated Zod Schema Preview:');
     console.log(generateZodSchemas(moduleName, fields));
     return;
@@ -1716,7 +2400,7 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
   try {
     // Step 4: Generate Prisma Schema
     console.log('\x1b[32m%s\x1b[0m', '✓ Generating Prisma schema...');
-    const prismaSchema = generatePrismaSchema(moduleName, fields, relations);
+    const prismaSchema = generatePrismaSchema(moduleName, fields, relations, !noRest);
     const schemaPath = getFilePath('infra/database/prisma/schema.prisma');
     appendToFile(schemaPath, prismaSchema);
 
@@ -1740,7 +2424,7 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
 
     // Step 6.5: Generate Router Test
     console.log('\x1b[32m%s\x1b[0m', '✓ Generating router test...');
-    const routerSpec = generateRouterSpec(moduleName);
+    const routerSpec = generateRouterSpec(moduleName, fields);
     const specPath = getFilePath(
       `apps/api/src/modules/${moduleName}/trpc/${camelName}.router.spec.ts`,
     );
@@ -1751,7 +2435,7 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
       '\x1b[32m%s\x1b[0m',
       `✓ Generating frontend list page (${uiPattern.pattern} pattern)...`,
     );
-    const listPage = generateFrontendListPage(moduleName, fields, relations, uiPattern);
+    const listPage = generateFrontendListPage(moduleName, fields, relations, uiPattern, meta);
     const listPagePath = getFilePath(
       `apps/admin/src/modules/${moduleName}/pages/${pascalName}ListPage.tsx`,
     );
@@ -1763,11 +2447,31 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
 
     // Step 7.75: Generate Frontend Form Component (StandardForm)
     console.log('\x1b[32m%s\x1b[0m', '✓ Generating frontend form component (StandardForm)...');
-    const formComponent = generateStandardFormComponent(moduleName, fields, relations);
+    const formComponent = generateStandardFormComponent(moduleName, fields, relations, meta);
     const formPath = getFilePath(
       `apps/admin/src/modules/${moduleName}/components/${pascalName}Form.tsx`,
     );
     createFile(formPath, formComponent);
+
+    // Step 7.8: Generate Detail fields config (StandardDetailPage 配置)
+    console.log('\x1b[32m%s\x1b[0m', '✓ Generating detail fields config (StandardDetailPage)...');
+    const detailFieldsConfig = generateDetailFieldsConfig(moduleName, fields, relations, meta);
+    const detailConfigPath = getFilePath(
+      `apps/admin/src/modules/${moduleName}/components/${pascalName}Detail.tsx`,
+    );
+    createFile(detailConfigPath, detailFieldsConfig);
+
+    // Step 7.85: Create components barrel
+    console.log('\x1b[32m%s\x1b[0m', '✓ Creating components index.ts...');
+    createComponentsIndex(moduleName, fields, meta);
+
+    // Step 7.9: Generate Frontend Detail Page (StandardDetailPage)
+    console.log('\x1b[32m%s\x1b[0m', '✓ Generating frontend detail page (StandardDetailPage)...');
+    const detailPage = generateFrontendDetailPage(moduleName, fields, meta);
+    const detailPagePath = getFilePath(
+      `apps/admin/src/modules/${moduleName}/pages/${pascalName}DetailPage.tsx`,
+    );
+    createFile(detailPagePath, detailPage);
 
     // Step 8: Update App.tsx
     console.log('\x1b[32m%s\x1b[0m', '✓ Updating App.tsx...');
@@ -1779,11 +2483,21 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
 
     // Step 10: Update AdminLayout (sidebar)
     console.log('\x1b[32m%s\x1b[0m', '✓ Updating AdminLayout.tsx (sidebar)...');
-    updateAdminLayout(moduleName);
+    updateAdminLayout(moduleName, meta);
 
-    // Step 11: Generate NestJS Module
+    // Step 11: Generate NestJS Module (+ REST controller registration when REST enabled)
     console.log('\x1b[32m%s\x1b[0m', '✓ Generating NestJS Module...');
-    generateNestModule(moduleName);
+    generateNestModule(moduleName, !noRest);
+
+    // Step 11.5: Generate REST Controller (Web/Miniapp 端数据入口)
+    if (!noRest) {
+      console.log('\x1b[32m%s\x1b[0m', '✓ Generating REST controller...');
+      const restController = generateRestController(moduleName, fields, meta);
+      const restControllerPath = getFilePath(
+        `apps/api/src/modules/${moduleName}/rest/${camelName}.controller.ts`,
+      );
+      createFile(restControllerPath, restController);
+    }
 
     // Step 12: Register in app.module.ts
     console.log('\x1b[32m%s\x1b[0m', '✓ Registering in app.module.ts...');
@@ -1803,6 +2517,12 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
     console.log('\x1b[32m%s\x1b[0m', '✓ Updating miniapp API index...');
     updateMiniappApiIndex(moduleName);
 
+    // Step 16: Generate Web API Client
+    console.log('\x1b[32m%s\x1b[0m', '✓ Generating Web API client...');
+    const webApiClient = generateWebApiClient(moduleName, fields, meta);
+    const webApiPath = getFilePath(`apps/web/src/lib/api/${camelName}.ts`);
+    createFile(webApiPath, webApiClient);
+
     console.log('\n\x1b[35m%s\x1b[0m', `\n✅ Module "${pascalName}" generated successfully!\n`);
     console.log('%s', '━'.repeat(50));
 
@@ -1813,6 +2533,7 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
     console.log(`   Smart fields inferred: ${inferredCount}/${fields.length}`);
     console.log(`   Relations detected: ${relationCount}`);
     console.log(`   UI Pattern: ${uiPattern.pattern}`);
+    console.log(`   REST endpoints: ${noRest ? '-' : `/api/${pluralName}`}`);
 
     console.log('\n📝 Next steps:');
     console.log(`   1. Review generated files`);
@@ -1820,7 +2541,12 @@ export async function generateModule(options: GenerateOptions): Promise<void> {
       `   2. Run migration: cd infra/database && npx prisma migrate dev --name add_${camelName}`,
     );
     console.log(`   3. Generate Prisma client: npx prisma generate`);
-    console.log(`   4. Start servers: pnpm dev\n`);
+    if (!noRest) {
+      console.log(
+        `   4. Smoke test REST: curl -H "Authorization: Bearer <token>" http://localhost:3000/api/${pluralName}`,
+      );
+    }
+    console.log(`   ${noRest ? '4' : '5'}. Start servers: pnpm dev\n`);
 
     // Update memory registry
     updateMemoryRegistry(moduleName);
@@ -1848,6 +2574,18 @@ Options:
   --help, -h              Show this help message
   --dry-run               Preview without creating files
   --file-upload           Add file upload support
+  --no-rest               Skip REST controller (admin-only modules)
+  --fields '<json>'       Custom fields: [{"name":"title","type":"string","required":true},{"name":"status","type":"enum","required":true,"enum":["active","inactive"]}]
+  --meta '<json>'         Chinese labels: {"label":"收藏","fieldLabels":{"name":"名称"},"enumLabels":{"status":{"active":"启用"}}}
+
+Generated outputs:
+  - Prisma model + Zod schemas + Permission registry
+  - tRPC router (Admin) + spec
+  - Admin: StandardListPage + StandardForm + StandardDetailPage + barrels
+  - REST controller at /api/<plural> (unless --no-rest), with userId data isolation
+  - Miniapp API client + endpoint registration
+  - Web REST client (apps/web/src/lib/api/<camel>.ts)
+  - Note: Web pages / miniapp pages are hand-written per project (not generated)
 
 Smart Features (Phase 2):
   - Currency fields (price, amount, cost) → InputNumber with ¥ formatter + min:0 validation
@@ -1869,8 +2607,11 @@ Examples:
   # Preview mode with smart inference
   generate-module article --dry-run
 
-  # With file upload support
-  generate-module article --file-upload
+  # Chinese labels + enum values
+  generate-module bookmark --meta '{"label":"收藏","enumLabels":{"status":{"active":"启用"}}}'
+
+  # Admin-only module (no REST endpoints)
+  generate-module category --no-rest
 
   # Category (auto-detects parentId → TreeSelect)
   generate-module category
@@ -1881,11 +2622,48 @@ Examples:
   const moduleName = args[0];
   const dryRun = args.includes('--dry-run');
   const fileUpload = args.includes('--file-upload');
+  const noRest = args.includes('--no-rest');
+
+  let fields: Field[] | undefined;
+  const fieldsIdx = args.indexOf('--fields');
+  if (fieldsIdx !== -1) {
+    const raw = args[fieldsIdx + 1];
+    if (!raw || raw.startsWith('--')) {
+      console.error('\x1b[31m%s\x1b[0m', '❌ --fields 需要一个 JSON 数组参数');
+      process.exit(1);
+    }
+    try {
+      fields = JSON.parse(raw);
+      if (!Array.isArray(fields)) throw new Error('not an array');
+    } catch {
+      console.error('\x1b[31m%s\x1b[0m', `❌ --fields 不是合法的 JSON 数组: ${raw}`);
+      process.exit(1);
+    }
+  }
+
+  let meta: GenMeta | undefined;
+  const metaIdx = args.indexOf('--meta');
+  if (metaIdx !== -1) {
+    const raw = args[metaIdx + 1];
+    if (!raw || raw.startsWith('--')) {
+      console.error('\x1b[31m%s\x1b[0m', '❌ --meta 需要一个 JSON 参数，例如 \'{"label":"收藏"}\'');
+      process.exit(1);
+    }
+    try {
+      meta = JSON.parse(raw);
+    } catch {
+      console.error('\x1b[31m%s\x1b[0m', `❌ --meta 不是合法 JSON: ${raw}`);
+      process.exit(1);
+    }
+  }
 
   await generateModule({
     moduleName,
+    fields,
     fileUpload,
     dryRun,
+    noRest,
+    meta,
   });
 }
 

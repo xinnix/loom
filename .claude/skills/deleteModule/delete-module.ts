@@ -151,9 +151,9 @@ function updateAppTsx(moduleName: string, dryRun: boolean): void {
   let content = fs.readFileSync(appPath, 'utf-8');
   let modified = false;
 
-  // Remove import
+  // Remove import（兼容旧版单页与新版双页导出）
   const importPattern = new RegExp(
-    `import \\{ ${pascalName}ListPage \\} from ["']./modules/${moduleName}["'];\\n`,
+    `import \\{ ${pascalName}ListPage(, ${pascalName}DetailPage)? \\} from ["']./modules/${moduleName}["'];\\n`,
   );
   if (importPattern.test(content)) {
     content = content.replace(importPattern, '');
@@ -161,9 +161,9 @@ function updateAppTsx(moduleName: string, dryRun: boolean): void {
     console.log(`  ✓ 移除导入: ${pascalName}ListPage`);
   }
 
-  // Remove resource
+  // Remove resource（含行首缩进，整行移除）
   const resourcePattern = new RegExp(
-    `\\{\\s*name: ["']${camelName}["'],[\\s\\S]*?list: ["']/${pluralName}["'],[\\s\\S]*?\\},\\n`,
+    `\\n[ \\t]*\\{\\s*name: ["']${camelName}["'],\\s*list: ["']/${pluralName}["'],\\s*\\},`,
   );
   if (resourcePattern.test(content)) {
     content = content.replace(resourcePattern, '');
@@ -171,14 +171,15 @@ function updateAppTsx(moduleName: string, dryRun: boolean): void {
     console.log(`  ✓ 移除资源配置: ${camelName}`);
   }
 
-  // Remove route
+  // Remove routes（list + detail，含行首缩进，整行移除）
   const routePattern = new RegExp(
-    `\\s*<Route path=["']${pluralName}["']\\s+element=\\{<${pascalName}ListPage\\s*/>\\}\\s*/>\\n`,
+    `\\n[ \\t]*<Route path=["']${pluralName}(/:id)?["']\\s+element=\\{<${pascalName}(ListPage|DetailPage)\\s*/>\\}\\s*/>`,
+    'g',
   );
   if (routePattern.test(content)) {
-    content = content.replace(routePattern, '\n');
+    content = content.replace(routePattern, '');
     modified = true;
-    console.log(`  ✓ 移除路由: /${pluralName}`);
+    console.log(`  ✓ 移除路由: /${pluralName}（含详情）`);
   }
 
   if (modified && !dryRun) {
@@ -201,10 +202,8 @@ function updateAdminLayout(moduleName: string, dryRun: boolean): void {
   let content = fs.readFileSync(layoutPath, 'utf-8');
   let modified = false;
 
-  // Remove menu item from menuConfig array
-  const menuPattern = new RegExp(
-    `\\{\\s*key:\\s*["']/${pluralName}["']\\s*,\\s*label:[^}]*\\}\\s*,?\\s*\\n`,
-  );
+  // Remove menu item from menuConfig array（含行首缩进，整行移除）
+  const menuPattern = new RegExp(`\\n[ \\t]*\\{ key: [\"']/${pluralName}[\"'][^}]*\\},`);
   if (menuPattern.test(content)) {
     content = content.replace(menuPattern, '');
     modified = true;
@@ -230,9 +229,9 @@ function removeZodSchema(moduleName: string, dryRun: boolean): void {
   let content = fs.readFileSync(sharedPath, 'utf-8');
   let modified = false;
 
-  // Remove the schema export block
+  // Remove the schema export block（含横幅注释与前置空行）
   const schemaPattern = new RegExp(
-    `// ${pascalName} Schemas[\\s\\S]*?export const ${pascalName}Schema = \\{[\\s\\S]*?\\};\\n`,
+    `\\n// ={10,}\\n// ${pascalName} Schemas\\n// ={10,}\\n[\\s\\S]*?export const ${pascalName}Schema = \\{[\\s\\S]*?\\};\\n`,
   );
 
   if (schemaPattern.test(content)) {
@@ -245,6 +244,170 @@ function removeZodSchema(moduleName: string, dryRun: boolean): void {
     fs.writeFileSync(sharedPath, content);
   } else if (modified) {
     console.log(`  [预览] 将更新: ${path.relative(PROJECT_ROOT, sharedPath)}`);
+  }
+}
+
+function removePrismaModel(moduleName: string, dryRun: boolean): void {
+  const pascalName = toPascalCase(moduleName);
+  const schemaPath = getFilePath('infra/database/prisma/schema.prisma');
+
+  if (!fs.existsSync(schemaPath)) {
+    console.log(`  ⚠ 文件不存在: ${path.relative(PROJECT_ROOT, schemaPath)}`);
+    return;
+  }
+
+  let content = fs.readFileSync(schemaPath, 'utf-8');
+  let modified = false;
+
+  // Remove the model block（model 闭合花括号顶格）
+  const modelPattern = new RegExp(`\\nmodel ${pascalName} \\{[\\s\\S]*?\\n\\}\\n?`);
+  if (modelPattern.test(content)) {
+    content = content.replace(modelPattern, '');
+    modified = true;
+    console.log(`  ✓ 移除 Prisma model: ${pascalName}`);
+  }
+
+  if (modified && !dryRun) {
+    fs.writeFileSync(schemaPath, content);
+  } else if (modified) {
+    console.log(`  [预览] 将更新: ${path.relative(PROJECT_ROOT, schemaPath)}`);
+  }
+}
+
+function updateAppModule(moduleName: string, dryRun: boolean): void {
+  const pascalName = toPascalCase(moduleName);
+  const modulePath = getFilePath('apps/api/src/app.module.ts');
+
+  if (!fs.existsSync(modulePath)) {
+    console.log(`  ⚠ 文件不存在: ${path.relative(PROJECT_ROOT, modulePath)}`);
+    return;
+  }
+
+  let content = fs.readFileSync(modulePath, 'utf-8');
+  let modified = false;
+
+  const importPattern = new RegExp(
+    `import \\{ ${pascalName}Module \\} from ['"]\\.\\/modules\\/${moduleName}\\/module['\"];\\n`,
+  );
+  if (importPattern.test(content)) {
+    content = content.replace(importPattern, '');
+    modified = true;
+    console.log(`  ✓ 移除 import: ${pascalName}Module`);
+  }
+
+  const entryPattern = new RegExp(`\\s*${pascalName}Module,\\n`);
+  if (entryPattern.test(content)) {
+    content = content.replace(entryPattern, '\n');
+    modified = true;
+    console.log(`  ✓ 移除模块注册: ${pascalName}Module`);
+  }
+
+  if (modified && !dryRun) {
+    fs.writeFileSync(modulePath, content);
+  } else if (modified) {
+    console.log(`  [预览] 将更新: ${path.relative(PROJECT_ROOT, modulePath)}`);
+  }
+}
+
+function updatePermissionRegistry(moduleName: string, dryRun: boolean): void {
+  const camelName = toCamelCase(moduleName);
+  const registryPath = getFilePath('infra/shared/src/permissions/registry.ts');
+
+  if (!fs.existsSync(registryPath)) {
+    console.log(`  ⚠ 文件不存在: ${path.relative(PROJECT_ROOT, registryPath)}`);
+    return;
+  }
+
+  let content = fs.readFileSync(registryPath, 'utf-8');
+  let modified = false;
+
+  const entryPattern = new RegExp(`  ${camelName}: \\{\\n    create:[\\s\\S]*?\\n  \\},\\n`);
+  if (entryPattern.test(content)) {
+    content = content.replace(entryPattern, '');
+    modified = true;
+    console.log(`  ✓ 移除权限注册: ${camelName}`);
+  }
+
+  if (modified && !dryRun) {
+    fs.writeFileSync(registryPath, content);
+  } else if (modified) {
+    console.log(`  [预览] 将更新: ${path.relative(PROJECT_ROOT, registryPath)}`);
+  }
+}
+
+function updateMiniapp(moduleName: string, dryRun: boolean): void {
+  const pascalName = toPascalCase(moduleName);
+  const camelName = toCamelCase(moduleName);
+
+  // 1. 删除 API client 文件
+  const apiClientPath = getFilePath(`apps/miniapp/src/api/${camelName}.ts`);
+  if (fs.existsSync(apiClientPath)) {
+    if (!dryRun) {
+      deleteFile(apiClientPath);
+    } else {
+      console.log(`  [预览] 将删除文件: apps/miniapp/src/api/${camelName}.ts`);
+    }
+  }
+
+  // 2. 移除 API_ENDPOINTS 端点
+  const configPath = getFilePath('apps/miniapp/src/config/api.ts');
+  if (fs.existsSync(configPath)) {
+    let content = fs.readFileSync(configPath, 'utf-8');
+    let modified = false;
+
+    const endpointPattern = new RegExp(
+      `  \\/\\/ ${pascalName} 相关\\n  ${camelName}List:[^\\n]*\\n  ${camelName}Detail:[^\\n]*\\n`,
+    );
+    if (endpointPattern.test(content)) {
+      content = content.replace(endpointPattern, '');
+      modified = true;
+      console.log(`  ✓ 移除 miniapp 端点: ${camelName}List/Detail`);
+    }
+
+    if (modified && !dryRun) {
+      fs.writeFileSync(configPath, content);
+    } else if (modified) {
+      console.log(`  [预览] 将更新: ${path.relative(PROJECT_ROOT, configPath)}`);
+    }
+  }
+
+  // 3. 移除 api/index.ts 导出
+  const indexPath = getFilePath('apps/miniapp/src/api/index.ts');
+  if (fs.existsSync(indexPath)) {
+    let content = fs.readFileSync(indexPath, 'utf-8');
+    let modified = false;
+
+    const exportPattern = new RegExp(`export \\* from ['"]\\./${camelName}['\"];\\n`);
+    if (exportPattern.test(content)) {
+      content = content.replace(exportPattern, '');
+      modified = true;
+      console.log(`  ✓ 移除 miniapp 导出: ./${camelName}`);
+    }
+
+    if (modified && !dryRun) {
+      fs.writeFileSync(indexPath, content);
+    } else if (modified) {
+      console.log(`  [预览] 将更新: ${path.relative(PROJECT_ROOT, indexPath)}`);
+    }
+  }
+}
+
+function removeWebApiClient(moduleName: string, dryRun: boolean): void {
+  const camelName = toCamelCase(moduleName);
+  const apiDir = getFilePath('apps/web/src/lib/api');
+  const clientPath = path.join(apiDir, `${camelName}.ts`);
+
+  if (fs.existsSync(clientPath)) {
+    if (!dryRun) {
+      deleteFile(clientPath);
+      // 目录为空则一并移除
+      if (fs.existsSync(apiDir) && fs.readdirSync(apiDir).length === 0) {
+        fs.rmdirSync(apiDir);
+        console.log(`  ✓ 删除空目录: apps/web/src/lib/api/`);
+      }
+    } else {
+      console.log(`  [预览] 将删除文件: apps/web/src/lib/api/${camelName}.ts`);
+    }
   }
 }
 
@@ -290,6 +453,15 @@ function deleteModule(moduleName: string, dryRun: boolean): void {
   updateAppTsx(moduleName, dryRun);
   updateAdminLayout(moduleName, dryRun);
   removeZodSchema(moduleName, dryRun);
+  removePrismaModel(moduleName, dryRun);
+  updateAppModule(moduleName, dryRun);
+  updatePermissionRegistry(moduleName, dryRun);
+
+  console.log('\n📱 Miniapp:');
+  updateMiniapp(moduleName, dryRun);
+
+  console.log('\n🌐 Web:');
+  removeWebApiClient(moduleName, dryRun);
 
   console.log('\n✅ 模块删除完成!\n');
 
@@ -300,10 +472,10 @@ function deleteModule(moduleName: string, dryRun: boolean): void {
 
   if (!dryRun) {
     console.log('📋 后续步骤:');
-    console.log('   1. 检查并删除相关的 Prisma migration 文件');
     console.log(
-      '   2. 运行: cd infra/database && npx prisma migrate dev --name drop_' + moduleName,
+      `   1. 迁移: cd infra/database && npx prisma migrate dev --name drop_${moduleName} && npx prisma generate`,
     );
+    console.log('   2. 重建共享包: pnpm --filter @loom/shared build');
     console.log('   3. 重启后端和前端服务\n');
   }
 }
