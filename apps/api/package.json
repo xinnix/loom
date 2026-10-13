@@ -18,6 +18,8 @@
   "dependencies": {
     "@bull-board/api": "^8.1.2",
     "@bull-board/express": "^8.1.2",
+    "@earendil-works/pi-agent-core": "^1.1.0",
+    "@earendil-works/pi-ai": "^1.1.0",
     "@loom/database": "workspace:*",
     "@loom/shared": "workspace:*",
     "@nestjs/bull": "^11.0.4",
@@ -49,6 +51,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "wechatpay-axios-plugin": "^0.9.6",
+    "yaml": "^2.9.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

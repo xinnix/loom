@@ -1,0 +1,14 @@
+# 最简示例：单 chat 节点（无工具）
+name: simple-chat
+description: 通用单轮对话助手——直接回答输入的问题，不调用工具
+icon: RobotOutlined
+triggers:
+  http:
+    enabled: true
+workflow:
+  - id: answer
+    type: chat
+    prompt: |
+      {{input.question}}
+output:
+  template: '{{nodes.answer.output}}'

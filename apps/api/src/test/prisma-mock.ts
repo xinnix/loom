@@ -37,7 +37,8 @@ const DEFAULT_MODELS = [
   'adminRefreshToken',
   'userRefreshToken',
   'agent',
-  'agentMessage',
+  'agentRun',
+  'llmConfig',
   'todo',
   'upload',
 ];

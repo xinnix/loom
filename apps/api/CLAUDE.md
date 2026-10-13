@@ -48,6 +48,11 @@ src/
 │   ├── <name>.service.ts
 │   ├── <name>.router.ts
 │   └── <name>.controller.ts  # 可选，REST 端点
+├── ai/                   # AI 三层架构（框架级能力，ADR-005）
+│   ├── llm/              # 第 1 层：LLM 配置与调用（pi 底座，apiKey AES 加密）
+│   ├── tools/            # 第 2 层：YML 声明的内部 REST 映射工具 + 代码工具扩展点
+│   ├── agents/           # 第 3 层：YML 编排运行时（chat/loop 节点 + AgentRun 审计）
+│   └── definitions/      # YML 真理源（agents/*.yml + tools/*.yml，git 版本控制）
 ├── trpc/
 │   ├── app.router.ts     # 路由注册
 │   └── trpc.helper.ts    # createCrudRouter 工厂
@@ -56,9 +61,16 @@ src/
 └── shared/services/      # 共享服务（文件存储等）
 ```
 
+## AI 三层（ADR-005）
+
+- LLM 调用一律注入 `LlmService`（`src/ai/llm/`），禁止手写 fetch 调模型 API
+- 新增 agent 编排/工具 = 在 `src/ai/definitions/` 加 YML（Zod 校验，dev 热加载），不写代码
+- 工具只允许映射本机 `/api/` 下内部端点（执行器硬编码回环）；MVP 只接只读工具
+- apiKey 明文永不落库/入日志（AES-256-GCM，密钥 `AI_ENCRYPTION_KEY`）
+
 ## 注意事项
 
-- tRPC 路由在 `app.router.ts` 中注册
+- tRPC 路由在 `app.router.ts` 中注册（AI 三命名空间由 main.ts 经 AI_TRPC_ROUTERS 合并）
 - REST Controller 需要 `@Controller()` 装饰器
 - userId 注入：BaseService 自动处理 `createdById`/`updatedById`
 - 数据隔离：User 端查询必须加 `where: { userId }`

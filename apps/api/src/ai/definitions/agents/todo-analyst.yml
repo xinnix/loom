@@ -1,0 +1,27 @@
+# 组合示例：chat + loop（工具循环）
+# 运行前提：管理后台存在 LlmConfig，且 Agent 行（DB）绑定 llmConfigId 或存在 isDefault 配置
+name: todo-analyst
+description: 接收自然语言问题，查询待办数据并生成分析报告
+icon: BarChartOutlined
+triggers:
+  http:
+    enabled: true
+  cron: # 预留：运行时忽略并 warn
+    enabled: false
+    expression: '0 9 * * 1-5'
+workflow:
+  - id: draft
+    type: chat
+    prompt: |
+      你是待办数据分析助手。用户问题：{{input.question}}
+      请先给出你需要哪些数据才能回答，以及初步的分析思路。
+  - id: research
+    type: loop
+    tools: [todo_list, todo_count]
+    maxIterations: 5
+    prompt: |
+      基于以下草稿，调用可用工具核实数据，然后给出完整分析报告：
+
+      {{nodes.draft.output}}
+output:
+  template: '{{nodes.research.output}}'

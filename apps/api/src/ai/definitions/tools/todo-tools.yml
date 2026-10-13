@@ -1,0 +1,45 @@
+# AI 工具声明（真理源）
+# 映射 TodoModule 既有 REST 端点。MVP 只接只读工具（ADR-005 威胁模型）。
+tools:
+  - name: todo_list
+    description: >
+      查询当前用户的待办事项列表。返回待办数组与分页信息（total/page/pageSize）。
+      可按关键词搜索、按完成状态过滤。
+    parameters:
+      type: object
+      properties:
+        search:
+          type: string
+          description: 关键词，匹配标题或描述（可选）
+        isCompleted:
+          type: string
+          enum: ['true', 'false']
+          description: 按完成状态过滤（可选）
+        page:
+          type: integer
+          description: 页码，默认 1（可选）
+        pageSize:
+          type: integer
+          description: 每页条数，默认 10（可选）
+    rest:
+      method: GET
+      path: /api/todos
+      paramPlacement: query
+      timeoutMs: 10000
+
+  - name: todo_count
+    description: >
+      统计当前用户的待办事项总数。仅返回数量，不返回列表内容。
+      适合快速回答"我有多少待办"类问题。
+    parameters:
+      type: object
+      properties:
+        isCompleted:
+          type: string
+          enum: ['true', 'false']
+          description: 按完成状态过滤（可选，不传统计全部）
+    rest:
+      method: GET
+      path: /api/todos
+      paramPlacement: query
+      timeoutMs: 10000

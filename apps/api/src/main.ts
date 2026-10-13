@@ -9,6 +9,8 @@ import { AllExceptionsFilter } from './core/filters/http-exception.filter';
 import { PrismaService } from './prisma/prisma.service';
 import { FileStorageService } from './shared/services/file-storage.service';
 import { appRouter } from './trpc/app.router';
+import { router as createTrpcRouter } from './trpc/trpc';
+import { AI_TRPC_ROUTERS } from './modules/ai/module';
 import {
   createContext,
   setPrismaService,
@@ -105,10 +107,17 @@ async function bootstrap() {
 
   setAppInstance(app);
 
+  // AI 三层 router 运行时组装（依赖 ToolRegistry/AgentYamlLoader 等 Nest 实例）
+  const aiRouters = app.get<any>(AI_TRPC_ROUTERS);
+  const mergedAppRouter = createTrpcRouter({
+    ...appRouter._def.procedures,
+    ...aiRouters,
+  });
+
   (app as any).use(
     '/trpc',
     trpcExpress.createExpressMiddleware({
-      router: appRouter,
+      router: mergedAppRouter,
       createContext: (opts) => createContext(opts),
     }),
   );

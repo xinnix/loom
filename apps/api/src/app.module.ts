@@ -14,13 +14,13 @@ import { PermissionModule } from './modules/permission/module';
 import { UploadModule } from './modules/upload/module';
 import { WechatModule } from './modules/wechat/wechat.module';
 import { PaymentModule } from './modules/payment/module';
-import { AgentsModule } from './modules/agents/module';
+import { AiAdminModule } from './modules/ai/module';
+import { AiModule } from './ai/ai.module';
 import { WecomModule } from './modules/wecom/module';
 import { TodoModule } from './modules/todo/module';
 // 全局拦截器
 import { TransformInterceptor } from './core/interceptors/transform.interceptor';
 import { SharedModule } from './shared/shared.module';
-import { LlmModule } from './llm/llm.module';
 
 @Module({
   imports: [
@@ -38,8 +38,8 @@ import { LlmModule } from './llm/llm.module';
     PrismaModule,
     // 共享服务（全局：FileStorageService 等）
     SharedModule,
-    // 基础设施模块
-    LlmModule.forRoot(),
+    // 基础设施模块（AI 三层：LLM / 工具 / Agent 编排）
+    AiModule,
     AuthModule,
     UserModule,
     RoleModule,
@@ -47,7 +47,7 @@ import { LlmModule } from './llm/llm.module';
     UploadModule,
     WechatModule,
     PaymentModule,
-    AgentsModule,
+    AiAdminModule,
     WecomModule,
     TodoModule,
   ],

@@ -8,7 +8,7 @@
  * - 3000-3999: Admin module
  * - 4000-4999: User module
  * - 5000-5999: Role/Permission module
- * - 6000-6999: Agent module
+ * - 6000-6999: AI module (agents / llm / tools)
  * - 9000-9999: Search/Filter / Business logic
  */
 export const ErrorCodes = {
@@ -46,9 +46,13 @@ export const ErrorCodes = {
   ROLE_HAS_ADMINS: 'ERR_5004',
   PERMISSION_NOT_FOUND: 'ERR_5005',
 
-  // Agent (6000-6999)
+  // AI 三层架构 (6000-6999)
   AGENT_NOT_FOUND: 'ERR_6001',
-  AGENT_SLUG_EXISTS: 'ERR_6002',
+  AI_YAML_INVALID: 'ERR_6003',
+  AI_CONFIG_NOT_FOUND: 'ERR_6004',
+  AI_TOOL_NOT_FOUND: 'ERR_6005',
+  AI_TOOL_EXEC_FAILED: 'ERR_6006',
+  AI_AGENT_DISABLED: 'ERR_6007',
 
   // Search/Filter (9000-9999)
   SEARCH_INVALID_OPERATOR: 'ERR_9001',
