@@ -8,8 +8,8 @@
 | ---- | ------------------------------- | --------- | -------- |
 | M1   | 基础设施与核心特性              | ✅ 完成   | 2026-07  |
 | M2   | 抽象层与模块标准化              | ✅ 完成   | 2026-09  |
-| M3   | 全端生成覆盖与工程化            | 🔨 进行中 | —        |
-| M4   | 运行时 AI 演进（AI 原生第一批） | ⬜ 规划中 | —        |
+| M3   | 全端 API 生成覆盖与工程化       | ✅ 完成   | 2026-10  |
+| M4   | 运行时 AI 演进（AI 原生第一批） | 🔨 进行中 | —        |
 
 ## 各阶段详情
 
@@ -24,17 +24,18 @@ Monorepo 脚手架骨架 + 核心能力全部就绪：双用户认证、RBAC、�
 - 全部业务模块完成标准化改造（[ADR-004](adr/004-module-standardization-push.md)，2026-09）
 - 期间产物：Permission Registry 类型安全权限、LLM 抽象层（D6）、Todo 全端示范、createCrudRouter search/filter、抽象层 118 组件用例、上传模块三策略修复
 
-### M3 — 全端 API 生成覆盖与工程化 🔨
+### M3 — 全端 API 生成覆盖与工程化 ✅
 
-目标：生成器覆盖外部端 API 面与 Admin 三件套全量、端到端测试体系、核心包类型安全。工作项见 [backlog](product/backlog.md) E1 / E2 / E4（外加 E3 安全加固中不依赖 M3 的部分）。范围定界见 PRD D7：Web/miniapp 页面个性化高，不生成（各端手写），生成器产出 REST Controller + Admin 三件套 + 两端 API client。
+生成器覆盖外部端 API 面与 Admin 三件套全量、端到端测试体系、核心包类型安全。范围定界见 PRD D7（Web/miniapp 页面个性化高，不生成，各端手写）。
 
-期间产物（2026-10）：AI 三层架构（ADR-005，pi 底座：LlmConfig 加密配置 / YML 工具 / YML Agent 编排 + Playground，2026-10-12）。
+- E1 测试体系最小版：Playwright E2E 主路径（Admin CRUD / Web 登录→Todo）+ API 集成测试跑真实 PostgreSQL（2026-10-13）
+- E2 strict 类型安全：api/admin strict 全绿，tRPC 端到端类型打通（2026-10-13）
+- E4 genModule 扩展：REST Controller（userId 隔离 + 信封契约）+ Admin 三件套补全 DetailPage + Web/miniapp API client + `--fields`/`--meta`/`--no-rest` CLI + deleteModule 清理闭环（2026-10-13）
+- 期间产物（2026-10）：AI 三层架构（ADR-005，pi 底座：LlmConfig 加密配置 / YML 工具 / YML Agent 编排 + Playground，2026-10-12）
 
-进入 M4 的条件：E1 E2E 主路径跑通、E2 strict 全绿、E4 genModule API + Admin 三件套 + client 输出落地。
+### M4 — 运行时 AI 演进（AI 原生第一批）🔨
 
-### M4 — 运行时 AI 演进（AI 原生第一批）⬜
-
-方向与顺序见 [ai-native-roadmap.md](product/ai-native-roadmap.md)：用户端 REST 消费、会话持久化、写操作工具 + 审批链。M3 收尾后启动，实施前先补 ADR。
+方向与顺序见 [ai-native-roadmap.md](product/ai-native-roadmap.md) 第 3/4 步：用户端 REST 消费（User 身份 Agent 执行路径 + 用户 JWT 工具转发）、会话持久化、写操作工具 + 审批链。实施前先补 ADR。
 
 ## 回写规则
 
