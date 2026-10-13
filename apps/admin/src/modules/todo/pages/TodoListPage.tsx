@@ -87,6 +87,9 @@ export function TodoListPage() {
       columns={columns}
       formComponent={TodoForm}
       formWidth={520}
+      // Todo 是用户端数据（REST 注入 userId，R5 隔离）：Admin 只查看/编辑/删除，
+      // 不提供创建入口——创建表单无 userId 通路，工厂注入的只有审计字段
+      hideCreateButton
       searchFields={[{ field: 'search', placeholder: '搜索标题/描述' }]}
       filterFields={[
         {

@@ -118,6 +118,35 @@ async function main() {
       create: { resource: 'aiTool', action: 'read', description: '查看 AI 工具' },
     }),
 
+    // Todo CRUD（示例模块， PermissionGuard 按钮级守卫依赖这些行）
+    ...['create', 'read', 'update', 'delete'].map((action) =>
+      prisma.permission.upsert({
+        where: { resource_action: { resource: 'todo', action } },
+        update: {},
+        create: {
+          resource: 'todo',
+          action,
+          description: {
+            create: '创建待办',
+            read: '查看待办',
+            update: '更新待办',
+            delete: '删除待办',
+          }[action],
+        },
+      }),
+    ),
+
+    // 管理员角色管理（AdminDetailPage 分配角色入口）
+    prisma.permission.upsert({
+      where: { resource_action: { resource: 'admin', action: 'manage_roles' } },
+      update: {},
+      create: {
+        resource: 'admin',
+        action: 'manage_roles',
+        description: '为管理员分配角色',
+      },
+    }),
+
     // WeCom permissions
     ...['create', 'read', 'update', 'delete'].map((action) =>
       prisma.permission.upsert({
