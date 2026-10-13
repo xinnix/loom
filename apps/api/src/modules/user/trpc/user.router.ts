@@ -1,6 +1,6 @@
 import { Permission } from '@loom/shared';
 import { createCrudRouterWithCustom } from '../../../trpc/trpc.helper';
-import { permissionProcedure, publicProcedure } from '../../../trpc/trpc';
+import { permissionProcedure } from '../../../trpc/trpc';
 import { z } from 'zod';
 import { NotFoundBusinessException, ErrorCodes } from '../../../core/exceptions';
 
@@ -36,7 +36,7 @@ export const userRouter = createCrudRouterWithCustom(
      * 获取用户列表（带搜索和筛选）
      * 自定义实现以保证安全字段选择
      */
-    getMany: publicProcedure
+    getMany: permissionProcedure(Permission.user.read)
       .input(
         z.object({
           page: z.number().optional().default(1),
