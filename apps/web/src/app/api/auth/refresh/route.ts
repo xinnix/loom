@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import { API_UPSTREAM as API_BASE } from '@/lib/api-upstream';
 
 /**
  * POST /api/auth/refresh — 服务端代理 token 刷新。

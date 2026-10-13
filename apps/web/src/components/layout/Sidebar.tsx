@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 const NAV_ITEMS = [
   { href: '/dashboard', label: '仪表盘', icon: '🏠' },
   { href: '/todos', label: '待办事项', icon: '✅' },
+  { href: '/ai/chat', label: 'AI 助手', icon: '🤖' },
   { href: '/profile', label: '个人中心', icon: '👤' },
 ];
 
