@@ -69,3 +69,4 @@ uploads/
 test-loom/
 landing-*.png
 landing-*.txt
+apps/e2e/test-results/
