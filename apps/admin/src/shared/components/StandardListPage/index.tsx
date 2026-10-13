@@ -345,7 +345,8 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
                       key: 'actions',
                       fixed: 'right' as const,
                       width: 150,
-                      render: (record: T) => renderRowActions(record),
+                      render: (record: T) =>
+                        renderRowActions(record, { edit: handleEdit, delete: handleDelete }),
                     },
                   ]
                 : formComponent

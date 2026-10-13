@@ -93,9 +93,19 @@ export interface StandardListPageProps<T = Record<string, unknown>> {
   meta?: Record<string, unknown>; // useTable 的 meta 参数
 
   // 自定义渲染
-  renderRowActions?: (record: T) => ReactNode; // 自定义行操作
+  /** 自定义行操作。第二参数暴露内置编辑/删除（复用标准弹窗与回调），供自定义操作列组合使用 */
+  renderRowActions?: (record: T, helpers: RowActionHelpers<T>) => ReactNode;
   renderHeader?: () => ReactNode; // 自定义 Header 区域
   renderModalContent?: () => ReactNode; // 自定义 Modal 内容
+}
+
+/**
+ * 行操作辅助：传了 renderRowActions 后内置的编辑/删除按钮不会渲染
+ * （自定义操作列完全替换默认列），需要时经此复用。
+ */
+export interface RowActionHelpers<T> {
+  edit: (record: T) => void;
+  delete: (id: string) => void;
 }
 
 /**

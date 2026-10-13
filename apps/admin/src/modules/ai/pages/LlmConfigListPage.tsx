@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tag, Button } from 'antd';
+import { Tag, Button, Space, Popconfirm } from 'antd';
 import { ApiOutlined, LoadingOutlined } from '@ant-design/icons';
 import { StandardListPage } from '../../../shared/components/StandardListPage';
 import type { StandardListPageProps } from '../../../shared/components/StandardListPage/types';
@@ -93,15 +93,25 @@ export function LlmConfigListPage() {
         formComponent={LlmConfigForm}
         formWidth={640}
         searchFields={[{ field: 'search', placeholder: '搜索名称或配置键' }]}
-        renderRowActions={(record: any) => (
-          <Button
-            type="link"
-            size="small"
-            icon={<ApiOutlined />}
-            onClick={() => setTestModal({ open: true, record })}
-          >
-            测试
-          </Button>
+        renderRowActions={(record: any, helpers) => (
+          <Space>
+            <Button type="link" size="small" onClick={() => helpers.edit(record)}>
+              编辑
+            </Button>
+            <Button
+              type="link"
+              size="small"
+              icon={<ApiOutlined />}
+              onClick={() => setTestModal({ open: true, record })}
+            >
+              测试
+            </Button>
+            <Popconfirm title="确认删除？" onConfirm={() => helpers.delete(String(record.id))}>
+              <Button type="link" size="small" danger>
+                删除
+              </Button>
+            </Popconfirm>
+          </Space>
         )}
       />
       <Modal
