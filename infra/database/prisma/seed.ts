@@ -76,8 +76,8 @@ async function main() {
       }),
     ),
 
-    // Agent 权限（AI 三层架构：只读 + 运行，编排定义真理源在 YML）
-    ...['read', 'run'].map((action) =>
+    // Agent 权限（AI 三层架构：只读 + 运行 + 部署期绑定；编排定义真理源在 YML）
+    ...['read', 'run', 'update'].map((action) =>
       prisma.permission.upsert({
         where: { resource_action: { resource: 'agent', action } },
         update: {},
@@ -87,6 +87,7 @@ async function main() {
           description: {
             read: '查看 Agent',
             run: '运行 Agent',
+            update: '更新 Agent 绑定（模型配置）',
           }[action],
         },
       }),

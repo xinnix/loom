@@ -31,6 +31,8 @@ export const Permission = {
   agent: {
     read: 'agent:read',
     run: 'agent:run',
+    // 部署期绑定（llmConfigId 模型绑定），不涉及 YML 编排内容——编排真理源仍在 YML
+    update: 'agent:update',
   },
   llmConfig: {
     create: 'llmConfig:create',
