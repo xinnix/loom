@@ -11,7 +11,13 @@ import { AdminLayout } from './shared/layouts';
 import { AdminListPage, AdminDetailPage } from './modules/admin';
 import { UserListPage, UserDetailPage } from './modules/user';
 import { RoleListPage, RoleDetailPage } from './modules/role';
-import { AgentListPage, AgentDetailPage } from './modules/agents';
+import {
+  LlmConfigListPage,
+  AgentListPage,
+  AgentDetailPage,
+  AgentPlaygroundPage,
+  ToolListPage,
+} from './modules/ai';
 import { WecomConfigListPage, WecomMessageListPage, WecomEventListPage } from './modules/wecom';
 import { TodoListPage, TodoDetailPage } from './modules/todo';
 import { useMessageInitializer } from './shared/hooks/useMessageInitializer';
@@ -76,7 +82,9 @@ function AppContent() {
           { name: 'user', list: '/users' },
           { name: 'admin', list: '/admins' },
           { name: 'role', list: '/roles' },
-          { name: 'agents', list: '/agents' },
+          { name: 'agents', list: '/ai/agents' },
+          { name: 'llmConfigs', list: '/ai/llm-configs' },
+          { name: 'aiTools', list: '/ai/tools' },
           { name: 'wecom.config', list: '/wecom' },
           { name: 'wecom.message', list: '/wecom/messages' },
           { name: 'wecom.event', list: '/wecom/events' },
@@ -94,8 +102,11 @@ function AppContent() {
             <Route path="roles/:id" element={<RoleDetailPage />} />
             <Route path="admins" element={<AdminListPage />} />
             <Route path="admins/:id" element={<AdminDetailPage />} />
-            <Route path="agents" element={<AgentListPage />} />
-            <Route path="agents/:id" element={<AgentDetailPage />} />
+            <Route path="ai/llm-configs" element={<LlmConfigListPage />} />
+            <Route path="ai/agents" element={<AgentListPage />} />
+            <Route path="ai/agents/:id" element={<AgentDetailPage />} />
+            <Route path="ai/agents/:slug/playground" element={<AgentPlaygroundPage />} />
+            <Route path="ai/tools" element={<ToolListPage />} />
             <Route path="wecom" element={<WecomConfigListPage />} />
             <Route path="wecom/messages" element={<WecomMessageListPage />} />
             <Route path="wecom/events" element={<WecomEventListPage />} />

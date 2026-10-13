@@ -14,6 +14,8 @@ import {
   MessageOutlined,
   ThunderboltOutlined,
   CheckSquareOutlined,
+  ApiOutlined,
+  ToolOutlined,
 } from '@ant-design/icons';
 import { useState, useMemo } from 'react';
 import { useAuth } from '../auth';
@@ -34,6 +36,8 @@ const iconMap: Record<string, React.ReactNode> = {
   MessageOutlined: <MessageOutlined />,
   ThunderboltOutlined: <ThunderboltOutlined />,
   CheckSquareOutlined: <CheckSquareOutlined />,
+  ApiOutlined: <ApiOutlined />,
+  ToolOutlined: <ToolOutlined />,
 };
 
 // prettier-ignore
@@ -44,7 +48,9 @@ const menuConfig = [
     icon: "RobotOutlined",
     permission: null,
     children: [
-      { key: "/agents", label: "Agent 管理", icon: "RobotOutlined", permission: Permission.menu.agents },
+      { key: "/ai/llm-configs", label: "模型配置", icon: "ApiOutlined", permission: Permission.menu.llmConfigs },
+      { key: "/ai/agents", label: "Agent 编排", icon: "RobotOutlined", permission: Permission.menu.agents },
+      { key: "/ai/tools", label: "工具", icon: "ToolOutlined", permission: Permission.menu.aiTools },
     ],
   },
   {

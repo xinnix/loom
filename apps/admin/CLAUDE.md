@@ -34,6 +34,11 @@ src/
 └── types/                # tRPC 类型定义
 ```
 
+## AI 管理页（ADR-005）
+
+- `modules/ai/`：模型配置（标准 CRUD + testConnection）、Agent 编排（**只读**，`hideCreateButton` 无 formComponent——真理源在 YML）、Playground（SSE 流式，走 `shared/utils/ssePost.ts`，不用 EventSource——不支持 POST）、工具列表（轻量 Table 直调 tRPC——数据源 ToolRegistry 非 Prisma，StandardListPage 的合理例外）
+- Agent 行数据由后端 loader 从 YML 同步，Admin 端禁止提供编辑入口
+
 ## 注意事项
 
 - 页面在 `App.tsx` 中注册为 Refine resource + Route
