@@ -31,7 +31,13 @@ export const AgentTriggerForm: React.FC<any> = ({ form, isEdit }) => {
   );
 
   const fields: FieldDefinition[] = [
-    { key: 'name', label: '名称', type: 'text', required: true, placeholder: '如「每日待办分析」' },
+    {
+      key: 'name',
+      label: '名称',
+      type: 'input',
+      required: true,
+      placeholder: '如「每日待办分析」',
+    },
     {
       key: 'agentSlug',
       label: '目标 Agent',

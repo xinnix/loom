@@ -142,9 +142,8 @@ function UsageOverview() {
         <Col span={4}>
           <Card size="small">
             <Statistic
-              title="成本归因"
+              title="成本归因（单价未配则按估算）"
               value={`¥${totals?.cost ?? 0}`}
-              tooltip="Σ(token/1e6 × 单价)；单价取 LlmConfig 行值，空则回退全局兜底，无 token 按 chars 估算（±10%）"
               loading={isLoading}
             />
           </Card>

@@ -40,6 +40,7 @@ interface FieldView {
   options?: { label: string; value: string }[];
   help?: string;
   placeholder?: string;
+  optional?: boolean;
 }
 
 function GroupForm({ group }: { group: string }) {
