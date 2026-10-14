@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { AssistantMessage } from '@earendil-works/pi-ai';
 // pi-agent-core 为 ESM-only：运行时值（agentLoop）经动态 import 加载，类型静态导入
 import type { AgentEvent, AgentLoopConfig, AgentMessage } from '@earendil-works/pi-agent-core';
@@ -13,6 +13,7 @@ import { LlmConfigService } from '../llm/llm-config.service';
 import { LlmService } from '../llm/llm.service';
 import { buildPiModel, dynamicImport } from '../llm/pi-model.factory';
 import { accumulateUsage, emptyUsage, type LlmUsageAggregate } from '../llm/interfaces';
+import { LlmTraceService, traceLlmStream } from '../llm-trace/llm-trace.service';
 import type { WorkflowNode } from '@loom/shared';
 import type { ToolExecutionContext } from '../tools/interfaces';
 
@@ -41,7 +42,7 @@ export interface RunContext extends ToolExecutionContext {
   /** 请求级中止信号（客户端断连 → 中止 LLM fetch） */
   signal?: AbortSignal;
   triggeredById?: string;
-  triggeredByType?: 'admin' | 'user';
+  triggeredByType?: 'admin' | 'user' | 'trigger';
   /** 会话模式：注入首个节点的历史消息（正序，已截断至上限） */
   history?: HistoryMessage[];
 }
@@ -81,6 +82,7 @@ export class AgentRuntimeService {
     private readonly toolRegistry: ToolRegistry,
     private readonly llmConfig: LlmConfigService,
     private readonly llm: LlmService,
+    @Optional() private readonly trace?: LlmTraceService,
   ) {}
 
   async run(
@@ -141,8 +143,18 @@ export class AgentRuntimeService {
         if (i === 0) rendered.prompt = this.withHistory(rendered.prompt, ctx.history);
 
         let output: string;
+        const runMeta = { runId: run.id, agentSlug: slug };
         if (node.type === 'chat') {
-          output = await this.runChatNode(node, rendered, resolved, ctx, emit, usage, trace);
+          output = await this.runChatNode(
+            node,
+            rendered,
+            resolved,
+            ctx,
+            emit,
+            usage,
+            trace,
+            runMeta,
+          );
         } else {
           output = await this.runLoopNode(
             node,
@@ -153,6 +165,7 @@ export class AgentRuntimeService {
             usage,
             trace,
             budget,
+            runMeta,
           );
         }
         if (node.outputFormat === 'json') {
@@ -205,6 +218,7 @@ export class AgentRuntimeService {
     emit: Emit,
     usage: LlmUsageAggregate,
     trace: NodeTraceEntry,
+    runMeta: { runId: string; agentSlug: string },
     retryWithError?: string,
   ): Promise<string> {
     const prompt = retryWithError
@@ -215,6 +229,12 @@ export class AgentRuntimeService {
       messages: [{ role: 'user', content: prompt, timestamp: Date.now() }],
       temperature: node.llm ? undefined : undefined,
       signal: ctx.signal,
+      // 用量流水归因（ADR-007）：traceId=runId、sceneKey=agentSlug
+      trace: {
+        traceId: runMeta.runId,
+        sceneKey: runMeta.agentSlug,
+        props: { nodeId: node.id },
+      },
     });
 
     let output = '';
@@ -243,6 +263,7 @@ export class AgentRuntimeService {
         emit,
         usage,
         trace,
+        runMeta,
         '输出无法解析为 JSON',
       );
     }
@@ -258,6 +279,7 @@ export class AgentRuntimeService {
     usage: LlmUsageAggregate,
     trace: NodeTraceEntry,
     budget: number,
+    runMeta: { runId: string; agentSlug: string },
   ): Promise<string> {
     const tools = this.toolRegistry.toPiTools(node.tools ?? [], ctx);
     const userMessage: AgentMessage = {
@@ -341,7 +363,27 @@ export class AgentRuntimeService {
       { messages: [], tools },
       config,
       ctx.signal,
-      (model, transcript, options) => handle.models.streamSimple(model, transcript, options),
+      (model, transcript, options) => {
+        // loop 节点绕过 LlmService 直连 pi（每轮一次请求）：旁听 result() 落用量流水（ADR-007 双路径覆盖）
+        const s = handle.models.streamSimple(model, transcript, options);
+        if (this.trace) {
+          traceLlmStream(
+            s,
+            {
+              traceId: runMeta.runId,
+              sceneKey: runMeta.agentSlug,
+              llmConfigId: resolved.id ?? null,
+              props: { nodeId: node.id, configKey: resolved.configKey },
+              callType: 'AGENT_LOOP',
+              model: resolved.model,
+              temperature: resolved.temperature ?? null,
+              maxTokens: resolved.maxTokens ?? null,
+            },
+            (draft) => this.trace?.record(draft),
+          );
+        }
+        return s;
+      },
     );
 
     let finalText = '';

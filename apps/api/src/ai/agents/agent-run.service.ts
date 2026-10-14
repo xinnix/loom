@@ -6,7 +6,7 @@ export interface AgentRunCreateInput {
   agentSlug: string;
   input: unknown;
   triggeredById?: string;
-  triggeredByType?: 'admin' | 'user';
+  triggeredByType?: 'admin' | 'user' | 'trigger';
 }
 
 export interface AgentRunFinishInput {

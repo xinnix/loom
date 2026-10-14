@@ -12,7 +12,7 @@ export interface ToolExecutionContext {
   /** 触发者权限集合（YML permission 第二道闸门用） */
   permissions: string[];
   userId?: string;
-  userType?: 'admin' | 'user';
+  userType?: 'admin' | 'user' | 'trigger';
 }
 
 /** YML 声明的 REST 映射工具（解析后的内存形态） */

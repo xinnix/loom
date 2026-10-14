@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ErrorCodes } from '../../core/exceptions';
 import { BusinessException } from '../../core/exceptions/business.exception';
 import { ToolRegistry } from '../tools/tool.registry';
+import { computeNextRunAt, cronExpressionToSchedule } from '../agent-trigger/compute-next-run';
 
 /**
  * AI 第 3 层：Agent 编排文件加载器（YML 真理源，决策 D1）。
@@ -86,6 +87,7 @@ export class AgentYamlLoader implements OnModuleInit {
     this.definitions.clear();
     for (const [slug, def] of next) this.definitions.set(slug, def);
     await this.syncAgentRows();
+    await this.syncTriggerRows();
     this.logger.log(`已加载 ${this.definitions.size} 个 Agent 编排定义`);
   }
 
@@ -147,6 +149,65 @@ export class AgentYamlLoader implements OnModuleInit {
           isActive: true,
         },
       });
+    }
+  }
+
+  /**
+   * YML triggers.cron → AgentTrigger 行（ADR-009 双源约定）：
+   * YML 权威存在性与 schedule（expression 映射白名单形态）；DB 权威 enabled/input。
+   * cron 禁用或 expression 超出白名单形态 → 删除该 slug 的 yml 源行（YML 拥有存在性）；
+   * source='manual' 的管理端手建行不受影响。
+   */
+  private async syncTriggerRows(): Promise<void> {
+    const seenSlugs = new Set<string>();
+    for (const def of this.definitions.values()) {
+      const cron = def.triggers?.cron;
+      if (!cron?.enabled || !cron.expression) {
+        continue;
+      }
+      const schedule = cronExpressionToSchedule(cron.expression);
+      if (!schedule) {
+        this.logger.warn(
+          `Agent ${def.name} 的 cron expression「${cron.expression}」超出白名单形态（仅支持 '0 * * * *' 与 '0 H * * *'），触发器未同步`,
+        );
+        continue;
+      }
+      seenSlugs.add(def.name);
+      const existing = await this.prisma.agentTrigger.findFirst({
+        where: { agentSlug: def.name, source: 'yml' },
+        select: { id: true },
+      });
+      if (existing) {
+        await this.prisma.agentTrigger.update({
+          where: { id: existing.id },
+          data: { schedule, name: `YML: ${def.name}` },
+        });
+      } else {
+        await this.prisma.agentTrigger.create({
+          data: {
+            name: `YML: ${def.name}`,
+            agentSlug: def.name,
+            schedule,
+            source: 'yml',
+            enabled: true,
+            nextRunAt: computeNextRunAt(schedule, new Date()),
+          },
+        });
+        this.logger.log(`已从 YML 同步触发器: ${def.name} (${schedule})`);
+      }
+    }
+    // YML 中移除/禁用 cron 的 slug：删除其 yml 源行
+    const ymlRows =
+      (await this.prisma.agentTrigger.findMany({
+        where: { source: 'yml' },
+        select: { id: true, agentSlug: true },
+      })) ?? [];
+    const stale = ymlRows.filter((r) => !seenSlugs.has(r.agentSlug));
+    if (stale.length) {
+      await this.prisma.agentTrigger.deleteMany({
+        where: { id: { in: stale.map((r) => r.id) } },
+      });
+      this.logger.log(`已清理 ${stale.length} 条 YML 移除的触发器`);
     }
   }
 

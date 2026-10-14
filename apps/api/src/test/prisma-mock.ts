@@ -5,11 +5,13 @@ export type MockDelegate = {
   findFirst: ReturnType<typeof vi.fn>;
   findMany: ReturnType<typeof vi.fn>;
   create: ReturnType<typeof vi.fn>;
+  createMany: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
   deleteMany: ReturnType<typeof vi.fn>;
   count: ReturnType<typeof vi.fn>;
   aggregate: ReturnType<typeof vi.fn>;
+  groupBy: ReturnType<typeof vi.fn>;
   upsert: ReturnType<typeof vi.fn>;
 };
 
@@ -19,11 +21,13 @@ function createModelMock(): MockDelegate {
     findFirst: vi.fn(),
     findMany: vi.fn(),
     create: vi.fn(),
+    createMany: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
     count: vi.fn(),
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
     upsert: vi.fn(),
   };
 }
@@ -41,6 +45,9 @@ const DEFAULT_MODELS = [
   'agentSession',
   'agentMessage',
   'llmConfig',
+  'llmCallLog',
+  'systemSetting',
+  'agentTrigger',
   'todo',
   'upload',
 ];

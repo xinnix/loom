@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import { ZodError } from 'zod';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../shared/services/file-storage.service';
+import { SettingsService } from '../shared/settings/settings.service';
 import jwt from 'jsonwebtoken';
 import { INestApplication } from '@nestjs/common';
 import { BusinessException } from '../core/exceptions';
@@ -11,6 +12,7 @@ import type { PermissionKey } from '@loom/shared';
 // Global service references
 let prismaServiceInstance: PrismaService | null = null;
 let fileStorageServiceInstance: FileStorageService | null = null;
+let settingsServiceInstance: SettingsService | null = null;
 let appInstance: INestApplication | null = null;
 
 export const setPrismaService = (prisma: PrismaService) => {
@@ -19,6 +21,17 @@ export const setPrismaService = (prisma: PrismaService) => {
 
 export const setFileStorageService = (fileStorage: FileStorageService) => {
   fileStorageServiceInstance = fileStorage;
+};
+
+export const setSettingsService = (settings: SettingsService) => {
+  settingsServiceInstance = settings;
+};
+
+/** 平台参数服务（router 内使用；main.ts 启动时注入，含兜底 reload） */
+export const getSettingsService = (): SettingsService => {
+  if (!settingsServiceInstance)
+    throw new Error('SettingsService 尚未注入（main.ts 启动完成前不可用）');
+  return settingsServiceInstance;
 };
 
 export const setAppInstance = (app: INestApplication) => {

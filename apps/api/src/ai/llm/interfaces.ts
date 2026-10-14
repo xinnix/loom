@@ -8,6 +8,7 @@ import type { Models, Model, Usage } from '@earendil-works/pi-ai';
 
 /** 解析完成的 LLM 配置（apiKey 已解密，仅在 provider 发起请求的瞬间存在） */
 export interface LlmConfigResolved {
+  id?: string; // DB 行 id（env 兜底配置无值）——用量流水 llmConfigId 归因用
   configKey: string;
   name: string;
   provider: string;

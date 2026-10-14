@@ -74,6 +74,8 @@ src/
 - REST Controller 需要 `@Controller()` 装饰器
 - userId 注入：BaseService 自动处理 `createdById`/`updatedById`
 - 数据隔离：User 端查询必须加 `where: { userId }`
+- ⚠️ **带 `@Cron` 的服务必须单一 Module 声明**（当前：`LlmTraceService`、`AgentTriggerDispatcherService`）——provider 只允许在自己的 Module 里声明一次，import 该 Module 多次是安全的（Nest 按 module 类去重实例）；在多处重复声明 provider 会导致定时任务重复触发
+- DB 配置读取显式注入 `SettingsService`（ADR-008）；禁止 re-declare 全局 ConfigService token（铁律详见 `docs/dev/settings-config-injection.md`）
 
 ## API 端治理规则
 

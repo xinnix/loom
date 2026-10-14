@@ -1,15 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ErrorCodes } from '../../core/exceptions';
 import { BusinessException } from '../../core/exceptions/business.exception';
 import { LlmCryptoService } from './llm-crypto.service';
+import { SettingsService } from '../../shared/settings/settings.service';
 import type { LlmConfigResolved } from './interfaces';
 
 /**
  * AI 第 1 层：LLM 配置解析（决策 D3）。
  *
  * 解析优先级：显式 configKey / id → Agent 级默认（llmConfigId，由调用方传入）
- * → LlmConfig.isDefault 全局兜底 → env 静态配置（LLM_API_URL/KEY/MODEL）。
+ * → LlmConfig.isDefault 全局兜底 → 静态兜底配置（SystemSetting → env，ADR-008 接管
+ * LLM_API_URL/KEY/MODEL 三键：数据库参数中心优先于环境变量）。
  *
  * 不做缓存：单次索引查询 + AES-GCM 解密相对秒级 LLM 延迟可忽略，零失效逻辑。
  */
@@ -20,6 +22,7 @@ export class LlmConfigService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly crypto: LlmCryptoService,
+    @Optional() private readonly settings?: SettingsService,
   ) {}
 
   /** 按显式引用解析（configKey 或 id） */
@@ -52,6 +55,7 @@ export class LlmConfigService {
   }
 
   private toResolved(row: {
+    id: string;
     configKey: string;
     name: string;
     provider: string;
@@ -64,6 +68,7 @@ export class LlmConfigService {
     maxRetries: number;
   }): LlmConfigResolved {
     return {
+      id: row.id,
       configKey: row.configKey,
       name: row.name,
       provider: row.provider,
@@ -77,25 +82,28 @@ export class LlmConfigService {
     };
   }
 
-  /** env 兜底配置（LLM_API_KEY 缺失时抛业务错误而非启动错误） */
+  /** 静态兜底配置（SystemSetting → env 链；LLM_API_KEY 全链缺失时抛业务错误而非启动错误） */
   private resolveFromEnv(): LlmConfigResolved {
-    const apiKey = process.env.LLM_API_KEY;
+    // SettingsService 内部已含 env 回落；缺省（单测直 new）时回退 process.env
+    const read = (key: string): string | undefined =>
+      this.settings ? this.settings.get(key) : process.env[key];
+    const apiKey = read('LLM_API_KEY');
     if (!apiKey) {
       throw new BusinessException({
         message:
-          '无可用 LLM 配置：数据库中不存在 isDefault 配置，且 LLM_API_KEY 环境变量未设置。请在管理后台创建模型配置，或配置 LLM_API_KEY。',
+          '无可用 LLM 配置：数据库中不存在 isDefault 配置，且 LLM_API_KEY 未配置（环境变量或平台参数中心）。请在管理后台创建模型配置，或配置 LLM_API_KEY。',
         errorCode: ErrorCodes.AI_CONFIG_NOT_FOUND,
         statusCode: 400,
       });
     }
-    this.logger.warn('使用 env 静态 LLM 配置兜底（数据库无 isDefault 配置）');
+    this.logger.warn('使用静态 LLM 配置兜底（数据库无 isDefault 配置）');
     return {
       configKey: 'env-default',
       name: 'env default',
       provider: 'openai',
-      apiUrl: process.env.LLM_API_URL || 'https://api.openai.com/v1',
+      apiUrl: read('LLM_API_URL') || 'https://api.openai.com/v1',
       apiKey,
-      model: process.env.LLM_MODEL || 'gpt-4o',
+      model: read('LLM_MODEL') || 'gpt-4o',
       timeoutMs: 60_000,
       maxRetries: 1,
     };

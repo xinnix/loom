@@ -10,6 +10,8 @@ import { uploadRouter } from '../modules/upload/trpc/upload.router';
 import { paymentRouter } from '../modules/payment/trpc/payment.router';
 import { wecomRouter } from '../modules/wecom/trpc/wecom.router';
 import { todoRouter } from '../modules/todo/trpc/todo.router';
+import { settingsRouter } from '../modules/settings/trpc/settings.router';
+import { changelogRouter } from '../modules/changelog/trpc/changelog.router';
 
 export const appRouter = router({
   auth: authRouter,
@@ -21,6 +23,8 @@ export const appRouter = router({
   payment: paymentRouter,
   wecom: wecomRouter,
   todo: todoRouter,
+  settings: settingsRouter,
+  changelog: changelogRouter,
 });
 
 export type AppRouter = typeof appRouter;

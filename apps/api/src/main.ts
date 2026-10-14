@@ -8,6 +8,7 @@ import { AllExceptionsFilter } from './core/filters/http-exception.filter';
 
 import { PrismaService } from './prisma/prisma.service';
 import { FileStorageService } from './shared/services/file-storage.service';
+import { SettingsService } from './shared/settings/settings.service';
 import { appRouter } from './trpc/app.router';
 import { router as createTrpcRouter } from './trpc/trpc';
 import { AI_TRPC_ROUTERS } from './modules/ai/module';
@@ -15,6 +16,7 @@ import {
   createContext,
   setPrismaService,
   setFileStorageService,
+  setSettingsService,
   setAppInstance,
 } from './trpc/trpc';
 import * as trpcExpress from '@trpc/server/adapters/express';
@@ -104,6 +106,12 @@ async function bootstrap() {
 
   const fileStorageService = app.get(FileStorageService);
   setFileStorageService(fileStorageService);
+
+  // 平台参数中心（ADR-008）：tRPC 侧注入 + listen 前兜底 reload——
+  // Prisma 连接时序下 onModuleInit 的 reload 可能静默失败，双保险（weSale 生产教训）
+  const settingsService = app.get(SettingsService);
+  setSettingsService(settingsService);
+  await settingsService.reload().catch(() => undefined);
 
   setAppInstance(app);
 

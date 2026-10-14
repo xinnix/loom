@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './prisma/prisma.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
@@ -16,8 +17,10 @@ import { WechatModule } from './modules/wechat/wechat.module';
 import { PaymentModule } from './modules/payment/module';
 import { AiAdminModule } from './modules/ai/module';
 import { AiModule } from './ai/ai.module';
+import { AgentTriggerModule } from './ai/agent-trigger/agent-trigger.module';
 import { WecomModule } from './modules/wecom/module';
 import { TodoModule } from './modules/todo/module';
+import { SettingsModule } from './modules/settings/settings.module';
 // 全局拦截器
 import { TransformInterceptor } from './core/interceptors/transform.interceptor';
 import { SharedModule } from './shared/shared.module';
@@ -34,12 +37,15 @@ import { SharedModule } from './shared/shared.module';
         limit: Number(process.env.RATE_LIMIT_GENERAL) || 100,
       },
     ]),
+    // 定时任务底座（llm-trace retention 等 @Cron 服务；@Cron 服务必须单一 Module 声明）
+    ScheduleModule.forRoot(),
     // 数据库模块（全局，必须在最前）
     PrismaModule,
     // 共享服务（全局：FileStorageService 等）
     SharedModule,
     // 基础设施模块（AI 三层：LLM / 工具 / Agent 编排）
     AiModule,
+    AgentTriggerModule,
     AuthModule,
     UserModule,
     RoleModule,
@@ -50,6 +56,7 @@ import { SharedModule } from './shared/shared.module';
     AiAdminModule,
     WecomModule,
     TodoModule,
+    SettingsModule,
   ],
   providers: [
     Reflector,
