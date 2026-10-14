@@ -23,7 +23,11 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 }) => {
   const { user } = useAuth();
 
+  // super_admin 直通（与后端 REST guard / tRPC permissionProcedure / 菜单过滤口径一致）
+  const isSuperAdmin = user?.roles?.some((r: any) => r?.role?.slug === 'super_admin') || false;
+
   const checkPermission = (): boolean => {
+    if (isSuperAdmin) return true;
     if (!user?.permissions) return false;
 
     // 新用法：直接传入 permission 字符串

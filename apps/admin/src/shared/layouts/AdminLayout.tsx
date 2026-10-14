@@ -16,6 +16,7 @@ import {
   CheckSquareOutlined,
   ApiOutlined,
   ToolOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 import { useState, useMemo } from 'react';
 import { useAuth } from '../auth';
@@ -38,6 +39,7 @@ const iconMap: Record<string, React.ReactNode> = {
   CheckSquareOutlined: <CheckSquareOutlined />,
   ApiOutlined: <ApiOutlined />,
   ToolOutlined: <ToolOutlined />,
+  BarChartOutlined: <BarChartOutlined />,
 };
 
 // prettier-ignore
@@ -51,6 +53,8 @@ const menuConfig = [
       { key: "/ai/llm-configs", label: "模型配置", icon: "ApiOutlined", permission: Permission.menu.llmConfigs },
       { key: "/ai/agents", label: "Agent 编排", icon: "RobotOutlined", permission: Permission.menu.agents },
       { key: "/ai/tools", label: "工具", icon: "ToolOutlined", permission: Permission.menu.aiTools },
+      { key: "/ai/agent-triggers", label: "定时触发", icon: "ThunderboltOutlined", permission: Permission.menu.agentTriggers },
+      { key: "/ai/usage", label: "AI 用量", icon: "BarChartOutlined", permission: Permission.menu.llmUsage },
     ],
   },
   {
@@ -61,6 +65,8 @@ const menuConfig = [
     children: [
       { key: "/admins", label: "管理员管理", icon: "SafetyCertificateOutlined", permission: Permission.menu.admins },
       { key: "/roles", label: "角色管理", icon: "SafetyCertificateOutlined", permission: Permission.menu.roles },
+      { key: "/settings", label: "平台参数", icon: "SettingOutlined", permission: Permission.menu.settings },
+      { key: "/changelog", label: "更新日志", icon: "ThunderboltOutlined", permission: Permission.menu.changelog },
     ],
   },
   {

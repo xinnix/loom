@@ -122,6 +122,18 @@ export const llmConfigFormFields: FieldDefinition[] = [
     initialValue: 1,
   },
   {
+    key: 'inputPricePer1M',
+    label: '输入单价（元/百万 tokens）',
+    type: 'number',
+    placeholder: '留空回退全局兜底',
+  },
+  {
+    key: 'outputPricePer1M',
+    label: '输出单价（元/百万 tokens）',
+    type: 'number',
+    placeholder: '留空回退全局兜底',
+  },
+  {
     key: 'isDefault',
     label: '全局默认',
     type: 'switch',

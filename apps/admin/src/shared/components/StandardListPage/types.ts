@@ -97,6 +97,10 @@ export interface StandardListPageProps<T = Record<string, unknown>> {
   renderRowActions?: (record: T, helpers: RowActionHelpers<T>) => ReactNode;
   renderHeader?: () => ReactNode; // 自定义 Header 区域
   renderModalContent?: () => ReactNode; // 自定义 Modal 内容
+
+  /** 深链直达编辑：URL `?param=value` 命中行同名字段时自动打开编辑 Modal（需提供 formComponent）；
+   * 命中后清除参数防重开；当前页未命中（目标行在分页外）时按字段直查一条 */
+  autoOpenEditParam?: string;
 }
 
 /**

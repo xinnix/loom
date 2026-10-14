@@ -1,6 +1,7 @@
 // StandardListPage 主组件
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   useTable,
   useCreate,
@@ -25,6 +26,7 @@ import {
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { PermissionGuard } from '../PermissionGuard';
+import { getTrpcClient } from '../../trpc/trpcClient';
 import {
   createMutationCallbacks,
   createBatchMutationCallbacks,
@@ -63,6 +65,7 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
     renderRowActions,
     renderHeader,
     renderModalContent,
+    autoOpenEditParam,
   } = props;
 
   const FormComponent = formComponent;
@@ -152,7 +155,10 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
   // 若把 buildFilters 放进依赖数组会导致 setFilters → 重渲染 → 新引用 → 循环
   // （Maximum update depth exceeded）。用 ref 持有最新 buildFilters，effect 只响应状态变化。
   const buildFiltersRef = useRef(buildFilters);
-  buildFiltersRef.current = buildFilters;
+  // 渲染期写 ref 会被 react-hooks/refs 拦截；无依赖 effect 每次渲染后先于消费方 effect 执行，语义等价
+  useEffect(() => {
+    buildFiltersRef.current = buildFilters;
+  });
   useEffect(() => {
     setFilters(buildFiltersRef.current());
   }, [debouncedSearchValues, filterValues, setFilters]);
@@ -161,6 +167,50 @@ export function StandardListPage<T extends Record<string, unknown> = Record<stri
   const query = tableQuery;
   const data = ((result as Record<string, unknown>)?.data as T[]) || [];
   const total = ((result as Record<string, unknown>)?.total as number) || 0;
+
+  // 深链直达编辑：?param=value 命中行同名字段 → 自动打开编辑 Modal，随后清参数防重开；
+  // 当前页未命中（目标行在分页外）时按字段直查一条，不依赖分页位置
+  const [searchParams, setSearchParams] = useSearchParams();
+  const autoOpenedRef = useRef(false);
+  useEffect(() => {
+    if (!autoOpenEditParam || autoOpenedRef.current) return;
+    const value = searchParams.get(autoOpenEditParam);
+    if (!value) return;
+    const openRecord = (record: T) => {
+      autoOpenedRef.current = true;
+      setEditingRecord(record);
+      form.setFieldsValue(record); // 与 handleEdit 同构回填
+      setIsModalVisible(true);
+      searchParams.delete(autoOpenEditParam);
+      setSearchParams(searchParams, { replace: true });
+    };
+    const hit = data.find((item) => (item as Record<string, unknown>)[autoOpenEditParam] === value);
+    if (hit) {
+      openRecord(hit);
+      return;
+    }
+    if (data.length === 0) return; // 列表未加载完，等下一轮 effect
+    autoOpenedRef.current = true;
+    (getTrpcClient() as any)[resource][`${autoOpenEditParam === 'id' ? 'getOne' : 'getMany'}`]
+      .query(
+        autoOpenEditParam === 'id'
+          ? { id: value }
+          : { where: { [autoOpenEditParam]: value }, pageSize: 1 },
+      )
+      .then((res: any) => {
+        const row = autoOpenEditParam === 'id' ? res : (res?.items ?? res?.data)?.[0];
+        if (row) {
+          openRecord(row);
+        } else {
+          searchParams.delete(autoOpenEditParam);
+          setSearchParams(searchParams, { replace: true });
+        }
+      })
+      .catch(() => {
+        searchParams.delete(autoOpenEditParam);
+        setSearchParams(searchParams, { replace: true });
+      });
+  }, [autoOpenEditParam, searchParams, setSearchParams, data, resource, form]);
 
   // CRUD mutations
   const { mutate: create } = useCreate();

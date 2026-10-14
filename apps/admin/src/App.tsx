@@ -17,9 +17,13 @@ import {
   AgentDetailPage,
   AgentPlaygroundPage,
   ToolListPage,
+  LlmUsagePage,
+  AgentTriggerListPage,
 } from './modules/ai';
 import { WecomConfigListPage, WecomMessageListPage, WecomEventListPage } from './modules/wecom';
 import { TodoListPage, TodoDetailPage } from './modules/todo';
+import { SettingsPage } from './modules/settings';
+import { ChangelogPage } from './modules/changelog';
 import { useMessageInitializer } from './shared/hooks/useMessageInitializer';
 // Create QueryClient outside component to prevent re-creation
 const queryClient = new QueryClient({
@@ -53,8 +57,6 @@ function App() {
 }
 
 function AppContent() {
-  const { message: messageApi } = AntApp.useApp();
-
   useMessageInitializer();
 
   return (
@@ -74,6 +76,8 @@ function AppContent() {
           { name: 'agents', list: '/ai/agents' },
           { name: 'llmConfigs', list: '/ai/llm-configs' },
           { name: 'aiTools', list: '/ai/tools' },
+          { name: 'agentTriggers', list: '/ai/agent-triggers' },
+          { name: 'llmUsage', list: '/ai/usage' },
           { name: 'wecom.config', list: '/wecom' },
           { name: 'wecom.message', list: '/wecom/messages' },
           { name: 'wecom.event', list: '/wecom/events' },
@@ -96,11 +100,15 @@ function AppContent() {
             <Route path="ai/agents/:id" element={<AgentDetailPage />} />
             <Route path="ai/agents/:slug/playground" element={<AgentPlaygroundPage />} />
             <Route path="ai/tools" element={<ToolListPage />} />
+            <Route path="ai/agent-triggers" element={<AgentTriggerListPage />} />
+            <Route path="ai/usage" element={<LlmUsagePage />} />
             <Route path="wecom" element={<WecomConfigListPage />} />
             <Route path="wecom/messages" element={<WecomMessageListPage />} />
             <Route path="wecom/events" element={<WecomEventListPage />} />
             <Route path="todos" element={<TodoListPage />} />
             <Route path="todos/:id" element={<TodoDetailPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="changelog" element={<ChangelogPage />} />
           </Route>
           <Route path="/404" element={<NotFoundPage />} />
           <Route path="*" element={<NotFoundPage />} />
