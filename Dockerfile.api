@@ -82,6 +82,9 @@ COPY --from=deployer /out/node_modules ./node_modules
 # 2. 从 builder 阶段拷贝编译后的产物（pnpm deploy 不会包含编译文件）
 COPY --from=builder /app/apps/api/dist ./dist
 
+# 2.5 变更日志（ADR-010：文件真理源，运行时由 ChangelogReader 读取 /app/CHANGELOG.md）
+COPY --from=builder /app/CHANGELOG.md ./CHANGELOG.md
+
 # 3. 拷贝完整的 Prisma Schema 以便在生产环境运行迁移（必须在 node_modules 拷贝前）
 # 包含 migrations 目录，用于 prisma migrate deploy
 COPY --from=builder /app/infra/database ./infra/database

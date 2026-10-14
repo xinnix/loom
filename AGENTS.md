@@ -154,7 +154,8 @@ export class ProductService extends BaseService<Product> {
 
 1. 在 `docs/task/active/` 维护任务文档（`/task`），完成移入 `completed/`
 2. 回写 `docs/ROADMAP.md`（产物 + 日期）；PRD 事实有变同步更新
-3. 新模块过一遍模块健康检查清单（`docs/dev/module-health-checklist.md`）
+3. **登记 `CHANGELOG.md`**（每次改动必做，ADR-010）：在当前或新增版本节下按类型（新增/变更/修复/移除/安全）追加条目——含用户可见变化的改动递增版本号（新能力 → 次版本号，修复 → 修订号），纯内部调整并入当前版本「变更」组；格式约束见 `docs/adr/010-changelog.md`，管理端「更新日志」页只读展示
+4. 新模块过一遍模块健康检查清单（`docs/dev/module-health-checklist.md`）
 
 ---
 

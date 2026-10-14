@@ -207,13 +207,18 @@ docker exec -i postgres psql -U xinnix -d loom < infra/database/prisma/seed-base
 
 关键架构决策记录在 `docs/adr/` 目录。在做出重大架构变更前，先查阅现有 ADR 避免重复决策：
 
-| ADR                                                    | 标题                                                               |
-| ------------------------------------------------------ | ------------------------------------------------------------------ |
-| [ADR-001](docs/adr/001-dual-protocol-architecture.md)  | 双协议架构（Admin 端 tRPC，外部端 REST）                           |
-| [ADR-002](docs/adr/002-refine-antd-frontend.md)        | Admin 前端选择 Refine + Ant Design                                 |
-| [ADR-003](docs/adr/003-standardized-ui-pattern.md)     | 声明式 UI 模式（StandardForm/StandardListPage/StandardDetailPage） |
-| [ADR-004](docs/adr/004-module-standardization-push.md) | 模块标准化推广至全部业务模块                                       |
-| [ADR-005](docs/adr/005-native-ai-three-layer.md)       | 框架原生 AI 三层架构（LLM / 工具 / Agent 编排，pi 底座）           |
+| ADR                                                            | 标题                                                               |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [ADR-001](docs/adr/001-dual-protocol-architecture.md)          | 双协议架构（Admin 端 tRPC，外部端 REST）                           |
+| [ADR-002](docs/adr/002-refine-antd-frontend.md)                | Admin 前端选择 Refine + Ant Design                                 |
+| [ADR-003](docs/adr/003-standardized-ui-pattern.md)             | 声明式 UI 模式（StandardForm/StandardListPage/StandardDetailPage） |
+| [ADR-004](docs/adr/004-module-standardization-push.md)         | 模块标准化推广至全部业务模块                                       |
+| [ADR-005](docs/adr/005-native-ai-three-layer.md)               | 框架原生 AI 三层架构（LLM / 工具 / Agent 编排，pi 底座）           |
+| [ADR-006](docs/adr/006-runtime-ai-user-consumption-session.md) | 运行时 AI 用户端消费与会话持久化（M4 第一批）                      |
+| [ADR-007](docs/adr/007-llm-call-observability.md)              | LLM 调用观测层（用量埋点管线 + Admin 看板）                        |
+| [ADR-008](docs/adr/008-settings-platform-parameters.md)        | 平台参数中心（Settings）                                           |
+| [ADR-009](docs/adr/009-agent-scheduled-trigger.md)             | Agent 定时触发（泛化 cron → run agent）                            |
+| [ADR-010](docs/adr/010-changelog.md)                           | 变更日志（CHANGELOG.md 文件真理源 + 管理端展示）                   |
 
 新增 ADR 时使用模板：
 
@@ -353,12 +358,12 @@ Agent 必须在开发全生命周期使用 `docs/task/` 持久化任务追踪系
 
 `docs/` 采用分层文档体系，配合规则详见 `docs/README.md`。Agent 工作流：
 
-| 时机         | 行为                                                                               |
-| ------------ | ---------------------------------------------------------------------------------- |
-| **开工前**   | 读 `docs/ROADMAP.md` 当前阶段 + `docs/product/prd.md` 对应功能规格，确认任务归属   |
-| **新需求**   | 先过 `docs/product/vision.md` 红线检查，再进 `docs/product/backlog.md`，不直接实现 |
-| **完成后**   | 回写 ROADMAP（产物 + 日期）；PRD 事实有变则同步；epic 从 backlog 移除              |
-| **决策拍板** | 产品决策入 prd.md 决策表；架构决策新开 `docs/adr/` 条目；改主意新增条目不改历史    |
+| 时机         | 行为                                                                                                                                                            |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **开工前**   | 读 `docs/ROADMAP.md` 当前阶段 + `docs/product/prd.md` 对应功能规格，确认任务归属                                                                                |
+| **新需求**   | 先过 `docs/product/vision.md` 红线检查，再进 `docs/product/backlog.md`，不直接实现                                                                              |
+| **完成后**   | 回写 ROADMAP（产物 + 日期）；PRD 事实有变则同步；epic 从 backlog 移除；**登记 `CHANGELOG.md`（每次改动必做，ADR-010：按类型分组追加条目，可见变化递增版本号）** |
+| **决策拍板** | 产品决策入 prd.md 决策表；架构决策新开 `docs/adr/` 条目；改主意新增条目不改历史                                                                                 |
 
 红线（SSOT、双协议边界、三大标准组件强制等）定义在 `docs/product/vision.md`，冲突时删功能不破红线。
 

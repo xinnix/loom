@@ -38,6 +38,10 @@ Monorepo 脚手架骨架 + 核心能力全部就绪：双用户认证、RBAC、�
 方向与顺序见 [ai-native-roadmap.md](product/ai-native-roadmap.md) 第 3/4 步。实施前先补 ADR。
 
 - 第 3 步完成：用户端 REST 消费 + 会话持久化（[ADR-006](adr/006-runtime-ai-user-consumption-session.md)：YML audience 可见性 / AgentSession+AgentMessage 两表 / SSE 零变更 / 历史注入首个节点 / Web 聊天示范页，2026-10-13）
+- 期间产物：LLM 调用观测层（[ADR-007](adr/007-llm-call-observability.md)：LlmCallLog 请求级流水 + 双路径埋点（旁听 result() 零行为改变）+ 双缓冲写入管线 + Admin「AI 用量」看板 `/ai/usage` + LlmConfig 单价成本归因，回哺自 weSale，2026-10-14）
+- 期间产物：平台参数中心（[ADR-008](adr/008-settings-platform-parameters.md)：SettingsService DB→env→derived 三层 + 最小字段目录 + Admin `/settings` 配置页 + 配置注入铁律文档，回哺自 weSale，2026-10-14）
+- 期间产物：Agent 定时触发（[ADR-009](adr/009-agent-scheduled-trigger.md)：泛化 cron→run(agentSlug) + CAS 抢占 dispatcher + YML triggers.cron 运行时生效 + Admin `/ai/agent-triggers`，打开 ADR-005 MVP 边界预留项，回哺自 weSale，2026-10-14）
+- 期间产物：变更日志机制（[ADR-010](adr/010-changelog.md)：CHANGELOG.md 文件真理源 + Admin `/changelog` 展示页 + 每次改动必登记的开发规范，2026-10-14）
 - 待做：第 4 步写操作工具 + human-in-the-loop 审批链（另立 ADR）
 
 ## 回写规则
