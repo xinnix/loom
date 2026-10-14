@@ -217,6 +217,8 @@ model LlmConfig {
   maxTokens   Int?
   timeoutMs   Int      @default(60000)
   maxRetries  Int      @default(1)
+  inputPricePer1M  Float? // 元/百万输入 tokens，成本归因（空=回退全局兜底键；仅归因不参与计费）
+  outputPricePer1M Float? // 元/百万输出 tokens
   isDefault   Boolean  @default(false) // 全局默认（应用层保证唯一）
   isActive    Boolean  @default(true)
   description String?
@@ -249,13 +251,90 @@ model AgentRun {
   usage           Json? // {calls,promptTokens,completionTokens,totalTokens}
   durationMs      Int?
   triggeredById   String? // 无 FK（admin/user 双源）
-  triggeredByType String? // "admin" | "user"
+  triggeredByType String? // "admin" | "user" | "trigger"（定时触发，ADR-009）
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([agentSlug, createdAt])
   @@index([status])
   @@map("agent_runs")
+}
+
+// ============================================
+// LlmCallLog 模型（AI 第 1 层：LLM 请求级用量流水，ADR-007）
+// 与 AgentRun 正交：AgentRun 记一次 agent 执行，本表记一次 LLM 请求
+// （loop 节点多轮工具循环 = 一个 run、多次 LLM 请求）。
+// 隐私红线：不落 prompt/出参全文；errorMsg 截 200 字。
+// ============================================
+model LlmCallLog {
+  id              String   @id @default(cuid())
+  traceId         String // 缺省补 uuid；agent 调用时 = AgentRun.id（一次 run 的多次调用共享）
+  sceneKey        String? // = agentSlug（归因维度；无 run 上下文的散调为空）
+  callType        String // CHAT | CHAT_STREAM | AGENT_LOOP（Zod 枚举同源；无 Prisma enum 惯例）
+  model           String
+  llmConfigId     String? // 无 FK（env 兜底配置无行 id）
+  status          String // SUCCESS | ERROR | TIMEOUT | ABORTED
+  inputTokens     Int?
+  outputTokens    Int?
+  promptChars     Int?
+  completionChars Int?
+  latencyMs       Int?
+  errorClass      String? // timeout | abort | http_4xx | http_5xx | unknown
+  errorMsg        String? // 截 200 字
+  temperature     Float?
+  maxTokens       Int?
+  day             String // UTC+8 统计日桶（趋势聚合单源，与服务器时区解耦）
+  props           Json? // 扩展元数据（nodeId/configKey 等）
+  createdAt       DateTime @default(now())
+
+  @@index([sceneKey, createdAt])
+  @@index([status, createdAt])
+  @@index([traceId])
+  @@index([day])
+  @@map("llm_call_logs")
+}
+
+// ============================================
+// SystemSetting 模型（平台参数中心，ADR-008）
+// key 与环境变量同名；元数据真理源在 infra/shared settings 目录，
+// DB 只存值——读取链 DB → env → 派生（SettingsService 内存缓存）
+// ============================================
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String? // 空串等价未设置（回退 env）
+  group     String // 目录分组键（base/llm/...）
+  isSecret  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+// ============================================
+// AgentTrigger 模型（AI 第 3 层：定时触发，ADR-009）
+// 泛化形态：动作 = run(agentSlug)。YML triggers.cron 为真理源时 source='yml'
+// （loader 启动同步，enabled 为 DB 权威）；管理端手建 source='manual'。
+// nextRunAt 为 CAS 调度水位（dispatcher updateMany compare-and-swap 抢占）。
+// ============================================
+model AgentTrigger {
+  id          String    @id @default(cuid())
+  name        String
+  agentSlug   String // 目标 agent（runtime.run(slug)）
+  schedule    String // HOURLY | DAILY_HH（受限白名单形态，Zod 同源）
+  input       Json? // 运行输入（缺省 {}）
+  source      String    @default("manual") // yml | manual
+  enabled     Boolean   @default(true) // DB 权威（YML 同步不覆盖）
+  lastRunAt   DateTime?
+  nextRunAt   DateTime? // CAS 水位：抢占成功即推进（崩溃不重放）
+  createdById String?
+  updatedById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([enabled, nextRunAt])
+  @@index([agentSlug, source])
+  @@map("agent_triggers")
 }
 
 // ============================================

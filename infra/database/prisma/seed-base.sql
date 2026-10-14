@@ -28,11 +28,38 @@ VALUES
   ('p18', 'wecom', 'read', '查看企微配置'),
   ('p19', 'wecom', 'update', '更新企微配置'),
   ('p20', 'wecom', 'delete', '删除企微配置'),
+  -- LLM 配置 CRUD（registry 已有，此前 seed 漏配——2026-10-14 补）
+  ('p25', 'llmConfig', 'create', '创建模型配置'),
+  ('p26', 'llmConfig', 'read', '查看模型配置'),
+  ('p27', 'llmConfig', 'update', '更新模型配置'),
+  ('p28', 'llmConfig', 'delete', '删除模型配置'),
+  -- AI 工具与 Agent 运行
+  ('p29', 'aiTool', 'read', '查看 AI 工具'),
+  ('p30', 'agent', 'run', '运行 Agent'),
+  -- AI 用量看板（ADR-007）
+  ('p31', 'llmusage', 'read', '查看 AI 用量看板'),
+  -- 平台参数中心（ADR-008）
+  ('p39', 'settings', 'read', '查看平台参数'),
+  ('p40', 'settings', 'update', '修改平台参数'),
+  -- 变更日志（ADR-010）
+  ('p48', 'changelog', 'read', '查看更新日志'),
+  -- Agent 定时触发（ADR-009）
+  ('p42', 'agentTrigger', 'create', '创建触发器'),
+  ('p43', 'agentTrigger', 'read', '查看触发器'),
+  ('p44', 'agentTrigger', 'update', '更新触发器'),
+  ('p45', 'agentTrigger', 'delete', '删除触发器'),
+  ('p46', 'agentTrigger', 'run', '手动执行触发器'),
   -- Menu visibility
-  ('p21', 'menu', 'agents', 'Agent 管理菜单'),
-  ('p22', 'menu', 'admins', '管理员管理菜单'),
-  ('p23', 'menu', 'roles', '角色管理菜单'),
-  ('p24', 'menu', 'wecom', '企业微信菜单')
+  ('p32', 'menu', 'agents', 'Agent 管理菜单'),
+  ('p33', 'menu', 'admins', '管理员管理菜单'),
+  ('p34', 'menu', 'roles', '角色管理菜单'),
+  ('p35', 'menu', 'wecom', '企业微信菜单'),
+  ('p36', 'menu', 'llmConfigs', '模型配置菜单'),
+  ('p37', 'menu', 'aiTools', 'AI 工具菜单'),
+  ('p38', 'menu', 'llmUsage', 'AI 用量菜单'),
+  ('p41', 'menu', 'settings', '平台参数菜单'),
+  ('p47', 'menu', 'agentTriggers', '定时触发菜单'),
+  ('p49', 'menu', 'changelog', '更新日志菜单')
 ON CONFLICT (resource, action) DO NOTHING;
 
 -- ============================================

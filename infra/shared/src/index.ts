@@ -26,6 +26,12 @@ export type { PE as PermissionEntry };
 export * from './ai';
 
 // ============================================
+// 平台参数配置目录（SystemSetting，ADR-008）
+// ============================================
+
+export * from './settings';
+
+// ============================================
 // Auth Schemas
 // ============================================
 
@@ -337,6 +343,9 @@ export const CreateLlmConfigSchema = z.object({
   maxTokens: z.number().int().positive().optional(),
   timeoutMs: z.number().int().positive().optional(),
   maxRetries: z.number().int().min(0).optional(),
+  /** 元/百万 tokens，成本归因用（ADR-007）；空 = 回退全局兜底键 */
+  inputPricePer1M: z.number().min(0).optional(),
+  outputPricePer1M: z.number().min(0).optional(),
   isDefault: z.boolean().optional().default(false),
   isActive: z.boolean().optional().default(true),
   description: z.string().optional(),
@@ -354,6 +363,8 @@ export const UpdateLlmConfigSchema = z.object({
   maxTokens: z.number().int().positive().nullable().optional(),
   timeoutMs: z.number().int().positive().optional(),
   maxRetries: z.number().int().min(0).optional(),
+  inputPricePer1M: z.number().min(0).nullable().optional(),
+  outputPricePer1M: z.number().min(0).nullable().optional(),
   isDefault: z.boolean().optional(),
   isActive: z.boolean().optional(),
   description: z.string().nullable().optional(),
@@ -361,6 +372,66 @@ export const UpdateLlmConfigSchema = z.object({
 
 export type CreateLlmConfigInput = z.infer<typeof CreateLlmConfigSchema>;
 export type UpdateLlmConfigInput = z.infer<typeof UpdateLlmConfigSchema>;
+
+// ============================================
+// AgentTrigger Schemas（定时触发，ADR-009）
+// ============================================
+
+/** 受限调度白名单形态：HOURLY | DAILY_HH（00-23 任意整点）；非任意 cron 表达式 */
+export const AgentTriggerScheduleSchema = z
+  .string()
+  .regex(/^HOURLY$|^DAILY_(?:[01]\d|2[0-3])$/, '调度仅支持 HOURLY 或 DAILY_HH（整点白名单形态）');
+
+export const CreateAgentTriggerSchema = z.object({
+  name: z.string().min(1, '名称不能为空'),
+  agentSlug: z.string().min(1, 'agent slug 不能为空'),
+  schedule: AgentTriggerScheduleSchema,
+  input: z.record(z.string(), z.unknown()).optional(),
+  enabled: z.boolean().optional().default(true),
+});
+
+export const UpdateAgentTriggerSchema = z.object({
+  name: z.string().min(1).optional(),
+  agentSlug: z.string().min(1).optional(),
+  schedule: AgentTriggerScheduleSchema.optional(),
+  input: z.record(z.string(), z.unknown()).nullable().optional(),
+  enabled: z.boolean().optional(),
+});
+
+export type AgentTriggerSchedule = z.infer<typeof AgentTriggerScheduleSchema>;
+export type CreateAgentTriggerInput = z.infer<typeof CreateAgentTriggerSchema>;
+export type UpdateAgentTriggerInput = z.infer<typeof UpdateAgentTriggerSchema>;
+
+// ============================================
+// Changelog Schemas（变更日志，ADR-010）
+// ============================================
+
+/** 条目类型（CHANGELOG.md 分节标题的中英文别名由 API 侧归一） */
+export const CHANGELOG_TYPES = ['added', 'changed', 'fixed', 'removed', 'security'] as const;
+
+export const ChangelogTypeSchema = z.enum(CHANGELOG_TYPES);
+
+export const ChangelogGroupSchema = z.object({
+  type: ChangelogTypeSchema,
+  items: z.array(z.string().min(1)),
+});
+
+export const ChangelogEntrySchema = z.object({
+  version: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '日期格式须为 YYYY-MM-DD'),
+  groups: z.array(ChangelogGroupSchema),
+});
+
+export const ChangelogQuerySchema = z
+  .object({
+    type: ChangelogTypeSchema.optional(),
+    keyword: z.string().optional(),
+  })
+  .optional();
+
+export type ChangelogType = z.infer<typeof ChangelogTypeSchema>;
+export type ChangelogGroup = z.infer<typeof ChangelogGroupSchema>;
+export type ChangelogEntry = z.infer<typeof ChangelogEntrySchema>;
 
 // ============================================
 // WeCom (企业微信) Schemas

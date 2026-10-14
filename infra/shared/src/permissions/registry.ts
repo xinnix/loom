@@ -43,6 +43,23 @@ export const Permission = {
   aiTool: {
     read: 'aiTool:read',
   },
+  agentTrigger: {
+    create: 'agentTrigger:create',
+    read: 'agentTrigger:read',
+    update: 'agentTrigger:update',
+    delete: 'agentTrigger:delete',
+    run: 'agentTrigger:run',
+  },
+  llmusage: {
+    read: 'llmusage:read',
+  },
+  settings: {
+    read: 'settings:read',
+    update: 'settings:update',
+  },
+  changelog: {
+    read: 'changelog:read',
+  },
   wecom: {
     create: 'wecom:create',
     read: 'wecom:read',
@@ -59,6 +76,10 @@ export const Permission = {
     agents: 'menu:agents',
     llmConfigs: 'menu:llmConfigs',
     aiTools: 'menu:aiTools',
+    agentTriggers: 'menu:agentTriggers',
+    llmUsage: 'menu:llmUsage',
+    settings: 'menu:settings',
+    changelog: 'menu:changelog',
     admins: 'menu:admins',
     roles: 'menu:roles',
     wecom: 'menu:wecom',
