@@ -52,17 +52,17 @@ docker exec <container> npx prisma migrate deploy
 
 ### 4. 健康检查
 
-API 服务提供健康检查端点：
+API 服务当前**没有**专用健康检查路由（如 `/health`）；以「进程有 HTTP 响应」为存活判据（任意状态码含 404 均代表服务已启动）：
 
 ```bash
-curl http://localhost:3000/health
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3000/
 ```
 
-Docker Compose 配置：
+Docker Compose 配置（示例）：
 
 ```yaml
 healthcheck:
-  test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+  test: ['CMD', 'curl', '-s', '-o', '/dev/null', 'http://localhost:3000/']
   interval: 30s
   timeout: 10s
   retries: 3

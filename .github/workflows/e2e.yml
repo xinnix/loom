@@ -69,11 +69,12 @@ jobs:
       - name: Start API (port 3000)
         run: |
           node apps/api/dist/main.js > /tmp/api.log 2>&1 &
+          # API 无 /health 路由，任意 HTTP 响应（含 404）即视为进程已就绪
           for i in $(seq 1 60); do
-            curl -sf http://localhost:3000/health && break
+            curl -s -o /dev/null --connect-timeout 2 http://localhost:3000/ && break
             sleep 2
           done
-          curl -sf http://localhost:3000/health
+          curl -s -o /dev/null --connect-timeout 2 http://localhost:3000/
 
       # admin dev 走 vite proxy /trpc→3000，web dev 走 rewrites /api→3000，均无需额外 env
       - name: Start Admin (5173) and Web (3002)
