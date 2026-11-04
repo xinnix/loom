@@ -1,79 +1,79 @@
 @import 'tailwindcss';
 
 @theme {
-  /* 色板：深色终端美学（背景三层 + 容器五层） */
-  --color-bg-canvas: #05070a;
-  --color-background: #111319;
-  --color-surface: #111319;
-  --color-surface-dim: #111319;
-  --color-surface-base: #0a0d12;
-  --color-surface-elevated: #10151d;
-  --color-surface-acrylic: rgba(16, 21, 29, 0.72);
-  --color-surface-bright: #36393f;
-  --color-surface-variant: #32353b;
-  --color-surface-tint: #4edea3;
-  --color-surface-container-lowest: #0b0e13;
-  --color-surface-container-low: #191c21;
-  --color-surface-container: #1d2025;
-  --color-surface-container-high: #272a30;
-  --color-surface-container-highest: #32353b;
-  --color-on-background: #e1e2ea;
-  --color-on-surface: #e1e2ea;
-  --color-on-surface-variant: #bbcabf;
-  --color-inverse-surface: #e1e2ea;
-  --color-inverse-on-surface: #2e3036;
+  /* 色板：浅色工程纸美学（背景三层 + 容器五层，mint 绿品牌色保留） */
+  --color-bg-canvas: #f7f9f8;
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-dim: #f1f4f3;
+  --color-surface-base: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-surface-acrylic: rgba(255, 255, 255, 0.78);
+  --color-surface-bright: #ffffff;
+  --color-surface-variant: #e9efec;
+  --color-surface-tint: #059669;
+  --color-surface-container-lowest: #f4f7f5;
+  --color-surface-container-low: #eef2f0;
+  --color-surface-container: #e9efec;
+  --color-surface-container-high: #e2e9e5;
+  --color-surface-container-highest: #dbe4df;
+  --color-on-background: #344054;
+  --color-on-surface: #344054;
+  --color-on-surface-variant: #475467;
+  --color-inverse-surface: #101828;
+  --color-inverse-on-surface: #f7f9f8;
 
-  /* 主色（mint 绿）三组色阶 */
-  --color-primary: #4edea3;
-  --color-on-primary: #003824;
+  /* 主色（emerald 绿）三组色阶——浅底下取深阶保证对比度 */
+  --color-primary: #059669;
+  --color-on-primary: #ffffff;
   --color-primary-container: #10b981;
-  --color-on-primary-container: #00422b;
-  --color-primary-fixed: #6ffbbe;
-  --color-primary-fixed-dim: #4edea3;
-  --color-on-primary-fixed: #002113;
-  --color-on-primary-fixed-variant: #005236;
-  --color-inverse-primary: #006c49;
+  --color-on-primary-container: #ffffff;
+  --color-primary-fixed: #047857;
+  --color-primary-fixed-dim: #059669;
+  --color-on-primary-fixed: #ffffff;
+  --color-on-primary-fixed-variant: #065f46;
+  --color-inverse-primary: #6ee7b7;
 
-  --color-secondary: #68dba9;
-  --color-on-secondary: #003825;
-  --color-secondary-container: #25a475;
-  --color-on-secondary-container: #00311f;
-  --color-secondary-fixed: #85f8c4;
-  --color-secondary-fixed-dim: #68dba9;
-  --color-on-secondary-fixed: #002114;
-  --color-on-secondary-fixed-variant: #005137;
+  --color-secondary: #0d9488;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #14b8a6;
+  --color-on-secondary-container: #ffffff;
+  --color-secondary-fixed: #0f766e;
+  --color-secondary-fixed-dim: #0d9488;
+  --color-on-secondary-fixed: #ffffff;
+  --color-on-secondary-fixed-variant: #115e59;
 
-  --color-tertiary: #45dfa4;
-  --color-on-tertiary: #003825;
-  --color-tertiary-container: #00b982;
-  --color-on-tertiary-container: #00422c;
-  --color-tertiary-fixed: #68fcbf;
-  --color-tertiary-fixed-dim: #45dfa4;
-  --color-on-tertiary-fixed: #002114;
-  --color-on-tertiary-fixed-variant: #005137;
+  --color-tertiary: #047857;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #059669;
+  --color-on-tertiary-container: #ffffff;
+  --color-tertiary-fixed: #065f46;
+  --color-tertiary-fixed-dim: #047857;
+  --color-on-tertiary-fixed: #ffffff;
+  --color-on-tertiary-fixed-variant: #064e3b;
 
   /* 功能色与信号色 */
-  --color-error: #ffb4ab;
-  --color-on-error: #690005;
-  --color-error-container: #93000a;
-  --color-on-error-container: #ffdad6;
-  --color-text-primary: #f8fafc;
-  --color-text-muted: #64748b;
-  --color-terminal-cyan: #38bdf8;
-  --color-outline: #86948a;
-  --color-outline-variant: #3c4a42;
-  --color-border-subtle: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(16, 185, 129, 0.35);
+  --color-error: #d92d20;
+  --color-on-error: #ffffff;
+  --color-error-container: #fee4e2;
+  --color-on-error-container: #7a271a;
+  --color-text-primary: #101828;
+  --color-text-muted: #667085;
+  --color-terminal-cyan: #0284c7;
+  --color-outline: #98a2b3;
+  --color-outline-variant: #d0d5dd;
+  --color-border-subtle: rgba(16, 24, 40, 0.08);
+  --color-border-strong: rgba(5, 150, 105, 0.35);
 
-  /* 字体族：标题 Inter，正文与标签 JetBrains Mono（终端美学） */
+  /* 字体族：标题/正文 Inter（简洁），代码与标签 JetBrains Mono（终端基因留在细节） */
   --font-headline-xl: 'Inter', sans-serif;
   --font-headline-lg: 'Inter', sans-serif;
   --font-headline-md: 'Inter', sans-serif;
   --font-display-hero: 'Inter', sans-serif;
   --font-display-hero-mobile: 'Inter', sans-serif;
   --font-headline-xl-mobile: 'Inter', sans-serif;
-  --font-body-md: 'JetBrains Mono', monospace;
-  --font-body-lg: 'JetBrains Mono', monospace;
+  --font-body-md: 'Inter', sans-serif;
+  --font-body-lg: 'Inter', sans-serif;
   --font-label-mono: 'JetBrains Mono', monospace;
   --font-label-caps: 'JetBrains Mono', monospace;
   --font-code-snippet: 'JetBrains Mono', monospace;
@@ -146,7 +146,7 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   html {
@@ -154,8 +154,8 @@
   }
 
   body {
-    background-color: #05070a;
-    color: #e1e2ea;
+    background-color: #f7f9f8;
+    color: #344054;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

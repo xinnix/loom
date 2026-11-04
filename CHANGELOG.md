@@ -4,6 +4,22 @@
 
 **登记规则**：每次改动必须在此登记——含用户可见变化的改动递增版本号（新能力 → 次版本号，修复 → 修订号），纯内部调整并入当前版本的「变更」组；条目按类型分组（新增/变更/修复/移除/安全），新版本在最上方。写法约束见 `docs/adr/010-changelog.md`。
 
+## [0.9.0] - 2026-11-04
+
+### 新增
+
+- Landing「更新日志」页（`/changelog`）：构建期解析根 `CHANGELOG.md`（移植 API 端 changelog.reader 三正则状态机，零新依赖）静态渲染版本时间线，类型徽章颜色语义对齐管理端；首页导航与页脚接入入口（GitHub Pages 实测 clean URL 可直达 `changelog.html`）
+- Landing「框架原生 AI」板块：LLM 调用抽象 / YML 声明式工具 / YML Agent 编排三层卡片（OpenAI 兼容多厂商、apiKey AES-256-GCM 加密、token 预算熔断等真实能力，ADR-005~007/009）+ 用户端会话 / 用量看板 / Playground 纵深条
+
+### 变更
+
+- Landing 整体改版为浅色简洁风：`globals.css` 设计令牌全量换浅色色板（mint 绿品牌色保留），正文 Inter 化、mono 收缩到代码与标签，CLI 终端窗口刻意保留深色身份；首页版本徽章 `v0.1` → `v0.8`（过期信息修正）
+- `apps/landing/next.config.ts` 补 `outputFileTracingRoot`（monorepo 追踪根，Turbopack NFT 提示缓解）
+
+### 移除
+
+- Landing 底部赞助/捐款栏（微信/支付宝二维码占位）及「生态网络」导航项；页脚「开源社区」改指 GitHub 仓库
+
 ## [0.8.1] - 2026-11-04
 
 ### 修复

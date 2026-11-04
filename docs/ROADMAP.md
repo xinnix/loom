@@ -43,6 +43,7 @@ Monorepo 脚手架骨架 + 核心能力全部就绪：双用户认证、RBAC、�
 - 期间产物：Agent 定时触发（[ADR-009](adr/009-agent-scheduled-trigger.md)：泛化 cron→run(agentSlug) + CAS 抢占 dispatcher + YML triggers.cron 运行时生效 + Admin `/ai/agent-triggers`，打开 ADR-005 MVP 边界预留项，回哺自 weSale，2026-10-14）
 - 期间产物：变更日志机制（[ADR-010](adr/010-changelog.md)：CHANGELOG.md 文件真理源 + Admin `/changelog` 展示页 + 每次改动必登记的开发规范，2026-10-14）
 - 期间产物：Landing 官网部署迁移 GitHub Pages（`landing-pages.yml` 子路径 `/loom` 自动部署 + `NEXT_PUBLIC_BASE_PATH` 支持，移除 Docker/nginx 旧链路，2026-11-04）
+- 期间产物：Landing 浅色改版 + 框架原生 AI 板块 + `/changelog` 更新日志页（构建期解析根 CHANGELOG.md 静态渲染，与 ADR-010 文件真理源同源；移除赞助栏，2026-11-04）
 - 待做：第 4 步写操作工具 + human-in-the-loop 审批链（另立 ADR）
 
 ## 回写规则

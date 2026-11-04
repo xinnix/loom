@@ -1,11 +1,15 @@
 import { CopyCommandButton } from './_components/copy-command-button';
 
+// 与 next.config.ts 同源：子路径部署（GitHub Pages）时站内页面链接需要手动拼前缀
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 const NAV_LINKS = [
   { label: '架构设计', href: '#architecture', active: true },
+  { label: 'AI 引擎', href: '#ai', active: false },
   { label: '模块组件', href: '#modules', active: false },
   { label: '指令行', href: '#cli', active: false },
-  { label: '生态网络', href: '#ecosystem', active: false },
   { label: '基准对比', href: '#benchmarks', active: false },
+  { label: '更新日志', href: `${basePath}/changelog`, active: false },
 ];
 
 const METRICS = [
@@ -145,26 +149,58 @@ const CLI_FEATURES = [
   },
 ];
 
-const SPONSOR_CHANNELS = [
+const AI_LAYERS = [
   {
-    label: '支付向量：微信',
-    dotClass: 'bg-primary',
-    cardHover: 'hover:border-primary/40',
-    qrHover: 'group-hover:border-primary/50',
-    icon: 'qr_code_2',
+    no: 'AI // LAYER-1',
+    title: 'LLM 调用抽象',
+    icon: 'hub',
     iconClass: 'text-primary',
-    code: 'COMMUNITY_WECHAT',
-    note: '扫描赞助开发者节点',
+    desc: '框架原生 LLM 运行时：一个门面服务统一 chat / 流式 / 函数调用，底层兼容一切 OpenAI 风格端点。',
+    providers: ['OpenAI', 'DeepSeek', 'Qwen', 'vLLM', 'Ollama'],
+    points: ['SSE 流式输出', 'Tool Function Calling', 'apiKey AES-256-GCM 加密落库'],
+    footer: '切换模型只改配置，不动一行业务代码',
   },
   {
-    label: '支付向量：支付宝',
-    dotClass: 'bg-terminal-cyan',
-    cardHover: 'hover:border-terminal-cyan/40',
-    qrHover: 'group-hover:border-terminal-cyan/50',
-    icon: 'qr_code_scanner',
+    no: 'AI // LAYER-2',
+    title: 'YML 声明式工具',
+    icon: 'construction',
     iconClass: 'text-terminal-cyan',
-    code: 'COMMUNITY_ALIPAY',
-    note: '扫描支持底层生态建设',
+    desc: '把内部 REST 端点映射为模型可调用的工具，一份 YML 声明参数、权限与超时，对标 OWASP 工具授权中间件模式。',
+    providers: [],
+    points: [
+      'JSON Schema 校验，失败回喂模型自纠',
+      'permission 闸门先于执行',
+      '方法白名单 + 结果 50KB 截断',
+    ],
+    footer: '工具即配置，随 git 版本化',
+  },
+  {
+    no: 'AI // LAYER-3',
+    title: 'YML Agent 编排',
+    icon: 'account_tree',
+    iconClass: 'text-secondary',
+    desc: '声明式节点图编排多步 Agent：chat 节点流式输出，loop 节点跑工具循环，统一 SSE 事件流协议。',
+    providers: [],
+    points: ['run 级 token 预算熔断', 'loop maxIterations 防失控', 'cron 定时触发，多实例幂等'],
+    footer: 'Agent 定义进仓库，kill switch 在管理端',
+  },
+];
+
+const AI_SURFACES = [
+  {
+    icon: 'forum',
+    title: '用户端 AI 会话',
+    desc: 'audience 可见性控制，用户在 Web / 小程序直接与 Agent 多轮对话，会话历史持久化。',
+  },
+  {
+    icon: 'monitoring',
+    title: '请求级用量看板',
+    desc: 'LlmCallLog 用量流水 + 成本三链归因，每一条 LLM 调用可观测、可核算。',
+  },
+  {
+    icon: 'sports_esports',
+    title: 'Admin Playground',
+    desc: '管理端实时调试 Agent：节点时间线、触发器管理、连通性测试一应俱全。',
   },
 ];
 
@@ -172,8 +208,8 @@ const FOOTER_LINKS = [
   { label: '技术文档', href: '#' },
   { label: '系统状态', href: '#' },
   { label: '安全审计', href: '#' },
-  { label: '更新日志', href: '#' },
-  { label: '开源社区', href: '#ecosystem' },
+  { label: '更新日志', href: `${basePath}/changelog` },
+  { label: '开源社区', href: 'https://github.com/xinnix/loom' },
 ];
 
 const INSTALL_COMMAND = 'npx create-loom@latest my-app';
@@ -182,11 +218,11 @@ export default function LandingPage() {
   return (
     <>
       {/* 背景氛围层 */}
-      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(16,185,129,0.15),rgba(5,7,10,0))] opacity-80" />
-      <div className="fixed inset-0 pointer-events-none z-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(5,150,105,0.08),transparent)]" />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[linear-gradient(to_right,rgba(16,24,40,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,24,40,0.035)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
 
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 bg-surface-acrylic backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
+      <header className="fixed top-0 w-full z-50 bg-surface-acrylic backdrop-blur-xl shadow-[0_1px_0_rgba(16,24,40,0.06)]">
         <div className="h-16 max-w-7xl mx-auto px-margin md:px-margin-desktop flex items-center justify-between gap-space-md">
           <div className="flex items-center gap-space-sm">
             <a className="flex items-center gap-space-sm group" href="#">
@@ -199,7 +235,7 @@ export default function LandingPage() {
             </a>
             <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container-high">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="font-label-caps text-label-caps uppercase text-primary">v0.1</span>
+              <span className="font-label-caps text-label-caps uppercase text-primary">v0.8</span>
             </div>
           </div>
           <nav className="hidden lg:flex items-center gap-space-lg">
@@ -232,7 +268,7 @@ export default function LandingPage() {
               </span>
             </a>
             <a
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container text-on-primary-container hover:bg-primary font-code-snippet text-code-snippet font-bold transition-colors shadow-[0_0_16px_rgba(16,185,129,0.2)]"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container text-on-primary-container hover:bg-primary font-code-snippet text-code-snippet font-bold transition-colors shadow-[0_2px_8px_rgba(5,150,105,0.25)]"
               href="#cli"
             >
               <span className="material-symbols-outlined text-[16px]">bolt</span>
@@ -268,7 +304,7 @@ export default function LandingPage() {
                 架构优化
               </span>
               <span className="text-text-muted/40 text-[10px]">|</span>
-              <span className="font-label-mono text-label-mono text-secondary">v0.1-STABLE</span>
+              <span className="font-label-mono text-label-mono text-secondary">v0.8-STABLE</span>
             </div>
 
             {/* 主标题 */}
@@ -289,14 +325,14 @@ export default function LandingPage() {
             <div className="mt-space-md inline-flex flex-wrap items-center justify-center gap-2 font-label-mono text-label-mono text-secondary-fixed-dim bg-surface-elevated/60 px-4 py-2 rounded border border-border-subtle">
               <span>19 种模块化技能</span>
               <span className="text-primary/40">•</span>
-              <span>10 种核心指令</span>
+              <span>框架原生 LLM 运行时</span>
               <span className="text-primary/40">•</span>
               <span className="text-primary font-semibold">精准编织</span>
             </div>
 
             {/* 安装命令复制框 + 对比入口 */}
             <div className="mt-space-xl w-full max-w-xl flex flex-col sm:flex-row items-center justify-center gap-space-sm">
-              <div className="w-full sm:w-auto flex-1 flex items-center justify-between px-4 py-3 bg-surface-base border border-border-strong/70 rounded shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] group">
+              <div className="w-full sm:w-auto flex-1 flex items-center justify-between px-4 py-3 bg-surface-base border border-border-strong/70 rounded shadow-[0_1px_2px_rgba(16,24,40,0.05)] group">
                 <div className="flex items-center gap-2 font-code-snippet text-code-snippet overflow-x-auto">
                   <span className="text-primary font-bold select-none">$</span>
                   <span className="text-text-primary">{INSTALL_COMMAND}</span>
@@ -442,23 +478,23 @@ export default function LandingPage() {
                       y1="35"
                       y2="35"
                     />
-                    <circle className="animate-pulse" cx="50" cy="35" fill="#10B981" r="4" />
-                    <circle cx="100" cy="20" fill="#38BDF8" r="3" />
-                    <circle cx="150" cy="50" fill="#10B981" r="3" />
-                    <circle cx="200" cy="20" fill="#38BDF8" r="3" />
-                    <circle cx="250" cy="35" fill="#4edea3" r="5" />
+                    <circle className="animate-pulse" cx="50" cy="35" fill="#059669" r="4" />
+                    <circle cx="100" cy="20" fill="#0284c7" r="3" />
+                    <circle cx="150" cy="50" fill="#059669" r="3" />
+                    <circle cx="200" cy="20" fill="#0284c7" r="3" />
+                    <circle cx="250" cy="35" fill="#059669" r="5" />
                     <path
                       d="M 50 35 Q 100 0, 150 50 T 250 35"
                       fill="none"
-                      stroke="#10B981"
-                      strokeOpacity="0.8"
+                      stroke="#059669"
+                      strokeOpacity="0.7"
                       strokeWidth="1.5"
                     />
                     <path
                       d="M 50 35 Q 100 70, 200 20 T 250 35"
                       fill="none"
-                      stroke="#38BDF8"
-                      strokeOpacity="0.7"
+                      stroke="#0284c7"
+                      strokeOpacity="0.6"
                       strokeWidth="1.2"
                     />
                   </svg>
@@ -541,6 +577,98 @@ export default function LandingPage() {
                   <span>Zero-Type-Drift Architecture</span>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* 框架原生 AI 三层架构 */}
+          <section
+            className="w-full max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl"
+            id="ai"
+          >
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-space-xl pb-space-md border-b border-border-subtle gap-space-sm">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 font-label-caps text-label-caps text-primary tracking-widest uppercase">
+                  <span className="text-text-muted">[</span> 框架原生 AI{' '}
+                  <span className="text-text-muted">]</span>
+                </div>
+                <h2 className="font-headline-xl text-headline-xl font-bold text-text-primary tracking-tight">
+                  LLM 原生三层运行时
+                </h2>
+              </div>
+              <p className="font-body-md text-body-md text-text-muted max-w-md">
+                不是外挂编排平台——LLM 调用、工具与 Agent 编排内建在框架里，随仓库一起版本化与部署。
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
+              {AI_LAYERS.map((layer) => (
+                <div
+                  key={layer.no}
+                  className="bg-surface-elevated/80 border border-border-subtle rounded-lg p-space-lg flex flex-col justify-between hover:border-border-strong transition-colors"
+                >
+                  <div className="space-y-space-sm">
+                    <div className="flex items-center justify-between text-text-muted font-label-mono text-label-mono">
+                      <span>{layer.no}</span>
+                      <span className={`material-symbols-outlined ${layer.iconClass} text-[18px]`}>
+                        {layer.icon}
+                      </span>
+                    </div>
+                    <h3 className="font-headline-lg text-headline-lg font-semibold text-text-primary">
+                      {layer.title}
+                    </h3>
+                    <p className="font-body-md text-body-md text-text-muted">{layer.desc}</p>
+                    {layer.providers.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {layer.providers.map((p) => (
+                          <span
+                            key={p}
+                            className="px-2 py-0.5 rounded bg-primary/5 border border-primary/20 font-label-mono text-label-mono text-primary"
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-space-md space-y-space-xs font-body-md text-body-md">
+                    {layer.points.map((point) => (
+                      <div key={point} className="flex items-start gap-2 text-on-surface-variant">
+                        <span
+                          className={`material-symbols-outlined ${layer.iconClass} text-[15px] mt-0.5`}
+                        >
+                          check
+                        </span>
+                        <span>{point}</span>
+                      </div>
+                    ))}
+                    <div className="mt-space-sm pt-space-sm border-t border-border-subtle/60 font-label-mono text-label-mono text-primary">
+                      {layer.footer}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 运行时 AI 纵深：会话 / 观测 / 调试 */}
+            <div className="mt-space-md grid grid-cols-1 md:grid-cols-3 gap-space-md">
+              {AI_SURFACES.map((surface) => (
+                <div
+                  key={surface.title}
+                  className="flex items-start gap-space-sm p-space-md bg-surface-container-lowest/80 border border-border-subtle rounded-lg"
+                >
+                  <div className="w-8 h-8 rounded bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                    <span className="material-symbols-outlined text-[17px]">{surface.icon}</span>
+                  </div>
+                  <div>
+                    <h4 className="font-headline-md text-[15px] font-semibold text-text-primary">
+                      {surface.title}
+                    </h4>
+                    <p className="mt-1 font-body-md text-[12px] text-text-muted leading-relaxed">
+                      {surface.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -728,102 +856,53 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* 右侧模拟终端 */}
-              <div className="lg:col-span-7 bg-surface-base border border-border-strong/80 rounded-lg shadow-2xl overflow-hidden font-code-snippet text-code-snippet">
-                <div className="px-4 py-2.5 bg-surface-container flex items-center justify-between border-b border-border-subtle">
+              {/* 右侧模拟终端（页面浅色化后终端窗口保留深色身份） */}
+              <div className="lg:col-span-7 bg-[#0d1117] border border-[#1f2730] rounded-lg shadow-[0_12px_32px_rgba(16,24,40,0.18)] overflow-hidden font-code-snippet text-code-snippet">
+                <div className="px-4 py-2.5 bg-[#161b22] flex items-center justify-between border-b border-[#1f2730]">
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-error/80" />
-                    <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <span className="w-3 h-3 rounded-full bg-primary/80" />
+                    <span className="w-3 h-3 rounded-full bg-[#f85149]/80" />
+                    <span className="w-3 h-3 rounded-full bg-[#d29922]/80" />
+                    <span className="w-3 h-3 rounded-full bg-[#2ea043]/80" />
                   </div>
-                  <span className="font-label-mono text-label-mono text-text-muted">
+                  <span className="font-label-mono text-label-mono text-[#8b949e]">
                     LOOM-CORE // BASH
                   </span>
                   <div className="w-8" />
                 </div>
                 <div className="p-space-lg space-y-3 font-code-snippet">
                   <div className="flex items-center gap-3">
-                    <span className="text-text-muted select-none">01</span>
-                    <span className="text-primary select-none">$</span>
-                    <span className="text-text-primary font-bold">{INSTALL_COMMAND}</span>
+                    <span className="text-[#6e7681] select-none">01</span>
+                    <span className="text-[#34d399] select-none">$</span>
+                    <span className="text-[#e6edf3] font-bold">{INSTALL_COMMAND}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-text-muted select-none">02</span>
-                    <span className="text-primary select-none">$</span>
-                    <span className="text-text-primary">cd my-app &amp;&amp; pnpm install</span>
+                    <span className="text-[#6e7681] select-none">02</span>
+                    <span className="text-[#34d399] select-none">$</span>
+                    <span className="text-[#e6edf3]">cd my-app &amp;&amp; pnpm install</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-text-muted select-none">03</span>
-                    <span className="text-primary select-none">$</span>
-                    <span className="text-text-primary">pnpm run dev</span>
+                    <span className="text-[#6e7681] select-none">03</span>
+                    <span className="text-[#34d399] select-none">$</span>
+                    <span className="text-[#e6edf3]">pnpm run dev</span>
                   </div>
-                  <div className="my-3 border-t border-border-subtle/50" />
-                  <div className="space-y-1 text-[12px] text-text-muted">
-                    <p className="text-primary flex items-center gap-2">
+                  <div className="my-3 border-t border-[#1f2730]" />
+                  <div className="space-y-1 text-[12px] text-[#8b949e]">
+                    <p className="text-[#34d399] flex items-center gap-2">
                       <span className="material-symbols-outlined text-[14px]">done</span>
                       <span>[系统] 项目脚手架生成完成。</span>
                     </p>
-                    <p className="text-text-primary flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[14px] text-secondary">
+                    <p className="text-[#e6edf3] flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[14px] text-[#5eead4]">
                         lan
                       </span>
                       <span>[系统] API:3000 | Admin:5173 | Web:3002 | Landing:3001</span>
                     </p>
-                    <p className="text-text-muted/60 pl-5">
+                    <p className="text-[#6e7681] pl-5">
                       {'>'} Claude Code Context Loaded: 19 modular skills ready.
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* 开源生态与赞助 */}
-          <section
-            className="w-full max-w-7xl mx-auto px-margin md:px-margin-desktop py-space-2xl text-center"
-            id="ecosystem"
-          >
-            <div className="max-w-xl mx-auto space-y-2 mb-space-xl">
-              <span className="font-label-caps text-label-caps text-primary tracking-widest uppercase">
-                开源生态网络
-              </span>
-              <h2 className="font-headline-xl text-headline-xl font-bold text-text-primary">
-                维护愿景
-              </h2>
-              <p className="font-body-md text-body-md text-text-muted">
-                Loom 由社区共同维系。支持确定性智能体核心框架的持续开发。
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-lg max-w-2xl mx-auto">
-              {SPONSOR_CHANNELS.map((channel) => (
-                <div
-                  key={channel.code}
-                  className={`p-space-lg bg-surface-elevated/60 border border-border-subtle rounded-lg flex flex-col items-center transition-colors group ${channel.cardHover}`}
-                >
-                  <div className="flex items-center gap-2 font-label-mono text-label-mono text-text-muted mb-4">
-                    <span className={`w-2 h-2 rounded-full ${channel.dotClass}`} />
-                    <span>{channel.label}</span>
-                  </div>
-                  <div
-                    className={`w-44 h-44 bg-surface-base border border-border-subtle rounded flex flex-col items-center justify-center p-3 relative transition-colors ${channel.qrHover}`}
-                  >
-                    <div className="w-full h-full border border-dashed border-border-subtle/80 flex flex-col items-center justify-center gap-2">
-                      <span
-                        className={`material-symbols-outlined text-[36px] ${channel.iconClass}`}
-                      >
-                        {channel.icon}
-                      </span>
-                      <span className="font-label-caps text-label-caps text-text-muted">
-                        {channel.code}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="mt-4 font-label-mono text-label-mono text-text-muted text-[11px]">
-                    {channel.note}
-                  </span>
-                </div>
-              ))}
             </div>
           </section>
         </div>
@@ -861,15 +940,8 @@ export default function LandingPage() {
               ))}
             </nav>
           </div>
-          <div className="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm text-text-muted font-label-mono text-label-mono">
-            <div className="flex items-center gap-space-sm">
-              <span>TELEMETRY: OPTIMAL</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>CLUSTER: PRODUCTION-NODE-01</span>
-            </div>
-            <div className="font-label-caps text-label-caps uppercase">
-              DETERMINISTIC AGENT ORCHESTRATION ENGINE
-            </div>
+          <div className="pt-space-md flex justify-center sm:justify-end text-text-muted font-label-caps text-label-caps uppercase">
+            Deterministic Agent Orchestration Engine
           </div>
         </div>
       </footer>
