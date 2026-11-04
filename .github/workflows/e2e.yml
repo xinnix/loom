@@ -86,10 +86,15 @@ jobs:
           for port in 5173 3002; do
             ok=0
             for i in $(seq 1 90); do
-              if curl -sf "http://localhost:$port" -o /dev/null; then ok=1; break; fi
-              # 每 30 秒吐一次现场，冷启动慢时能看到卡在哪
+              # next dev 的 localhost 绑定可能落在 IPv6（::1），双栈分别探活
+              for host in 127.0.0.1 '[::1]'; do
+                if curl -sf --connect-timeout 2 "http://$host:$port" -o /dev/null; then ok=1; break; fi
+              done
+              [ "$ok" = "1" ] && break
+              # 每 30 秒吐一次现场（curl 退出码 + 日志尾部）
               if [ $((i % 15)) -eq 0 ]; then
-                echo "[$port] 第 ${i} 次尝试未就绪，web.log 现状："
+                curl -s --connect-timeout 2 "http://127.0.0.1:$port" -o /dev/null
+                echo "[$port] 第 ${i} 次未就绪（curl exit=$?），web.log 尾部："
                 tail -5 /tmp/web.log 2>/dev/null || echo '(web.log 不存在)'
               fi
               sleep 2
