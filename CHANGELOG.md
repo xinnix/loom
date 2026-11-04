@@ -9,6 +9,7 @@
 ### 修复
 
 - `.scaffold-config.json` 格式撕裂：`init-project.sh` 曾生成裸数组 `[...]`，而 CI（`jq '.apps'` → null，deploy 重启列表静默为空）与 `toggle-app.sh`（python 对 list 调 `.get` 报错）都按 `{"apps":[...]}` 包装结构读取。统一为包装格式（根因修复 init-project.sh 生成逻辑），CI 解析兼容两种历史格式，`toggle-app.sh` 默认创建列表同步移除已迁 Pages 的 landing
+- CI test 长期红根因：`@loom/e2e` 在 CI 无浏览器且无 API/Admin/Web/PostgreSQL 服务环境，秒级失败并因 pnpm 递归 fail-fast 连带 api/admin/shared 单测一并中止。test job 排除 e2e 只跑单测（快车道），新建 `e2e.yml`（手动触发）自建完整环境跑 E2E（PG 18 service + migrate + SQL seed + 三服务 + Playwright chromium，失败时上传报告与日志）
 
 ## [0.8.0] - 2026-11-04
 

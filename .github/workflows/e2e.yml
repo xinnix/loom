@@ -1,0 +1,110 @@
+# E2E 测试（手动触发）
+#
+# 与本地跑法对齐：start-all 起全套服务 + seed 后 `pnpm --filter @loom/e2e test`。
+# CI 内自建完整环境：PostgreSQL service + migrate + SQL seed + API/Admin/Web 三服务 + Playwright chromium。
+# 不随 push 自动跑（慢、重）；需要时手动触发，后续如需可加 nightly schedule。
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: loom
+          POSTGRES_PASSWORD: loom
+          POSTGRES_DB: loom
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U loom"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://loom:loom@localhost:5432/loom
+      JWT_SECRET: ci-e2e-jwt-secret-not-for-production-32chars
+      # CI 固定密钥：只加密本环境里的测试 LLM 配置，无生产语义
+      AI_ENCRYPTION_KEY: kDBfj5To8AZz1u7vsA6JkQHCYSEzQQoZqqYJZM/nFio=
+      NODE_ENV: development
+      PORT: 3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build API and dependencies
+        run: |
+          pnpm --filter @loom/shared build
+          pnpm --filter @loom/database exec prisma generate
+          pnpm --filter @loom/api build
+
+      - name: Migrate database
+        run: pnpm --filter @loom/database exec prisma migrate deploy
+
+      # Prisma seed 与 7.x adapter 有兼容问题，按仓库惯例 SQL 直灌（AGENTS.md）
+      - name: Seed base data
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f infra/database/prisma/seed-base.sql
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @loom/e2e exec playwright install --with-deps chromium
+
+      - name: Start API (port 3000)
+        run: |
+          node apps/api/dist/main.js > /tmp/api.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/health && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000/health
+
+      # admin dev 走 vite proxy /trpc→3000，web dev 走 rewrites /api→3000，均无需额外 env
+      - name: Start Admin (5173) and Web (3002)
+        run: |
+          pnpm -C apps/admin dev > /tmp/admin.log 2>&1 &
+          pnpm -C apps/web dev > /tmp/web.log 2>&1 &
+          for port in 5173 3002; do
+            for i in $(seq 1 60); do
+              curl -sf "http://localhost:$port" -o /dev/null && break
+              sleep 2
+            done
+            curl -sf "http://localhost:$port" -o /dev/null
+          done
+
+      - name: Run E2E tests
+        run: pnpm --filter @loom/e2e test
+
+      - name: Dump service logs on failure
+        if: failure()
+        run: |
+          echo '=== api.log ==='
+          tail -80 /tmp/api.log || true
+          echo '=== admin.log ==='
+          tail -40 /tmp/admin.log || true
+          echo '=== web.log ==='
+          tail -40 /tmp/web.log || true
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: apps/e2e/test-results/
+          retention-days: 7

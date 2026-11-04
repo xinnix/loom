@@ -129,7 +129,8 @@ jobs:
         run: pnpm --filter @loom/database exec prisma generate
 
       - name: Run tests
-        run: pnpm --filter !@loom/miniapp test
+        # e2e 需要全栈服务环境，已拆到独立 workflow（e2e.yml，手动触发）
+        run: pnpm --filter !@loom/miniapp --filter !@loom/e2e test
 
   security-audit:
     runs-on: ubuntu-latest
