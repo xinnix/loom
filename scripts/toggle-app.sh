@@ -43,9 +43,10 @@ fi
 CONFIG_FILE=".scaffold-config.json"
 
 # 检查 config 文件是否存在，不存在则创建
+# 注意：landing 已迁 GitHub Pages，不在 Docker 部署列表内
 if [ ! -f "$CONFIG_FILE" ]; then
   echo "⚠️  .scaffold-config.json 不存在，创建默认配置..."
-  echo '{"apps":["api","admin","web","landing"]}' > "$CONFIG_FILE"
+  echo '{"apps":["api","admin","web"]}' > "$CONFIG_FILE"
 fi
 
 # 读取当前列表

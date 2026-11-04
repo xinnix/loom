@@ -35,7 +35,8 @@ jobs:
       - id: read
         run: |
           if [ -f .scaffold-config.json ]; then
-            echo "APPS=$(jq -c '.apps' .scaffold-config.json)" >> "$GITHUB_OUTPUT"
+            # 兼容包装格式 {"apps":[...]} 与历史裸数组 [...]（init-project.sh 旧版产物）
+            echo "APPS=$(jq -c 'if type == "array" then . else (.apps // []) end' .scaffold-config.json)" >> "$GITHUB_OUTPUT"
           else
             echo 'APPS=["api","admin","web"]' >> "$GITHUB_OUTPUT"
           fi

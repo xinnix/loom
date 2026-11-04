@@ -98,8 +98,9 @@ echo " 仓库根: ${ROOT_DIR}"
 echo "================================================"
 
 # ---- 生成 .scaffold-config.json ----
+# 包装为 {"apps":[...]} 结构（CI 与 toggle-app.sh 均按 .apps 读取）
 APPS_JSON="[\"$(echo "$ENABLED_APPS" | sed 's/ /", "/g')\"]"
-echo "$APPS_JSON" > .scaffold-config.json
+echo "{\"apps\": $APPS_JSON}" > .scaffold-config.json
 echo "  ✓ 已生成 .scaffold-config.json: ${ENABLED_APPS}"
 
 # ---- 清理旧的 git origin（防止污染模板仓库）----

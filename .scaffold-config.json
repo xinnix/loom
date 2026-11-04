@@ -1,1 +1,3 @@
-["api", "admin"]
+{
+  "apps": ["api", "admin"]
+}
