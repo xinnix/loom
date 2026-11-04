@@ -118,4 +118,5 @@ INSERT INTO users (id, username, email, "passwordHash", nickname, phone, "isActi
 VALUES
   ('u1', 'user', 'user@example.com', '$2a$10$lkkKl9vU1py90sJ/IX25U.idJvyroYi2XkdAbBaxnX4oIY3BTAipa', '测试用户', '13800138000', true, NOW(), NOW()),
   ('u2', 'user2', 'user2@example.com', '$2a$10$lkkKl9vU1py90sJ/IX25U.idJvyroYi2XkdAbBaxnX4oIY3BTAipa', '测试用户2', NULL, true, NOW(), NOW())
-ON CONFLICT (email) DO NOTHING;
+-- users.email 无唯一约束（微信用户场景可选），用裸 ON CONFLICT 幂等
+ON CONFLICT DO NOTHING;
