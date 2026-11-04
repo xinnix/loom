@@ -78,15 +78,25 @@ jobs:
 
       # admin dev 走 vite proxy /trpc→3000，web dev 走 rewrites /api→3000，均无需额外 env
       - name: Start Admin (5173) and Web (3002)
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
         run: |
           pnpm -C apps/admin dev > /tmp/admin.log 2>&1 &
           pnpm -C apps/web dev > /tmp/web.log 2>&1 &
           for port in 5173 3002; do
-            for i in $(seq 1 60); do
-              curl -sf "http://localhost:$port" -o /dev/null && break
+            ok=0
+            for i in $(seq 1 90); do
+              if curl -sf "http://localhost:$port" -o /dev/null; then ok=1; break; fi
+              # 每 30 秒吐一次现场，冷启动慢时能看到卡在哪
+              if [ $((i % 15)) -eq 0 ]; then
+                echo "[$port] 第 ${i} 次尝试未就绪，web.log 现状："
+                tail -5 /tmp/web.log 2>/dev/null || echo '(web.log 不存在)'
+              fi
               sleep 2
             done
-            curl -sf "http://localhost:$port" -o /dev/null
+            if [ "$ok" != "1" ]; then
+              echo "❌ 端口 $port 未就绪"; echo '--- web.log ---'; cat /tmp/web.log 2>/dev/null; exit 1
+            fi
           done
 
       - name: Run E2E tests
@@ -95,12 +105,16 @@ jobs:
       - name: Dump service logs on failure
         if: failure()
         run: |
+          echo '=== 进程现场 ==='
+          ps aux | grep -E 'next|vite|dist/main' | grep -v grep || true
+          echo '=== 日志文件 ==='
+          ls -la /tmp/*.log 2>/dev/null || true
           echo '=== api.log ==='
           tail -80 /tmp/api.log || true
           echo '=== admin.log ==='
           tail -40 /tmp/admin.log || true
           echo '=== web.log ==='
-          tail -40 /tmp/web.log || true
+          tail -60 /tmp/web.log || true
 
       - name: Upload Playwright artifacts on failure
         if: failure()
