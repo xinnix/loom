@@ -49,15 +49,3 @@ services:
     depends_on:
       - api
     restart: unless-stopped
-
-  landing:
-    build:
-      context: .
-      dockerfile: Dockerfile.landing
-      target: production
-    image: ${PROJECT_NAME:-loom}-landing:v1-local
-    container_name: ${PROJECT_NAME:-loom}-landing-local
-    profiles: [landing]
-    ports:
-      - '8080:80'
-    restart: unless-stopped

@@ -68,6 +68,15 @@ healthcheck:
   retries: 3
 ```
 
+## Landing 官网（GitHub Pages）
+
+官网（`apps/landing`）是纯静态导出（`output: 'export'`，产物 `out/`），自 2026-11 起托管在 GitHub Pages：**https://xinnix.github.io/loom/**，不再产出 Docker 镜像（旧 nginx 容器方案已移除）。
+
+- **自动部署**：`.github/workflows/landing-pages.yml` 在 push main 触及 `apps/landing/**` 或 workflow 自身时构建并发布（也支持手动 `workflow_dispatch`）
+- **子路径**：构建时注入 `NEXT_PUBLIC_BASE_PATH=/loom`，由 `apps/landing/next.config.ts` 转为 `basePath`/`assetPrefix`；本地 dev/build 不设此变量即根路径，行为不变
+- **一次性开启**：仓库 Settings → Pages → Source 选 "GitHub Actions"，或 `gh api repos/xinnix/loom/pages -X POST -f build_type=workflow`
+- **本地验证子路径构建**：`NEXT_PUBLIC_BASE_PATH=/loom pnpm build:landing` 后确认 `out/index.html` 资源引用为 `/loom/_next/...`
+
 ## 部署检查清单
 
 ### 部署前

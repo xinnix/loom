@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
+// 与 next.config.ts 同源：子路径部署时 metadata 里的静态资源需要手动拼前缀
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 export const metadata: Metadata = {
   title: 'Loom — Agent-Centric 全栈开发框架',
   description:
     'Loom 将 AI Agent、后端、前端与数据库精密编织为完整的全栈开发体验。Claude Code / Codex / OpenCode / ZCode 开箱即用，克隆即开工。',
-  icons: { icon: '/favicon.svg' },
+  icons: { icon: `${basePath}/favicon.svg` },
   openGraph: {
     title: 'Loom — Agent-Centric 全栈开发框架',
     description:

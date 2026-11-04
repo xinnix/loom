@@ -1,0 +1,59 @@
+# Landing 官网 → GitHub Pages 自动部署
+# 产物为纯静态导出（apps/landing/out），部署到 https://xinnix.github.io/loom/
+# 一次性开启：仓库 Settings → Pages → Source 选 "GitHub Actions"
+name: Landing Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/landing/**'
+      - '.github/workflows/landing-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只保留一次 Pages 部署
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build landing (static export)
+        run: pnpm build:landing
+        env:
+          # 项目站子路径部署，next.config 的 basePath/assetPrefix 由此注入
+          NEXT_PUBLIC_BASE_PATH: /loom
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/landing/out
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

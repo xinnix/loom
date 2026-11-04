@@ -22,7 +22,6 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME_API: ${{ github.repository }}-api
   IMAGE_NAME_ADMIN: ${{ github.repository }}-admin
-  IMAGE_NAME_LANDING: ${{ github.repository }}-landing
   IMAGE_NAME_WEB: ${{ github.repository }}-web
   VITE_API_URL: /trpc
 
@@ -38,7 +37,7 @@ jobs:
           if [ -f .scaffold-config.json ]; then
             echo "APPS=$(jq -c '.apps' .scaffold-config.json)" >> "$GITHUB_OUTPUT"
           else
-            echo 'APPS=["api","admin","web","landing"]' >> "$GITHUB_OUTPUT"
+            echo 'APPS=["api","admin","web"]' >> "$GITHUB_OUTPUT"
           fi
 
   migration-check:
@@ -191,19 +190,6 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Docker metadata for Landing
-        id: meta-landing
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LANDING }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
       - name: Docker metadata for Web
         id: meta-web
         uses: docker/metadata-action@v5
@@ -251,18 +237,6 @@ jobs:
             VITE_API_URL=${{ env.VITE_API_URL }}
           cache-from: type=gha,scope=admin
           cache-to: type=gha,mode=max,scope=admin
-
-      - name: Build and push Landing image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.landing
-          push: true
-          tags: ${{ steps.meta-landing.outputs.tags }}
-          labels: ${{ steps.meta-landing.outputs.labels }}
-          target: production
-          cache-from: type=gha,scope=landing
-          cache-to: type=gha,mode=max,scope=landing
 
       - name: Build and push Web image
         uses: docker/build-push-action@v5
@@ -353,14 +327,6 @@ jobs:
           echo "### Admin Image" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.meta-admin.outputs.tags }}" | tr ' ' '\n' | sed 's/^/docker pull /' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-      - name: Extra metadata for Landing image
-        run: |
-          echo "### Landing Image" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.meta-landing.outputs.tags }}" | tr ' ' '\n' | sed 's/^/docker pull /' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 

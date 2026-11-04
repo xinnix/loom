@@ -4,6 +4,16 @@
 
 **登记规则**：每次改动必须在此登记——含用户可见变化的改动递增版本号（新能力 → 次版本号，修复 → 修订号），纯内部调整并入当前版本的「变更」组；条目按类型分组（新增/变更/修复/移除/安全），新版本在最上方。写法约束见 `docs/adr/010-changelog.md`。
 
+## [0.8.0] - 2026-11-04
+
+### 新增
+
+- Landing 官网 GitHub Pages 自动部署：`landing-pages.yml` workflow（push main 触及 `apps/landing/**` 时静态导出并发布到 https://xinnix.github.io/loom/）+ `next.config.ts` 子路径支持（`NEXT_PUBLIC_BASE_PATH` 注入 `basePath`/`assetPrefix`）+ `public/.nojekyll`
+
+### 移除
+
+- Landing 旧 Docker/nginx 部署链路：`Dockerfile.landing`、`nginx.landing.conf`、docker-compose（local/prod）landing 服务、CI 中 landing 镜像构建与推送
+
 ## [0.7.0] - 2026-10-14
 
 ### 新增
